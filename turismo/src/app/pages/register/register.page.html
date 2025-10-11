@@ -1,13 +1,54 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>register</ion-title>
+<ion-header>
+  <ion-toolbar color="dark">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/login"></ion-back-button>
+    </ion-buttons>
+    
+    <ion-title>Registro</ion-title>
+    
+    <ion-buttons slot="end">
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">register</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding" style="--background: #1e3f48;">
+
+  <div class="logo-container ion-text-center ion-padding">
+    <img src="assets/icon/turisMatch_logo.png" alt="Logo TurisMatch" class="app-logo"> 
+  </div>
+
+  <h1 class="registro-title">Registro</h1>
+
+  <ion-list lines="none" class="input-list">
+    <ion-item class="custom-input-item">
+      <ion-input [(ngModel)]="nombre" placeholder="Nombre"></ion-input>
+    </ion-item>
+
+    <ion-item class="custom-input-item">
+      <ion-input [(ngModel)]="apellido" placeholder="Apellido"></ion-input>
+    </ion-item>
+
+    <ion-item class="custom-input-item">
+      <ion-input type="tel" [(ngModel)]="telefono" placeholder="Teléfono"></ion-input>
+    </ion-item>
+
+    <ion-item class="custom-input-item">
+      <ion-input type="email" [(ngModel)]="email" placeholder="Email"></ion-input>
+    </ion-item>
+
+    <ion-item class="custom-input-item">
+      <ion-input type="password" [(ngModel)]="password" placeholder="Contraseña"></ion-input>
+    </ion-item>
+
+    <ion-item class="custom-input-item">
+      <ion-input type="password" [(ngModel)]="confirmPassword" placeholder="Repita Contraseña"></ion-input>
+    </ion-item>
+  </ion-list>
+
+  <ion-button 
+    expand="full" 
+    class="create-account-button ion-margin-top" 
+    (click)="onRegister()">
+    Crear Cuenta
+  </ion-button>
 </ion-content>
