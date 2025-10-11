@@ -1,0 +1,41 @@
+<ion-content>
+    <div class="header-content">
+        <img src="#" alt="TurisMatch Logo">
+        <h1>TURIS MATCH</h1>
+        <p>Bienvenido</p>
+    </div>
+
+    <div class="login-form">
+        <ion-item class="input-item">
+            <ion-input 
+                placeholder="Email" 
+                type="email" 
+                [(ngModel)]="email">
+            </ion-input>
+        </ion-item>
+
+        <ion-item class="input-item">
+            <ion-input 
+                placeholder="Contraseña" 
+                type="password" 
+                [(ngModel)]="password">
+            </ion-input>
+        </ion-item>
+
+        <ion-button 
+            expand="full" 
+            class="ion-margin-top" 
+            (click)="iniciarSesion()">
+            Iniciar sesión
+        </ion-button>
+
+        <ion-button 
+            expand="full" 
+            fill="outline" 
+            class="ion-margin-top" 
+            (click)="registrarse()">
+            Registrarse
+        </ion-button>
+        
+        </div>
+</ion-content>
