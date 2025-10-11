@@ -1,19 +1,54 @@
-<ion-menu side="end" contentId="main-content">
+<ion-header>
+  <h1>
+    logo turismo
+  </h1>
+</ion-header>
+
+
+
+
+<ion-menu contentId="main-content" side="end">
   <ion-header>
-    <ion-toolbar color="primary">
-      <ion-title>Menu</ion-title>
+    <ion-toolbar>
+      <ion-title>Menu Content</ion-title>
     </ion-toolbar>
   </ion-header>
 </ion-menu>
-<div class="ion-page" id="main-content">
+
+
+<ion-content>
   <ion-header>
-    <ion-toolbar>
-      <ion-buttons slot="end">
-        <ion-menu-button>
-          <ion-icon name="person-outline"></ion-icon>
-        </ion-menu-button>
-      </ion-buttons>
-    </ion-toolbar>
+
+      <div class="ion-page" id="main-content">
+        <ion-buttons>
+          <ion-menu-button site="end"></ion-menu-button>
+        </ion-buttons>
+      </div>
   </ion-header>
 
-</div>
+  <div>
+    <p>
+      Seleccione
+    </p>
+
+  </div>
+  <div>
+    <ion-input label=" Provincia"  label-placement="floating" fill="outline" placeholder=" Ej: Buenos aires, Chubut,etc "></ion-input>
+  </div>
+    <div>
+    <ion-input fill="outline" placeholder="Selecionar Filtros"></ion-input>
+  </div>
+    <div>
+    <ion-input label=" Pisaje"  label-placement="floating" fill="outline" placeholder="Ej: "></ion-input>
+  </div>
+  <div> 
+    <ion-button > 
+      Buscar 
+    </ion-button>
+  </div>
+  <div> 
+      <p> 
+        Última sincronización
+      </p>
+  </div>
+</ion-content>
