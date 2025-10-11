@@ -106,4 +106,7 @@ export class LoginPage {
 
     await alert.present();
   }
+    irARegistro() {
+    this.router.navigate(['/register']);
+  }
 }
