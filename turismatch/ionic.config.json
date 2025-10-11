@@ -1,7 +1,0 @@
-{
-  "name": "turismatch",
-  "integrations": {
-    "capacitor": {}
-  },
-  "type": "angular"
-}
