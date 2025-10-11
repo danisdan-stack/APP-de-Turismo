@@ -5,30 +5,56 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
   providedIn: 'root'
 })
 export class Auth {
-  constructor (private angularFireAuth: AngularFireAuth){}
+
+  constructor(private angularFireAuth: AngularFireAuth) {}
+
+  /**
+   * 🔹 Registrar nuevo usuario
+   */
   async register(email: string, password: string): Promise<any> {
     try {
-      return await this.angularFireAuth.createUserWithEmailAndPassword(email, password);
-    } catch (error) {
-      // Manejar errores como 'email-already-in-use', 'weak-password', etc.
-      console.error("Error en el registro:", error);
-      return null;
+      const result = await this.angularFireAuth.createUserWithEmailAndPassword(email, password);
+      console.log("✅ Usuario registrado correctamente:", result.user?.email);
+      return result;
+    } catch (error: any) {
+      console.error("❌ Error en el registro:", error);
+      throw error; // se lanza para poder manejarlo desde el componente
     }
   }
 
-  // 2. Método para el Inicio de Sesión
+  /**
+   * 🔹 Iniciar sesión con email y contraseña
+   */
   async login(email: string, password: string): Promise<any> {
     try {
-      return await this.angularFireAuth.signInWithEmailAndPassword(email, password);
-    } catch (error) {
-      console.error("Error en el inicio de sesión:", error);
-      return null;
+      const result = await this.angularFireAuth.signInWithEmailAndPassword(email, password);
+      console.log("✅ Sesión iniciada:", result.user?.email);
+      return result;
+    } catch (error: any) {
+      console.error("❌ Error en el inicio de sesión:", error);
+      throw error; // se lanza para poder mostrar mensajes personalizados
     }
   }
 
-  // 3. Método para obtener el estado de autenticación (si hay un usuario logeado)
+  /**
+   * 🔹 Cerrar sesión
+   */
+  async logout(): Promise<void> {
+    try {
+      await this.angularFireAuth.signOut();
+      console.log("👋 Sesión cerrada correctamente");
+    } catch (error) {
+      console.error("❌ Error al cerrar sesión:", error);
+    }
+  }
+
+  /**
+   * 🔹 Obtener el estado de autenticación
+   * (emite un observable con el usuario logueado o null)
+   */
   getAuthState() {
     return this.angularFireAuth.authState;
   }
 }
+
 
