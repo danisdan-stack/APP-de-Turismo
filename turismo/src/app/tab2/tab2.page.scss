@@ -1,0 +1,21 @@
+.toolbar {
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+
+ion-button {
+    --background: #0cbb0f;
+}
+
+ol {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.boton-buscar {
+    padding: 8px
+}
