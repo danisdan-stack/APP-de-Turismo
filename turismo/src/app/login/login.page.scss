@@ -1,0 +1,120 @@
+.login-page {
+  // Configura el gradiente exacto. Los colores en el diseño se ven como un verde lima a un azul/turquesa.
+  --background: linear-gradient(180deg, #74e76d 0%, #15c9ff 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 30px 20px;
+}
+.input-group,
+.button-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center; // Centra los elementos dentro de estos contenedores
+    width: 100%;
+}
+.logo-container {
+  margin-top: 30px;
+  h1 {
+    // Estilo para TURIS MATCH
+    color: #fff;
+    font-size: 2.2em;
+    font-weight: 700;
+    margin-bottom: 0;
+  }
+  .bienvenido-text {
+    // Estilo para Bienvenido
+    color: #fff;
+    font-size: 1.2em;
+    font-weight: 500;
+  }
+  // (Aquí agregarías estilos para el icono/imagen del logo si lo usas)
+}
+.input-field {
+  --background: rgba(255, 255, 255, 0.9); // Fondo blanco con ligera transparencia
+  --border-radius: 10px; // Bordes redondeados
+  margin-bottom: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); // Sombra sutil
+  --padding-start: 15px;
+  --highlight-color-focused: transparent; // Opcional: elimina el borde de enfoque de Ionic
+  width: 90%; 
+  max-width: 350px;
+
+  ion-input {
+    color: #333; // Color de texto oscuro
+  }
+}
+.main-button {
+  --border-radius: 30px; // Forma de "píldora"
+  height: 50px;
+  font-weight: bold;
+  text-transform: none; // No queremos mayúsculas por defecto
+}
+
+// Botón de Iniciar Sesión (Iniciar sesión)
+.login-button {
+    height: 45px; 
+  --background: rgba(255, 255, 255, 0.65); // Claro y semitransparente
+  --color: #333; // Texto oscuro
+  margin-bottom: 15px;
+   width: 90%; 
+  max-width: 350px;
+}
+
+// Botón de Registrarse (Registrarse)
+.register-button {
+  height: 45px; 
+  --background: rgba(255, 255, 255, 0.4); // Fondo claro, pero más transparente
+  --color: #333; 
+  border: none; 
+  margin-top: 30px; 
+  width: 90%; 
+  max-width: 350px; 
+}
+
+// Botón de Google 'G'
+.social-login-separator {
+    text-align: center;
+    margin: 20px 0;
+}
+.google-button {
+    --background: #fff;
+    --color: #333;
+    width: 50px;
+    height: 50px;
+    font-size: 1.2em;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.forgot-password {
+    color: #333; // Color del texto claro
+    text-align: center;
+    font-size: 0.9em;
+    margin-bottom: 25px;
+}
+
+// Permisos GPS (Parte inferior)
+.gps-permission {
+    color: #fffefe;
+    font-weight: 500;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute; // Para pegarlo al fondo
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    margin-top: 20px;
+}
+
+.gps-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: #fff; // Punto blanco
+    border-radius: 50%;
+    margin-right: 8px;
+    border: 1px solid #faf8f8; // Borde 
+}
