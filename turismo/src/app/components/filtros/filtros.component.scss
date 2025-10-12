@@ -1,0 +1,152 @@
+.filtros-card {
+  margin: 0;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.paso-group {
+  margin-bottom: 20px;
+  
+  ion-button {
+    --border-radius: 12px;
+    margin-bottom: 8px;
+    --padding-top: 16px;
+    --padding-bottom: 16px;
+  }
+}
+
+.opciones-list {
+  margin-top: 8px;
+  border: 2px solid var(--ion-color-light-shade);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--ion-color-light);
+  
+  ion-list {
+    padding: 0;
+    background: transparent;
+  }
+  
+  ion-item {
+    --min-height: 52px;
+    --padding-start: 16px;
+    --inner-padding-end: 16px;
+    --background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid var(--ion-color-light-shade);
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    &:hover {
+      --background: var(--ion-color-primary-tint);
+    }
+    
+    &.selected {
+      --background: var(--ion-color-primary);
+      --color: white;
+      
+      ion-icon {
+        color: white !important;
+      }
+    }
+  }
+}
+
+.buscar-btn {
+  --border-radius: 12px;
+  --padding-top: 20px;
+  --padding-bottom: 20px;
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-top: 16px;
+}
+
+.resumen-selecciones {
+  margin-top: 24px;
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  padding: 8px;
+  
+  ion-item-divider {
+    --background: transparent;
+    --padding-start: 0;
+  }
+  
+  ion-item {
+    --background: transparent;
+    --min-height: 48px;
+    
+    h3 {
+      font-size: 0.9em;
+      color: var(--ion-color-medium);
+      margin: 0;
+    }
+    
+    p {
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+}
+
+.indicador-progreso {
+  margin-top: 20px;
+  text-align: center;
+  
+  ion-progress-bar {
+    margin-top: 8px;
+    border-radius: 8px;
+    height: 6px;
+  }
+}
+
+// Estados deshabilitados
+ion-button[disabled] {
+  opacity: 0.6;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .filtros-card {
+    max-height: 60vh;
+  }
+  
+  .paso-group {
+    margin-bottom: 16px;
+  }
+}
+// Agregar al archivo SCSS existente
+
+.modo-group {
+  margin-bottom: 24px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--ion-color-light-tint);
+  
+  &:last-child {
+    margin-bottom: 16px;
+  }
+}
+
+.estado-busqueda {
+  font-style: italic;
+  text-align: center;
+  color: var(--ion-color-medium);
+}
+
+// Destacar el modo paisaje
+.modo-group:last-child {
+  border: 2px solid var(--ion-color-tertiary);
+  background: rgba(var(--ion-color-tertiary-rgb), 0.05);
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .modo-group {
+    margin-bottom: 16px;
+    padding: 8px;
+  }
+}
