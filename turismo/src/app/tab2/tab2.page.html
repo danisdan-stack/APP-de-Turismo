@@ -1,36 +1,35 @@
+<ion-header [translucent]="true">
+  <ion-toolbar class="arriba">
+    <ion-img src="../imagenes/TurisMatch-logo.png" alt="TurisMatch-logo">
+    </ion-img>
+    <div class="titulo" slot="end">
+      <ion-title>
+        <h1>
+          Favoritos
+        </h1>
+      </ion-title>
+    </div>
+  </ion-toolbar>
+</ion-header>
 
-  <ion-header [translucent]="true">
-    <ion-toolbar class="arriba">
-      <ion-img src="../imagenes/TurisMatch-logo.png" alt="TurisMatch-logo">
-      </ion-img>
-      <div class="titulo" slot="end">
-        <ion-title>
-          <h1>
-            Favoritos
-          </h1>
-        </ion-title>
-      </div>
-    </ion-toolbar>
-  </ion-header>
 
-
-  <!--
+<!--
 Lista para agregar los puntos que dieron me gusta 
 usar ngfor para recorer en la lista y mostrar directamente la lista de me gusta
 -->
-  <ion-content [fullscreen]="true" class="login-page">
-    <ion-list class="lista">
-      <ion-item>
+<ion-content [fullscreen]="true" class="login-page">
+  <ion-list class="lista">
+    <ion-item>
+      <div class="nombre" (click)="hola()">
         <p>
           Nombre del lugar
         </p>
-        <div class="boton-buscar" slot="end">
-          <ion-button class="buscar" shape="round" size="defauld" color="success">
-            <ion-icon name="navigate-outline"></ion-icon>
-          </ion-button>
-        </div>
-
-      </ion-item>
-    </ion-list>
-
-  </ion-content>
+      </div>
+      <div class="boton-buscar" slot="end">
+        <ion-button class="buscar" shape="round" size="defauld" color="success" (click)="direccionar()">
+          <ion-icon name="navigate-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </ion-item>
+  </ion-list>
+</ion-content>

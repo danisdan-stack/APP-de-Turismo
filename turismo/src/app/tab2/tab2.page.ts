@@ -9,5 +9,10 @@ import { Component } from '@angular/core';
 export class Tab2Page {
 
   constructor() {}
-
+  direccionar(){
+    console.log("te direcciono")
+  }
+  hola(){
+    console.log("hola ")
+  }
 }
