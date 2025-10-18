@@ -1,17 +1,35 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Tab 2
-    </ion-title>
+  <ion-toolbar class="arriba">
+    <ion-img src="/turismo/src/app/imagenes/TurisMatch-logo.png" alt="TurisMatch-logo">
+    </ion-img>
+    <div class="titulo" slot="end">
+      <ion-title>
+        <h1>
+          Favoritos
+        </h1>
+      </ion-title>
+    </div>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 2</ion-title>
-    </ion-toolbar>
-  </ion-header>
 
-  <app-explore-container name="Tab 2 page"></app-explore-container>
+<!--
+Lista para agregar los puntos que dieron me gusta 
+usar ngfor para recorer en la lista y mostrar directamente la lista de me gusta
+-->
+<ion-content [fullscreen]="true" class="login-page">
+  <ion-list class="lista">
+    <ion-item>
+      <div class="nombre" (click)="hola()">
+        <p>
+          Nombre del lugar
+        </p>
+      </div>
+      <div class="boton-buscar" slot="end">
+        <ion-button class="buscar" shape="round" size="defauld" color="success" (click)="direccionar()">
+          <ion-icon name="navigate-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </ion-item>
+  </ion-list>
 </ion-content>

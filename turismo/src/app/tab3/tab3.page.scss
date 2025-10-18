@@ -1,0 +1,43 @@
+ion-content {
+    --background: #15464d;
+}
+.title-content{
+     --background: #0f343a;
+}
+
+ion-toolbar {
+    --background: #0f343a;
+}
+
+
+.derecha {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding-right: 20px;
+}
+
+.icon {
+    padding-right: 10px;
+    width: 50px;
+}
+
+.title-content {
+    padding: 20px;
+}
+
+.botones-content {
+    padding-top: 4%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+ion-button {
+    margin-top: 30px;
+    width: 80%;
+}
+ion-icon{
+    padding-right: 10px;
+}
