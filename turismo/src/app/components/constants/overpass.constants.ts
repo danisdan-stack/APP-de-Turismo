@@ -1,4 +1,3 @@
-// ====== Provincias de Argentina con códigos ISO ======
 export const PROVINCIAS = [
   { nombre: "Buenos Aires", iso: "AR-B" },
   { nombre: "Córdoba", iso: "AR-X" },
@@ -25,20 +24,70 @@ export const PROVINCIAS = [
   { nombre: "Santiago del Estero", iso: "AR-G" }
 ];
 
-// ====== Categorías y sus correspondencias en Overpass ======
 export const CATEGORIAS_OVERPASS = {
   naturaleza: {
     tags: ['natural'],
     tipos: [
       'wood', 'water', 'peak', 'volcano', 'cliff', 'beach', 'bay', 
-      'spring', 'cave_entrance', 'tree', 'stone', 'glacier'
+      'spring', 'cave_entrance', 'stone', 'glacier',
+      'ridge', 'valley', 'saddle', 'arete', 'gorge', 'canyon',
+      'river', 'stream', 'waterfall', 'rapids', 'lake', 'pond', 
+      'reservoir', 'wetland', 'marsh', 'bog',
+      'rock', 'scree', 'shingle', 'sand', 'dune', 'hill',
+      'crevasse', 'moraine', 'karst', 'sinkhole',
+      'tree_row', 'hedge', 'scrub', 'heath', 'grassland', 'meadow',
+      'fell', 'tundra', 'bare_rock',
+      'salt_pond', 'salt_marsh',      
+      'geyser', 'hot_spring',         
+      'caldera', 'crater',         
+      'peninsula', 'cape', 'isthmus', 
+      'reef', 'shoal',          
+      'mud', 'fen', 'swamp', 'reedbed',
+      'ice_shelf', 'snowfield', 'firn',
+      'cave', 'pothole', 'sink'
     ]
   },
   turismo: {
     tags: ['tourism'],
     tipos: [
-      'hotel', 'attraction', 'museum', 'artwork', 'viewpoint', 'zoo',
-      'theme_park', 'gallery', 'aquarium', 'information'
+      'hotel', 'attraction', 'museum', 'artwork', 'viewpoint',
+      'theme_park', 'gallery', 'aquarium', 'information',
+      'guest_house', 'hostel', 'apartment', 'camp_site', 'caravan_site',
+      'chalet', 'resort', 'motel', 'bed_and_breakfast',
+      'zoo', 'theme_park', 'water_park', 'adventure_park',
+      'picnic_site', 'wildlife_hide', 'bird_hide',
+      'archaeological_site', 'historic_site', 'monument', 'memorial',
+      'battlefield', 'fort', 'castle', 'ruins',
+      'religious_site', 'shrine', 'altar',
+      'ski_resort', 'trail_riding_station', 'climbing_adventure',
+      'information_office', 'information_board', 'information_guidepost',
+      'map', 'guidepost',
+      'estancia_turistica',
+      'bodega',
+      'bodega_visita',
+      'termas',
+      'balneario',
+      'parque_nacional',
+      'reserva_natural',
+      'mirador',
+      'feria_artesanal',
+      'casa_historica',
+      'faro',
+      'cabalgata',
+      'pesca_deportiva',
+      'observatorio',
+      'caminito',
+      'tren_turistico',
+      'restaurant', 'cafe', 'bar', 'pub', 
+      'food_court', 'food_truck', 'ice_cream',
+      'winery', 'vineyard', 'wine_cellar', 'wine_bar',
+      'adventure_park', 'climbing', 'rafting', 'kayaking',
+      'trekking', 'zip_line', 'paragliding', 'hang_gliding',
+      'farmstay', 'ranch', 'agritourism', 'rural_cabin',
+      'festival_grounds', 'exhibition_centre', 'conference_centre',
+      'events_venue', 'fairground',
+      'gift', 'souvenir', 'art', 'craft', 'jewelry',
+      'leather', 'wool', 'regional_products'
     ]
   },
   alojamiento: {
@@ -47,27 +96,24 @@ export const CATEGORIAS_OVERPASS = {
   }
 };
 
-// ====== Paisajes y sus correspondencias en Overpass ======
 export const PAISAJES_OVERPASS = {
-  montañas: {
+  "cerros_y_montañas": {
     tags: ['natural'],
-    tipos: ['peak', 'volcano', 'ridge', 'cliff', 'valley', 'arete', 'saddle']
+    tipos: ['peak', 'volcano', 'ridge', 'cliff', 'valley', 'arete', 'saddle', 'hill', 'mountain']
   },
-  agua: {
+  "rios_y_mar": {
     tags: ['natural', 'waterway'],
     tipos: [
       'water', 'spring', 'river', 'stream', 'canal', 'waterfall', 
-      'lake', 'pond', 'reservoir', 'bay', 'beach'
+      'lake', 'pond', 'reservoir', 'bay', 'beach', 'sea', 'ocean', 'coastline'
     ]
   }
 };
 
-// ====== Configuración de Overpass ======
 export const OVERPASS_CONFIG = {
   url: "https://overpass-api.de/api/interpreter",
   timeout: 60,
   maxElements: 1000
 };
 
-// ====== Tipos de elementos en Overpass ======
 export const TIPOS_ELEMENTOS = ['node', 'way', 'relation'];

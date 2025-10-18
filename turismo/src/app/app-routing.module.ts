@@ -23,6 +23,7 @@ const routes: Routes = [
     path: 'filtros',
     loadChildren: () => import('./pages/filtros/filtros.module').then(m => m.FiltrosPageModule)
   },
+    { path: 'mapa', loadChildren: () => import('./mapa/mapa.module').then(m => m.MapaPageModule) },
 ];
 
 @NgModule({

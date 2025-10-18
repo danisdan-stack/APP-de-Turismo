@@ -12,8 +12,9 @@ export class FiltrosPage {
 
   onFiltrosAplicados(filtros: any) {
     console.log('Redirigiendo al mapa con:', filtros);
-    this.router.navigate(['/tabs/mapa'], {
-      state: { filtros: filtros }
+    
+      this.router.navigate(['/mapa'], {  // ← '/mapa' 
+      queryParams: filtros
     });
   }
 }
