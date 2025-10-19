@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Auth } from '../../services/auth';
 
 @Component({
   selector: 'app-register',
@@ -8,9 +9,33 @@ import { Component, OnInit } from '@angular/core';
 })
 export class RegisterPage implements OnInit {
 
-  constructor() { }
+  
+  nombre = ''; 
+  apellido = ''; 
+  telefono = ''; 
+  email = '';
+  password = '';
+  confirmPassword = '';
 
-  ngOnInit() {
+  
+  constructor(private authService: Auth) { }
+
+    ngOnInit() {}
+
+  
+  async onRegister() {
+    try {
+      
+      if (this.password !== this.confirmPassword) {
+        console.error('Las contraseñas no coinciden');
+        return;
+      }
+      await this.authService.register(this.email, this.password);
+
+      console.log('✅ Registro exitoso!');
+
+    } catch (e: any) {
+      console.error('❌ Fallo al registrar:', e.message);
+    }
   }
-
 }
