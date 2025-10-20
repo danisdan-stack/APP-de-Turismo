@@ -1,14 +1,23 @@
 ion-content {
-    --background: #15464d;
+
+    // Degrade del fondo de LOGIN
+    --background: linear-gradient(180deg, #74e76d 0%, #15c9ff 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    padding: 30px 20px;
+    
+    
 }
-.title-content{
-     --background: #0f343a;
+
+ion-title {
+    
 }
 
 ion-toolbar {
-    --background: #0f343a;
+    --background: white;
+    color:black;
 }
-
 
 .derecha {
     display: flex;
@@ -23,7 +32,9 @@ ion-toolbar {
 }
 
 .title-content {
-    padding: 20px;
+    padding-left: 20px;
+    padding-top: 10px;
+    color: black; 
 }
 
 .botones-content {
@@ -31,13 +42,14 @@ ion-toolbar {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
 }
 
 ion-button {
-    margin-top: 30px;
+    margin-top: 8%;
     width: 80%;
+    color: black;
 }
-ion-icon{
+
+ion-icon {
     padding-right: 10px;
 }
