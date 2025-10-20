@@ -34,7 +34,7 @@ export class RegisterPage implements OnInit {
 
       console.log('✅ Registro exitoso!');
 
-    } catch (e: any) {
+    } catch (e: any) { 
       console.error('❌ Fallo al registrar:', e.message);
     }
   }
