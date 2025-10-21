@@ -20,7 +20,7 @@ export class DataService {
   // Puedes hacerlo en el constructor como antes, o usando inject() en un field initializer:
   private firestore: Firestore = inject(Firestore); // <--- Uso modular de Firestore
 
-  constructor(/* no es necesario inyectar aquí si usas inject() arriba */) {}
+  constructor() {}
 
   async saveUserProfile(userId: string, data: UserProfile): Promise<void> {
     const docRef = doc(this.firestore, `usuario/${userId}`); // Crear una referencia de documento
