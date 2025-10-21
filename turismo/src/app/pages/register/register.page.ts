@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Auth } from '../../services/auth';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -16,9 +17,10 @@ export class RegisterPage implements OnInit {
   email = '';
   password = '';
   confirmPassword = '';
+  //router: any;
 
   
-  constructor(private authService: Auth) { }
+  constructor(private authService: Auth, private router:Router) { }
 
     ngOnInit() {}
 
@@ -33,6 +35,7 @@ export class RegisterPage implements OnInit {
       await this.authService.register(this.email, this.password);
 
       console.log('✅ Registro exitoso!');
+      this.router.navigate(['/filtros']);
 
     } catch (e: any) {
       console.error('❌ Fallo al registrar:', e.message);
