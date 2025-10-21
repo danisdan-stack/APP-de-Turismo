@@ -1,24 +1,41 @@
-import { Injectable } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { Injectable, inject } from '@angular/core';
+import { 
+  Auth, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut,
+  user,
+  User
+} from '@angular/fire/auth';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
-export class Auth {
+export class AuthService {
 
-  constructor(private angularFireAuth: AngularFireAuth) {}
+  private firebaseAuth = inject(Auth); // No change here, as this refers to the imported Auth type
+
+  /**
+   * 🔹 Observable del estado de autenticación
+   */
+  authState$: Observable<User | null> = user(this.firebaseAuth);
 
   /**
    * 🔹 Registrar nuevo usuario
    */
   async register(email: string, password: string): Promise<any> {
     try {
-      const result = await this.angularFireAuth.createUserWithEmailAndPassword(email, password);
+      const result = await createUserWithEmailAndPassword(
+        this.firebaseAuth, 
+        email, 
+        password
+      );
       console.log("✅ Usuario registrado correctamente:", result.user?.email);
       return result;
     } catch (error: any) {
       console.error("❌ Error en el registro:", error);
-      throw error; // se lanza para poder manejarlo desde el componente
+      throw error;
     }
   }
 
@@ -27,12 +44,16 @@ export class Auth {
    */
   async login(email: string, password: string): Promise<any> {
     try {
-      const result = await this.angularFireAuth.signInWithEmailAndPassword(email, password);
+      const result = await signInWithEmailAndPassword(
+        this.firebaseAuth, 
+        email, 
+        password
+      );
       console.log("✅ Sesión iniciada:", result.user?.email);
       return result;
     } catch (error: any) {
       console.error("❌ Error en el inicio de sesión:", error);
-      throw error; // se lanza para poder mostrar mensajes personalizados
+      throw error;
     }
   }
 
@@ -41,7 +62,7 @@ export class Auth {
    */
   async logout(): Promise<void> {
     try {
-      await this.angularFireAuth.signOut();
+      await signOut(this.firebaseAuth);
       console.log("👋 Sesión cerrada correctamente");
     } catch (error) {
       console.error("❌ Error al cerrar sesión:", error);
@@ -49,12 +70,16 @@ export class Auth {
   }
 
   /**
-   * 🔹 Obtener el estado de autenticación
-   * (emite un observable con el usuario logueado o null)
+   * 🔹 Obtener el estado de autenticación (para compatibilidad)
    */
   getAuthState() {
-    return this.angularFireAuth.authState;
+    return this.authState$;
+  }
+
+  /**
+   * 🔹 Obtener usuario actual (opcional)
+   */
+  getCurrentUser(): User | null {
+    return this.firebaseAuth.currentUser;
   }
 }
-
-

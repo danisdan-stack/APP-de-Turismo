@@ -1,180 +1,172 @@
-import { Component, OnInit } from '@angular/core';
-
-//
+import { Component, inject } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { Auth} from '../services/auth';
-// Importaciones modulares de Firebase eliminadas
-// import { getAuth, sendPasswordResetEmail } from 'firebase/auth'; 
+import { AuthService } from 'src/app/services/auth';
 
-// Importación de AngularFireAuth (compatible con AngularFireModule)
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+// ✅ API MODULAR
+import { Auth as FirebaseAuth, sendPasswordResetEmail } from '@angular/fire/auth';
 
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.page.html',
-  styleUrls: ['./login.page.scss'],
-  standalone:false,
+  selector: 'app-login',
+  templateUrl: './login.page.html',
+  styleUrls: ['./login.page.scss'],
+  standalone: false,
 })
 export class LoginPage {
-  // Variables para capturar los datos de los inputs del HTML
-  email: string = '';
-  password: string = '';
-  
-  constructor(
-    private authService: Auth, // Servicio para interactuar con Firebase Auth
-    private router: Router,          // Servicio para navegar entre páginas
-    public alertController:AlertController,
-    private afAuth: AngularFireAuth // <--- INYECCIÓN: Usamos AngularFireAuth para compat
-  ) { }
+  // Variables para capturar los datos de los inputs del HTML
+  email: string = '';
+  password: string = '';
+  
+  // ✅ Inyectar Firebase Auth modular (con alias para evitar conflicto)
+  private firebaseAuth = inject(FirebaseAuth);
 
-  // --- FUNCIÓN DE INICIO DE SESIÓN (Botón 'Iniciar sesión') ---
-   async iniciarSesion() {
-    if (!this.email || !this.password) {
-      this.showAlert('Error', 'Por favor, ingresa tu correo y contraseña.');
-      return;
-    }
-    
-    try {
-      const userCredential = await this.authService.login(this.email, this.password);
-      if (userCredential) {
-        // Éxito
-        this.router.navigateByUrl('/filtros'); // Redirigir a la página principal (ajustar según tu ruta)
-      }
-    } catch (error: any) { 
-      let errorMessage = 'Error desconocido al iniciar sesión.';
-      
-      // Manejo de errores específicos de LOGIN
-      switch (error.code) {
-          case 'auth/wrong-password':
-              errorMessage = 'Contraseña incorrecta.';
-              break;
-          case 'auth/user-not-found':
-          case 'auth/invalid-credential':
-              errorMessage = 'Usuario no encontrado. Revisa tu email.';
-              break;
-          case 'auth/invalid-email':
-              errorMessage = 'El formato del correo es inválido.';
-              break;
-          default:
-              // Manejo de errores genéricos (ej: red, servidor)
-              errorMessage = 'Fallo en la conexión. Inténtalo más tarde.';
-              console.error("Firebase Error:", error);
-              break;
-      }
-      this.showAlert('Acceso Denegado', errorMessage);
-    }
-  }
+  constructor(
+    private authService: AuthService, // Tu servicio personalizado
+    private router: Router,
+    public alertController: AlertController
+  ) { }
 
-  // --- FUNCIÓN DE REGISTRO (Botón 'Registrarse') ---
-  async registrarse() {
-    if (!this.email || !this.password) {
-      this.showAlert('Error', 'Por favor, ingresa email y contraseña para registrarte.');
-      return;
-    }
+  // --- FUNCIÓN DE INICIO DE SESIÓN (Botón 'Iniciar sesión') ---
+  async iniciarSesion() {
+    if (!this.email || !this.password) {
+      this.showAlert('Error', 'Por favor, ingresa tu correo y contraseña.');
+      return;
+    }
+    
+    try {
+      const userCredential = await this.authService.login(this.email, this.password);
+      if (userCredential) {
+        // Éxito
+        this.router.navigateByUrl('/filtros');
+      }
+    } catch (error: any) { 
+      let errorMessage = 'Error desconocido al iniciar sesión.';
+      
+      // Manejo de errores específicos de LOGIN
+      switch (error.code) {
+          case 'auth/wrong-password':
+              errorMessage = 'Contraseña incorrecta.';
+              break;
+          case 'auth/user-not-found':
+          case 'auth/invalid-credential':
+              errorMessage = 'Usuario no encontrado. Revisa tu email.';
+              break;
+          case 'auth/invalid-email':
+              errorMessage = 'El formato del correo es inválido.';
+              break;
+          default:
+              errorMessage = 'Fallo en la conexión. Inténtalo más tarde.';
+              console.error("Firebase Error:", error);
+              break;
+      }
+      this.showAlert('Acceso Denegado', errorMessage);
+    }
+  }
 
-    try {
-      const userCredential = await this.authService.register(this.email, this.password);
-      if (userCredential) {
-        this.showAlert('¡Registro Exitoso!', 'Bienvenido a TurisMatch. Te hemos iniciado sesión automáticamente.');
-        this.router.navigateByUrl('/home');
-      }
-    } catch (error: any) {
-      let errorMessage = 'Error desconocido al registrarse.';
-      
-      // Manejo de errores específicos de REGISTRO
-      switch (error.code) {
-          case 'auth/email-already-in-use':
-              errorMessage = 'Este correo ya está registrado.';
-              break;
-          case 'auth/weak-password':
-              errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
-              break;
-          case 'auth/invalid-email':
-              errorMessage = 'El formato del correo es inválido.';
-              break;
-          default:
-              errorMessage = 'Fallo en el registro. Inténtalo más tarde.';
-              console.error("Firebase Error:", error);
-              break;
-      }
-      this.showAlert('Fallo de Registro', errorMessage);
-    }
-  }
-  
-  // --- FUNCIÓN AUXILIAR PARA MOSTRAR LA ALERTA (Unificado) ---
-  async showAlert(header: string, message: string) {
-    const alert = await this.alertController.create({
-        header: header,
-        message: message,
-        buttons: ['OK']
-    });
+  // --- FUNCIÓN DE REGISTRO (Botón 'Registrarse') ---
+  async registrarse() {
+    if (!this.email || !this.password) {
+      this.showAlert('Error', 'Por favor, ingresa email y contraseña para registrarte.');
+      return;
+    }
 
-    await alert.present();
-  }
+    try {
+      const userCredential = await this.authService.register(this.email, this.password);
+      if (userCredential) {
+        this.showAlert('¡Registro Exitoso!', 'Bienvenido a TurisMatch. Te hemos iniciado sesión automáticamente.');
+        this.router.navigateByUrl('/home');
+      }
+    } catch (error: any) {
+      let errorMessage = 'Error desconocido al registrarse.';
+      
+      // Manejo de errores específicos de REGISTRO
+      switch (error.code) {
+          case 'auth/email-already-in-use':
+              errorMessage = 'Este correo ya está registrado.';
+              break;
+          case 'auth/weak-password':
+              errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
+              break;
+          case 'auth/invalid-email':
+              errorMessage = 'El formato del correo es inválido.';
+              break;
+          default:
+              errorMessage = 'Fallo en el registro. Inténtalo más tarde.';
+              console.error("Firebase Error:", error);
+              break;
+      }
+      this.showAlert('Fallo de Registro', errorMessage);
+    }
+  }
+  
+  // --- FUNCIÓN AUXILIAR PARA MOSTRAR LA ALERTA (Unificado) ---
+  async showAlert(header: string, message: string) {
+    const alert = await this.alertController.create({
+        header: header,
+        message: message,
+        buttons: ['OK']
+    });
 
-  irARegistro() {
-    this.router.navigate(['/register']);
-  }
-  /**
-   * Muestra el cuadro de diálogo y maneja la lógica de recuperación de contraseña.
-   */
-  async forgotPassword() {
-    // 1. Mostrar cuadro de diálogo (Alert) para pedir el email
-    const alert = await this.alertController.create({
-      header: 'Recuperar Contraseña',
-      inputs: [
-        {
-          name: 'email',
-          type: 'email',
-          placeholder: 'Introduce tu correo electrónico',
-        },
-      ],
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-        },
-        {
-          text: 'Enviar',
-          handler: (data) => {
-            // Llama a la función de Firebase al pulsar 'Enviar'
-            this.sendResetEmail(data.email);
-          },
-        },
-      ],
-    });
+    await alert.present();
+  }
 
-    await alert.present();
-  }
+  irARegistro() {
+    this.router.navigate(['/register']);
+  }
 
-  /**
-   * Envía el correo de restablecimiento usando Firebase Auth (AngularFire/compat).
-   */
-  async sendResetEmail(email: string) {
-    if (!email) {
-      this.showAlert('Error', 'Debes introducir un correo electrónico.');
-      return;
-    }
+  /**
+   * Muestra el cuadro de diálogo y maneja la lógica de recuperación de contraseña.
+   */
+  async forgotPassword() {
+    const alert = await this.alertController.create({
+      header: 'Recuperar Contraseña',
+      inputs: [
+        {
+          name: 'email',
+          type: 'email',
+          placeholder: 'Introduce tu correo electrónico',
+        },
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+        },
+        {
+          text: 'Enviar',
+          handler: (data) => {
+            this.sendResetEmail(data.email);
+          },
+        },
+      ],
+    });
 
-    // Ya no es necesario llamar a getAuth() del SDK modular
-    
-    try {
-      // <--- SOLUCIÓN DEL ERROR: Usamos el servicio AngularFireAuth inyectado
-      await this.afAuth.sendPasswordResetEmail(email);
-      // 2. Éxito: El email fue enviado.
-      this.showAlert('Éxito', 'Se ha enviado un correo electrónico con instrucciones para restablecer tu contraseña.');
-    } catch (error: any) {
-      let message = 'Ocurrió un error desconocido. Inténtalo de nuevo.';
+    await alert.present();
+  }
 
-      // 3. Error: Verificar el código de error específico de Firebase
-      if (error.code === 'auth/user-not-found') {
-        message = 'El correo electrónico no se encuentra registrado en nuestro sistema. Por favor, verifica el mail ingresado.';
-      } else if (error.code === 'auth/invalid-email') {
-        message = 'Formato de correo electrónico inválido.';
-      }
-      
-      this.showAlert('Error', message);
-    }
-  }
+  /**
+   * Envía el correo de restablecimiento usando Firebase Auth MODULAR.
+   */
+  async sendResetEmail(email: string) {
+    if (!email) {
+      this.showAlert('Error', 'Debes introducir un correo electrónico.');
+      return;
+    }
+
+    try {
+      // ✅ Usar la función modular con el Firebase Auth inyectado
+      await sendPasswordResetEmail(this.firebaseAuth, email);
+      this.showAlert('Éxito', 'Se ha enviado un correo electrónico con instrucciones para restablecer tu contraseña.');
+    } catch (error: any) {
+      let message = 'Ocurrió un error desconocido. Inténtalo de nuevo.';
+
+      if (error.code === 'auth/user-not-found') {
+        message = 'El correo electrónico no se encuentra registrado en nuestro sistema. Por favor, verifica el mail ingresado.';
+      } else if (error.code === 'auth/invalid-email') {
+        message = 'Formato de correo electrónico inválido.';
+      }
+      
+      this.showAlert('Error', message);
+    }
+  }
 }
