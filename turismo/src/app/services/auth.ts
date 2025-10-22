@@ -7,38 +7,37 @@ import {
   user,
   User,
   updateProfile,
-  onAuthStateChanged,updateEmail
+  onAuthStateChanged,
+  updateEmail,
+  reauthenticateWithCredential,
+  EmailAuthProvider
 } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
 
-// 🔹 Define la interfaz UserProfile
+// 🔹 Interfaz para el perfil de usuario
 export interface UserProfile {
   id: string;
   email: string;
- 
   nombre?: string;
   apellido?: string;
-  /*phoneNumber?: string;
-  photoURL?: string;
-  tourismInterest?: string;*/
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-
   private firebaseAuth = inject(Auth);
-  private userId: string | null = null; // 👈 NUEVO: variable interna para guardar el UID
+  private userId: string | null = null;
 
   authState$: Observable<User | null> = user(this.firebaseAuth);
+  currentUser: any;
 
   constructor() {
-    // 👇 Escucha cambios de sesión y guarda automáticamente el UID
+    // Escucha los cambios de sesión
     onAuthStateChanged(this.firebaseAuth, (user) => {
       if (user) {
         this.userId = user.uid;
-        localStorage.setItem('userUID', user.uid); // 🔹 unificamos nombre de clave
+        localStorage.setItem('userUID', user.uid);
         console.log('✅ UID guardado:', this.userId);
       } else {
         this.userId = null;
@@ -47,44 +46,41 @@ export class AuthService {
       }
     });
 
-    // Si hay un UID guardado en localStorage (tras recarga), lo restaura
+    // Restaura el UID si ya hay sesión guardada
     const storedId = localStorage.getItem('userUID');
     if (storedId) {
       this.userId = storedId;
     }
   }
 
-  // 🔹 Función pública para obtener el UID cuando lo necesites
-  getStoredUserId(): string | null {
-    return localStorage.getItem('userUID');
-  }
+  // =====================================================
+  // 🔹 Actualizar email del usuario autenticado
+  // =====================================================
+  async updateAuthEmail(newEmail: string, currentPassword: string): Promise<void> {
+    const user = this.firebaseAuth.currentUser; // ✅ USAMOS firebaseAuth, NO this.auth
+    if (!user) throw new Error('No hay usuario autenticado');
 
-  // 🔹 También te dejo una forma rápida de acceder al UID actual en memoria
-  getUserId(): string | null {
-    return this.userId;
-  }
-  async updateAuthEmail(newEmail: string): Promise<void> {
-    const user = this.firebaseAuth.currentUser;
-    if (!user) throw new Error('No user logged in');
-
-    // 🚨 Firebase chequeará automáticamente si el email ya está en uso.
-    // Si el email ya existe, esta llamada fallará con el código 'auth/email-already-in-use'.
     try {
-        await updateEmail(user, newEmail);
-        console.log(`✅ Email de autenticación actualizado a: ${newEmail}`);
-    } catch (error) {
-        // Propaga el error para que Tab3Page pueda manejarlo (por ejemplo, mostrar el toast)
-        throw error; 
-    }
-}
+      // Reautenticación obligatoria antes de cambiar el email
+      const credential = EmailAuthProvider.credential(user.email!, currentPassword);
+      await reauthenticateWithCredential(user, credential);
 
+      // Luego actualizamos el email
+      await updateEmail(user, newEmail);
+
+      console.log(`✅ Email actualizado correctamente a: ${newEmail}`);
+    } catch (error) {
+      console.error('❌ Error al actualizar el email:', error);
+      throw error;
+    }
+  }
+
+  // =====================================================
+  // 🔹 Registro
+  // =====================================================
   async register(email: string, password: string): Promise<any> {
     try {
-      const result = await createUserWithEmailAndPassword(
-        this.firebaseAuth, 
-        email, 
-        password
-      );
+      const result = await createUserWithEmailAndPassword(this.firebaseAuth, email, password);
       console.log("✅ Usuario registrado correctamente:", result.user?.email);
       return result;
     } catch (error: any) {
@@ -93,20 +89,16 @@ export class AuthService {
     }
   }
 
+  // =====================================================
+  // 🔹 Inicio de sesión
+  // =====================================================
   async login(email: string, password: string): Promise<any> {
     try {
-      const result = await signInWithEmailAndPassword(
-        this.firebaseAuth, 
-        email, 
-        password
-      );
-
-      // 🔹 Guarda el UID también al hacer login manual
+      const result = await signInWithEmailAndPassword(this.firebaseAuth, email, password);
       if (result.user?.uid) {
         this.userId = result.user.uid;
         localStorage.setItem('userUID', result.user.uid);
       }
-
       console.log("✅ Sesión iniciada:", result.user?.email);
       return result;
     } catch (error: any) {
@@ -115,10 +107,13 @@ export class AuthService {
     }
   }
 
+  // =====================================================
+  // 🔹 Cierre de sesión
+  // =====================================================
   async logout(): Promise<void> {
     try {
       await signOut(this.firebaseAuth);
-      this.userId = null; // limpia el UID
+      this.userId = null;
       localStorage.removeItem('userUID');
       console.log("👋 Sesión cerrada correctamente");
     } catch (error) {
@@ -126,6 +121,9 @@ export class AuthService {
     }
   }
 
+  // =====================================================
+  // 🔹 Obtener datos de sesión
+  // =====================================================
   getAuthState() {
     return this.authState$;
   }
@@ -141,33 +139,36 @@ export class AuthService {
     return {
       id: user.uid,
       email: user.email || '',
-
       nombre: user.displayName?.split(' ')[0] || '',
       apellido: user.displayName?.split(' ')[1] || ''
-      /*phoneNumber: user.phoneNumber || '',
-      photoURL: user.photoURL || '',
-      tourismInterest: ''*/
     };
   }
 
+  // =====================================================
+  // 🔹 Actualizar nombre/apellido del perfil
+  // =====================================================
   async updateUserProfile(profileData: {
-    // La entrada de datos solo necesita los campos de nombre y apellido
-    nombre?: string;
-    apellido?: string;
-  }): Promise<void> {
-    const user = this.firebaseAuth.currentUser;
-    if (!user) throw new Error('No user logged in');
+    nombre?: string;
+    apellido?: string;
+  }): Promise<void> {
+    const user = this.firebaseAuth.currentUser;
+    if (!user) throw new Error('No user logged in');
 
-    // 1. Construir el nombre completo usando 'nombre' y 'apellido'
-    // Usamos || '' para asegurarnos de que no haya 'undefined' si el campo falta.
-    const fullName = `${profileData.nombre || ''} ${profileData.apellido || ''}`.trim();
-    
-    // 2. Llamar a updateProfile para actualizar el displayName de Firebase Auth
-    // Nota: El objeto debe contener al menos displayName o photoURL, 
-    // por lo que solo incluimos displayName.
-    await updateProfile(user, {
-      // Si fullName está vacío, usamos null para limpiar o no actualizar si es posible
-      displayName: fullName || null 
-    });
-}
+    const fullName = `${profileData.nombre || ''} ${profileData.apellido || ''}`.trim();
+
+    await updateProfile(user, {
+      displayName: fullName || null
+    });
+  }
+
+  // =====================================================
+  // 🔹 Obtener UID guardado
+  // =====================================================
+  getStoredUserId(): string | null {
+    return localStorage.getItem('userUID');
+  }
+
+  getUserId(): string | null {
+    return this.userId;
+  }
 }
