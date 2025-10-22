@@ -33,6 +33,10 @@ export class RegisterPage implements OnInit {
 
   ngOnInit() {}
 
+  volverAlLogin() {
+    this.router.navigate(['']);
+  }
+
   async onRegister() {
     
     // 1. VALIDACIÓN SIMPLE Y UNIFICADA: Chequea campos vacíos y coincidencia de contraseñas
@@ -79,7 +83,8 @@ export class RegisterPage implements OnInit {
         
         // --- PASO 4: ÉXITO Y REDIRECCIÓN ---
         this.showAlert('¡Registro Exitoso!', `Bienvenido ${this.nombre}.`);
-        this.router.navigate(['/filtros']);
+        this.router.navigate(['/inicio']);
+        
       }
 
     } catch (e: any) {

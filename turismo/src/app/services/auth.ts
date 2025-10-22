@@ -5,25 +5,32 @@ import {
   signInWithEmailAndPassword, 
   signOut,
   user,
-  User
+  User,
+  updateProfile
 } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
+
+// 🔹 Define la interfaz UserProfile en este mismo archivo
+export interface UserProfile {
+  uid: string;
+  email: string;
+  displayName?: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  photoURL?: string;
+  tourismInterest?: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  private firebaseAuth = inject(Auth); // No change here, as this refers to the imported Auth type
+  private firebaseAuth = inject(Auth);
 
-  /**
-   * 🔹 Observable del estado de autenticación
-   */
   authState$: Observable<User | null> = user(this.firebaseAuth);
 
-  /**
-   * 🔹 Registrar nuevo usuario
-   */
   async register(email: string, password: string): Promise<any> {
     try {
       const result = await createUserWithEmailAndPassword(
@@ -39,9 +46,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * 🔹 Iniciar sesión con email y contraseña
-   */
   async login(email: string, password: string): Promise<any> {
     try {
       const result = await signInWithEmailAndPassword(
@@ -57,9 +61,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * 🔹 Cerrar sesión
-   */
   async logout(): Promise<void> {
     try {
       await signOut(this.firebaseAuth);
@@ -69,17 +70,44 @@ export class AuthService {
     }
   }
 
-  /**
-   * 🔹 Obtener el estado de autenticación (para compatibilidad)
-   */
   getAuthState() {
     return this.authState$;
   }
 
-  /**
-   * 🔹 Obtener usuario actual (opcional)
-   */
   getCurrentUser(): User | null {
     return this.firebaseAuth.currentUser;
+  }
+
+  // 🔹 Obtener perfil del usuario actual
+  async getCurrentUserProfile(): Promise<UserProfile | null> {
+    const user = this.firebaseAuth.currentUser;
+    if (!user) return null;
+
+    return {
+      uid: user.uid,
+      email: user.email || '',
+      displayName: user.displayName || '',
+      firstName: user.displayName?.split(' ')[0] || '',
+      lastName: user.displayName?.split(' ')[1] || '',
+      phoneNumber: user.phoneNumber || '',
+      photoURL: user.photoURL || '',
+      tourismInterest: '' // Este campo vendría de Firestore
+    };
+  }
+
+  // 🔹 Actualizar perfil del usuario
+  async updateUserProfile(profileData: {
+    displayName?: string;
+    photoURL?: string;
+    firstName?: string;
+    lastName?: string;
+  }): Promise<void> {
+    const user = this.firebaseAuth.currentUser;
+    if (!user) throw new Error('No user logged in');
+
+    await updateProfile(user, {
+      displayName: profileData.displayName || `${profileData.firstName} ${profileData.lastName}`.trim(),
+      photoURL: profileData.photoURL
+    });
   }
 }

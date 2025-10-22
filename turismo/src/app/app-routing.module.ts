@@ -16,14 +16,23 @@ const routes: Routes = [
     loadChildren: () => import('./pages/register/register.module').then(m => m.RegisterPageModule)
   },
   {
-    path: 'tabs',
-    loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule)
-  },
-  {
-    path: 'filtros',
+    path: 'inicio',
     loadChildren: () => import('./pages/filtros/filtros.module').then(m => m.FiltrosPageModule)
   },
-    { path: 'mapa', loadChildren: () => import('./mapa/mapa.module').then(m => m.MapaPageModule) },
+  {
+    path: 'mapa',
+    loadChildren: () => import('./mapa/mapa.module').then(m => m.MapaPageModule)
+  },
+  // 🔹 RUTAS INDIVIDUALES para cada "tab"
+
+  {
+    path: 'favoritos',
+    loadChildren: () => import('./tab2/tab2.module').then(m => m.Tab2PageModule)
+  },
+  {
+    path: 'mi-cuenta',
+    loadChildren: () => import('./tab3/tab3.module').then(m => m.Tab3PageModule)
+  }
 ];
 
 @NgModule({

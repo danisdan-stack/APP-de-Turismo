@@ -37,7 +37,7 @@ export class LoginPage {
       const userCredential = await this.authService.login(this.email, this.password);
       if (userCredential) {
         // Éxito
-        this.router.navigateByUrl('/filtros');
+        this.router.navigateByUrl('/inicio');
       }
     } catch (error: any) { 
       let errorMessage = 'Error desconocido al iniciar sesión.';
