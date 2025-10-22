@@ -1,160 +1,104 @@
-<ion-content [fullscreen]="true">
-  <div class="profile-header ion-padding">
-    <h1>Mi Perfil</h1>
-    <p>Gestiona tu información personal</p>
-  </div>
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Mi Perfil</ion-title>
+  </ion-toolbar>
+</ion-header>
 
-  <div id="container" *ngIf="!loading; else loadingTemplate">
-    <ion-card *ngIf="userProfile">
-      <ion-card-header>
-        <ion-card-title>
-          {{ userProfile.firstName }} {{ userProfile.lastName }}
-        </ion-card-title>
-        <ion-card-subtitle>{{ userProfile.email }}</ion-card-subtitle>
-      </ion-card-header>
+<ion-content class="ion-padding">
 
-      <ion-card-content>
-        <form (ngSubmit)="saveProfile()" *ngIf="isEditing && editedProfile; else viewTemplate">
-          <!-- Nombre -->
-          <ion-item>
-            <ion-label position="stacked">Nombre</ion-label>
-            <ion-input 
-              [(ngModel)]="editedProfile.firstName" 
-              name="firstName"
-              type="text"
-              required>
-            </ion-input>
-          </ion-item>
+  <ion-card *ngIf="!loading">
+    <ion-card-header>
+      <ion-card-title>Datos del Usuario</ion-card-title>
+      <ion-card-subtitle>UID: {{ userProfile?.id || 'No disponible' }}</ion-card-subtitle>
+    </ion-card-header>
 
-          <!-- Apellido -->
-          <ion-item>
-            <ion-label position="stacked">Apellido</ion-label>
-            <ion-input 
-              [(ngModel)]="editedProfile.lastName" 
-              name="lastName"
-              type="text"
-              required>
-            </ion-input>
-          </ion-item>
+    <ion-card-content>
 
-          <!-- Teléfono -->
-          <ion-item>
-            <ion-label position="stacked">Teléfono</ion-label>
-            <ion-input 
-              [(ngModel)]="editedProfile.phoneNumber" 
-              name="phoneNumber"
-              type="tel"
-              placeholder="+54 11 1234-5678">
-            </ion-input>
-          </ion-item>
-
-          <!-- Email (solo lectura) -->
-          <ion-item>
-            <ion-label position="stacked">Email</ion-label>
-            <ion-input 
-              [value]="editedProfile.email" 
-              type="email"
-              readonly
-              disabled>
-            </ion-input>
-          </ion-item>
-
-          <!-- Interés turístico -->
-          <ion-item>
-            <ion-label position="stacked">Interés Turístico</ion-label>
-            <ion-textarea 
-              [(ngModel)]="editedProfile.tourismInterest" 
-              name="tourismInterest"
-              rows="3"
-              placeholder="Buscando turismo en Buenos Aires...">
-            </ion-textarea>
-          </ion-item>
-
-          <!-- Botones edición -->
-          <div class="button-group">
-            <ion-button expand="block" type="submit" color="primary">
-              Guardar Cambios
-            </ion-button>
-            <ion-button expand="block" fill="outline" (click)="cancelEditing()">
-              Cancelar
-            </ion-button>
-          </div>
-        </form>
-
-        <ng-template #viewTemplate>
-          <!-- Vista de solo lectura -->
-          <ion-list lines="none">
-            <ion-item>
-              <ion-label>
-                <h3>Nombre</h3>
-                <p>{{ userProfile.firstName || 'No especificado' }}</p>
-              </ion-label>
-            </ion-item>
-
-            <ion-item>
-              <ion-label>
-                <h3>Apellido</h3>
-                <p>{{ userProfile.lastName || 'No especificado' }}</p>
-              </ion-label>
-            </ion-item>
-
-            <ion-item>
-              <ion-label>
-                <h3>Teléfono</h3>
-                <p>{{ userProfile.phoneNumber || 'No especificado' }}</p>
-              </ion-label>
-            </ion-item>
-
-            <ion-item>
-              <ion-label>
-                <h3>Email</h3>
-                <p>{{ userProfile.email }}</p>
-              </ion-label>
-            </ion-item>
-
-            <ion-item>
-              <ion-label>
-                <h3>Interés Turístico</h3>
-                <p>{{ userProfile.tourismInterest || 'Buscando turismo en Buenos Aires...' }}</p>
-              </ion-label>
-            </ion-item>
-          </ion-list>
-
-          <!-- Botones -->
-          <div class="button-group">
-            <ion-button expand="block" (click)="enableEditing()">
-              <ion-icon slot="start" name="create-outline"></ion-icon>
-              Editar Perfil
-            </ion-button>
-            <ion-button expand="block" fill="outline" color="danger" (click)="logout()">
-              <ion-icon slot="start" name="log-out-outline"></ion-icon>
-              Cerrar Sesión
-            </ion-button>
-          </div>
-        </ng-template>
-      </ion-card-content>
-    </ion-card>
-
-    <ion-card *ngIf="!userProfile">
-      <ion-card-content>
-        <p>No se pudo cargar el perfil del usuario.</p>
-        <ion-button expand="block" (click)="loadUserProfile()">
-          Reintentar
+      <!-- NOMBRE -->
+      <ion-item>
+        <ion-label position="stacked">Nombre</ion-label>
+        <ion-input 
+          [(ngModel)]="editedProfile!.nombre" 
+          [readonly]="!isEditing"
+          placeholder="Ingrese su nombre">
+        </ion-input>
+        <ion-button fill="clear" slot="end" (click)="editarNombre()">
+          <ion-icon name="create-outline"></ion-icon>
+          <span class="ion-padding-start">Editar</span>
         </ion-button>
-      </ion-card-content>
-    </ion-card>
-  </div>
+      </ion-item>
 
-  <ng-template #loadingTemplate>
-    <div class="ion-text-center ion-padding">
-      <ion-spinner></ion-spinner>
-      <p>Cargando perfil...</p>
-    </div>
-  </ng-template>
+      <!-- APELLIDO -->
+      <ion-item>
+        <ion-label position="stacked">Apellido</ion-label>
+        <ion-input 
+          [(ngModel)]="editedProfile!.apellido" 
+          [readonly]="!isEditing"
+          placeholder="Ingrese su apellido">
+        </ion-input>
+        <ion-button fill="clear" slot="end" (click)="enableEditing()">
+          <ion-icon name="create-outline"></ion-icon>
+          <span class="ion-padding-start">Editar</span>
+        </ion-button>
+      </ion-item>
+
+      <!-- EMAIL -->
+      <ion-item>
+        <ion-label position="stacked">Email</ion-label>
+        <ion-input 
+          type="email" 
+          [(ngModel)]="editedProfile!.email" 
+          [readonly]="true"
+          placeholder="Ingrese su correo">
+        </ion-input>
+        <ion-button fill="clear" slot="end" disabled>
+          <ion-icon name="lock-closed-outline"></ion-icon>
+          <span class="ion-padding-start">Fijo</span>
+        </ion-button>
+      </ion-item>
+
+      <!-- CONTRASEÑA -->
+      <!--<ion-item>
+        <ion-label position="stacked">Contraseña</ion-label>
+        <ion-input 
+          type="password" 
+          [(ngModel)]="editedProfile!.password" 
+          [readonly]="!isEditing"
+          placeholder="********">
+        </ion-input>
+        <ion-button fill="clear" slot="end" (click)="enableEditing()">
+          <ion-icon name="create-outline"></ion-icon>
+          <span class="ion-padding-start">Editar</span>
+        </ion-button>
+      </ion-item>-->
+
+      <!-- BOTONES DE ACCIÓN -->
+      <div class="buttons-row" style="margin-top: 16px; display: flex; gap: 8px;">
+        <ion-button 
+          color="primary" 
+          expand="block" 
+          [disabled]="!isEditing"
+          (click)="saveProfile()">
+          Guardar
+        </ion-button>
+
+        <ion-button 
+          color="medium" 
+          fill="outline" 
+          expand="block" 
+          [disabled]="!isEditing"
+          (click)="cancelEditing()">
+          Cancelar
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Loader -->
+  <ion-spinner *ngIf="loading" name="crescent" class="ion-margin-top"></ion-spinner>
+
 </ion-content>
-
-<!-- 🔹 NAVEGACIÓN DE TABS EN LA PARTE INFERIOR -->
-<ion-tabs class="custom-tabs" >
+<!-- 🔹 NAVEGACIÓN DE TABS EN LA PARTE INFERIOR 
   <ion-tab-bar slot="bottom" class="tabs-navigation">
     <ion-tab-button tab="tab1" (click)="irATab1()">
       <ion-icon name="home-outline"></ion-icon>
@@ -171,4 +115,4 @@
       <ion-label>Mi Cuenta</ion-label>
     </ion-tab-button>
   </ion-tab-bar>
-</ion-tabs>
+</ion-tabs>-->
