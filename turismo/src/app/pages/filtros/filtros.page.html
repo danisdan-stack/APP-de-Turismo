@@ -6,27 +6,31 @@
 
 <ion-content class="filtros-content">
   <!-- CONTENIDO PRINCIPAL -->
-  <app-filtros 
-    (filtrosAplicados)="onFiltrosAplicados($event)">
+  <app-filtros (filtrosAplicados)="onFiltrosAplicados($event)">
   </app-filtros>
 
+</ion-content>
+<ion-footer>
   <!-- 🔹 NAVEGACIÓN DENTRO DEL CONTENIDO - AL FINAL -->
-  <div class="internal-tabs">
+  <ion-toolbar>
+    <div class="internal-tabs">
     <ion-segment value="filtros" class="tabs-segment">
       <ion-segment-button value="tab1" (click)="irATab1()">
         <ion-icon name="home-outline"></ion-icon>
         <ion-label>Inicio</ion-label>
       </ion-segment-button>
-      
+
       <ion-segment-button value="tab2" (click)="irATab2()">
         <ion-icon name="search-outline"></ion-icon>
         <ion-label>Favoritos</ion-label>
       </ion-segment-button>
-      
+
       <ion-segment-button value="tab3" (click)="irATab3()">
         <ion-icon name="person-outline"></ion-icon>
         <ion-label>Mi Cuenta</ion-label>
       </ion-segment-button>
     </ion-segment>
   </div>
-</ion-content>
+  </ion-toolbar>
+
+</ion-footer>

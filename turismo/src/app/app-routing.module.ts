@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { Path } from 'leaflet';
 
 const routes: Routes = [
   {
@@ -32,7 +33,8 @@ const routes: Routes = [
   {
     path: 'mi-cuenta',
     loadChildren: () => import('./tab3/tab3.module').then(m => m.Tab3PageModule)
-  }
+  },
+
 ];
 
 @NgModule({
