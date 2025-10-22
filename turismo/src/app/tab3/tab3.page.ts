@@ -42,6 +42,20 @@ export class Tab3Page implements OnInit {
       }
     });
   }
+    async onLogout() {
+    try {
+      // 3. Llama a la función de cierre de sesión
+      await this.auth.logout();
+      
+      // 4. Redirige al usuario a la página de inicio de sesión
+      this.router.navigateByUrl('/login', { replaceUrl: true });
+      
+    } catch (error) {
+      console.error('Error al intentar cerrar sesión:', error);
+      // Opcional: mostrar una alerta de error si el cierre falla
+    }
+  }
+  
 
   async loadUserProfile(uid: string) {
     try {
@@ -170,7 +184,7 @@ export class Tab3Page implements OnInit {
         {
           name: 'nuevoApellido',
           type: 'text',
-          placeholder: 'Introduce tu nuevo nombre',
+          placeholder: 'Introduce tu nuevo apellido',
           value: this.editedProfile!.apellido 
         }
       ],
@@ -193,11 +207,97 @@ export class Tab3Page implements OnInit {
 
     await alert.present();
   }
+async editarEmail() {
+    // Usamos 'uid' como nombre preferido, pero verificamos 'id' si 'uid' no está presente
+    const uid = this.userProfile?.id || this.userProfile?.id;
+    if (!this.editedProfile || !uid) {
+        this.showAlert('Error', 'No se puede editar, perfil o ID no disponible.');
+        return;
+    }
 
+    const alert = await this.alertController.create({
+        header: 'Editar Email',
+        inputs: [
+            {
+                name: 'nuevoEmail',
+                type: 'email', // 🚨 Usar 'email' para validación básica en el móvil
+                placeholder: 'Introduce tu nuevo email',
+                value: this.editedProfile!.email
+            }
+        ],
+        buttons: [
+            {
+                text: 'Cancelar',
+                role: 'cancel',
+            },
+            {
+                text: 'Guardar',
+                handler: (data) => {
+                    const nuevoEmail = data.nuevoEmail.trim();
+                    if (nuevoEmail && nuevoEmail !== this.editedProfile!.email) {
+                        // 🚨 Llamamos a la función auxiliar
+                        this.updateEmailAndFirestore(nuevoEmail);
+                    }
+                }
+            }
+        ]
+    });
+
+    await alert.present();
+}
+
+/**
+ * 🔹 FUNCIÓN CENTRAL PARA ACTUALIZAR EMAIL
+ * Maneja la actualización doble (Auth y Firestore) y los errores de unicidad.
+ */
+private async updateEmailAndFirestore(newEmail: string) {
+    const uid = this.userProfile!.id || this.userProfile!.id; 
+
+    try {
+        // 1. 🚨 ACTUALIZAR EN FIREBASE AUTH:
+        // Si el email ya está en uso, este paso FALLARÁ y lanzará un error.
+        console.log("ANTES")
+        await this.auth.updateAuthEmail(newEmail);
+
+
+        // 2. ACTUALIZAR EN FIRESTORE (Si Auth fue exitoso)
+        await this.profileService.updateUserProfile(uid, { email: newEmail });
+
+        // 3. ACTUALIZAR VARIABLES LOCALES
+        const dataToUpdate = { email: newEmail };
+        this.userProfile = { ...this.userProfile!, ...dataToUpdate };
+        this.editedProfile = { ...this.editedProfile!, ...dataToUpdate };
+
+        // 4. Actualizar localStorage (buena práctica)
+        localStorage.setItem(`profile_${uid}`, JSON.stringify(this.userProfile));
+
+        // 5. Retroalimentación
+        const toast = await this.toastController.create({
+            message: `Email actualizado con éxito a: ${newEmail}`,
+            duration: 3000,
+            color: 'success'
+        });
+        toast.present();
+
+    } catch (error: any) {
+        let errorMessage = 'Error desconocido al actualizar el email.';
+
+        // 🚨 MANEJO DE ERRORES DE FIREBASE AUTH (UNICIDAD)
+        if (error.code === 'auth/email-already-in-use') {
+            errorMessage = 'El email proporcionado ya está en uso por otra cuenta. Usa uno diferente.';
+        } else if (error.code === 'auth/requires-recent-login') {
+            errorMessage = 'Debes iniciar sesión de nuevo para cambiar tu email (seguridad).';
+        } else {
+            console.error('Error al actualizar email:', error);
+        }
+
+        this.showAlert('Error de Email', errorMessage);
+    }
+}
   // ----------------------------------------------------
   // 4. FUNCIÓN AUXILIAR CORREGIDA PARA ACTUALIZAR FIRESTORE
   // ----------------------------------------------------
-  private async updateFieldInDatabase(field: 'nombre' | 'apellido' | 'telefono', value: string) {
+  private async updateFieldInDatabase(field: 'nombre' | 'apellido' | 'email', value: string) {
     // 🚨 CORREGIDO: Usamos userProfile.uid (si existe) o userProfile.id
     const uid = this.userProfile!.id || this.userProfile!.id; 
     

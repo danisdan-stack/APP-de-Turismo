@@ -51,9 +51,9 @@
           [readonly]="true"
           placeholder="Ingrese su correo">
         </ion-input>
-        <ion-button fill="clear" slot="end" disabled>
+        <ion-button fill="clear" slot="end" (click)="editarEmail()">
           <ion-icon name="lock-closed-outline"></ion-icon>
-          <span class="ion-padding-start">Fijo</span>
+          <span class="ion-padding-start">Editar</span>
         </ion-button>
       </ion-item>
 
@@ -77,19 +77,13 @@
         <ion-button 
           color="primary" 
           expand="block" 
-          [disabled]="!isEditing"
-          (click)="saveProfile()">
-          Guardar
+          
+          (click)="logout()">
+          Cerrar Sesion
         </ion-button>
 
-        <ion-button 
-          color="medium" 
-          fill="outline" 
-          expand="block" 
-          [disabled]="!isEditing"
-          (click)="cancelEditing()">
-          Cancelar
-        </ion-button>
+   
+        
       </div>
     </ion-card-content>
   </ion-card>

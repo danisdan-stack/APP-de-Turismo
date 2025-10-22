@@ -7,7 +7,7 @@ import {
   user,
   User,
   updateProfile,
-  onAuthStateChanged
+  onAuthStateChanged,updateEmail
 } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
 
@@ -63,6 +63,20 @@ export class AuthService {
   getUserId(): string | null {
     return this.userId;
   }
+  async updateAuthEmail(newEmail: string): Promise<void> {
+    const user = this.firebaseAuth.currentUser;
+    if (!user) throw new Error('No user logged in');
+
+    // 🚨 Firebase chequeará automáticamente si el email ya está en uso.
+    // Si el email ya existe, esta llamada fallará con el código 'auth/email-already-in-use'.
+    try {
+        await updateEmail(user, newEmail);
+        console.log(`✅ Email de autenticación actualizado a: ${newEmail}`);
+    } catch (error) {
+        // Propaga el error para que Tab3Page pueda manejarlo (por ejemplo, mostrar el toast)
+        throw error; 
+    }
+}
 
   async register(email: string, password: string): Promise<any> {
     try {
