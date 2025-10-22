@@ -36,8 +36,11 @@ export class LoginPage {
     try {
       const userCredential = await this.authService.login(this.email, this.password);
       if (userCredential) {
-        // Éxito
+       
+        const uid = userCredential.user.uid;
+        localStorage.setItem('userUID', uid);
         this.router.navigateByUrl('/inicio');
+        return userCredential;
       }
     } catch (error: any) { 
       let errorMessage = 'Error desconocido al iniciar sesión.';

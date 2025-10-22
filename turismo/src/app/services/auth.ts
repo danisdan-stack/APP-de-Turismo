@@ -6,20 +6,21 @@ import {
   signOut,
   user,
   User,
-  updateProfile
+  updateProfile,
+  onAuthStateChanged
 } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
 
-// 🔹 Define la interfaz UserProfile en este mismo archivo
+// 🔹 Define la interfaz UserProfile
 export interface UserProfile {
-  uid: string;
+  id: string;
   email: string;
-  displayName?: string;
-  firstName?: string;
-  lastName?: string;
-  phoneNumber?: string;
+ 
+  nombre?: string;
+  apellido?: string;
+  /*phoneNumber?: string;
   photoURL?: string;
-  tourismInterest?: string;
+  tourismInterest?: string;*/
 }
 
 @Injectable({
@@ -28,8 +29,40 @@ export interface UserProfile {
 export class AuthService {
 
   private firebaseAuth = inject(Auth);
+  private userId: string | null = null; // 👈 NUEVO: variable interna para guardar el UID
 
   authState$: Observable<User | null> = user(this.firebaseAuth);
+
+  constructor() {
+    // 👇 Escucha cambios de sesión y guarda automáticamente el UID
+    onAuthStateChanged(this.firebaseAuth, (user) => {
+      if (user) {
+        this.userId = user.uid;
+        localStorage.setItem('userUID', user.uid); // 🔹 unificamos nombre de clave
+        console.log('✅ UID guardado:', this.userId);
+      } else {
+        this.userId = null;
+        localStorage.removeItem('userUID');
+        console.log('ℹ️ Usuario desconectado');
+      }
+    });
+
+    // Si hay un UID guardado en localStorage (tras recarga), lo restaura
+    const storedId = localStorage.getItem('userUID');
+    if (storedId) {
+      this.userId = storedId;
+    }
+  }
+
+  // 🔹 Función pública para obtener el UID cuando lo necesites
+  getStoredUserId(): string | null {
+    return localStorage.getItem('userUID');
+  }
+
+  // 🔹 También te dejo una forma rápida de acceder al UID actual en memoria
+  getUserId(): string | null {
+    return this.userId;
+  }
 
   async register(email: string, password: string): Promise<any> {
     try {
@@ -53,6 +86,13 @@ export class AuthService {
         email, 
         password
       );
+
+      // 🔹 Guarda el UID también al hacer login manual
+      if (result.user?.uid) {
+        this.userId = result.user.uid;
+        localStorage.setItem('userUID', result.user.uid);
+      }
+
       console.log("✅ Sesión iniciada:", result.user?.email);
       return result;
     } catch (error: any) {
@@ -64,6 +104,8 @@ export class AuthService {
   async logout(): Promise<void> {
     try {
       await signOut(this.firebaseAuth);
+      this.userId = null; // limpia el UID
+      localStorage.removeItem('userUID');
       console.log("👋 Sesión cerrada correctamente");
     } catch (error) {
       console.error("❌ Error al cerrar sesión:", error);
@@ -78,36 +120,40 @@ export class AuthService {
     return this.firebaseAuth.currentUser;
   }
 
-  // 🔹 Obtener perfil del usuario actual
   async getCurrentUserProfile(): Promise<UserProfile | null> {
     const user = this.firebaseAuth.currentUser;
     if (!user) return null;
 
     return {
-      uid: user.uid,
+      id: user.uid,
       email: user.email || '',
-      displayName: user.displayName || '',
-      firstName: user.displayName?.split(' ')[0] || '',
-      lastName: user.displayName?.split(' ')[1] || '',
-      phoneNumber: user.phoneNumber || '',
+
+      nombre: user.displayName?.split(' ')[0] || '',
+      apellido: user.displayName?.split(' ')[1] || ''
+      /*phoneNumber: user.phoneNumber || '',
       photoURL: user.photoURL || '',
-      tourismInterest: '' // Este campo vendría de Firestore
+      tourismInterest: ''*/
     };
   }
 
-  // 🔹 Actualizar perfil del usuario
   async updateUserProfile(profileData: {
-    displayName?: string;
-    photoURL?: string;
-    firstName?: string;
-    lastName?: string;
-  }): Promise<void> {
-    const user = this.firebaseAuth.currentUser;
-    if (!user) throw new Error('No user logged in');
+    // La entrada de datos solo necesita los campos de nombre y apellido
+    nombre?: string;
+    apellido?: string;
+  }): Promise<void> {
+    const user = this.firebaseAuth.currentUser;
+    if (!user) throw new Error('No user logged in');
 
-    await updateProfile(user, {
-      displayName: profileData.displayName || `${profileData.firstName} ${profileData.lastName}`.trim(),
-      photoURL: profileData.photoURL
-    });
-  }
+    // 1. Construir el nombre completo usando 'nombre' y 'apellido'
+    // Usamos || '' para asegurarnos de que no haya 'undefined' si el campo falta.
+    const fullName = `${profileData.nombre || ''} ${profileData.apellido || ''}`.trim();
+    
+    // 2. Llamar a updateProfile para actualizar el displayName de Firebase Auth
+    // Nota: El objeto debe contener al menos displayName o photoURL, 
+    // por lo que solo incluimos displayName.
+    await updateProfile(user, {
+      // Si fullName está vacío, usamos null para limpiar o no actualizar si es posible
+      displayName: fullName || null 
+    });
+}
 }
