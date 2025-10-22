@@ -158,6 +158,42 @@ export class Tab3Page implements OnInit {
     await alert.present();
   }
 
+    async editarApellido() {
+    if (!this.editedProfile || !this.userProfile?.id && !this.userProfile?.id) {
+      this.showAlert('Error', 'No se puede editar, perfil o UID no disponible.');
+      return;
+    }
+
+    const alert = await this.alertController.create({
+      header: 'Editar Apellido',
+      inputs: [
+        {
+          name: 'nuevoApellido',
+          type: 'text',
+          placeholder: 'Introduce tu nuevo nombre',
+          value: this.editedProfile!.apellido 
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+        },
+        {
+          text: 'Guardar', 
+          handler: (data) => {
+            const nuevoApellido = data.nuevoApellido.trim();
+            if (nuevoApellido && nuevoApellido !== this.editedProfile!.apellido) {
+              this.updateFieldInDatabase('apellido', nuevoApellido);
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
   // ----------------------------------------------------
   // 4. FUNCIÓN AUXILIAR CORREGIDA PARA ACTUALIZAR FIRESTORE
   // ----------------------------------------------------
