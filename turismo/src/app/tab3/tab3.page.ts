@@ -483,43 +483,52 @@ async showAlert2(header: string, message: string) {
       {
         name: 'currentPassword',
         type: 'password',
-        placeholder: 'Contraseña actual para confirmar'
+        placeholder: 'Contraseña actual para confirmar',
+        attributes: {
+          required: true
+        }
       }
     ],
     buttons: [
-      { 
-        text: 'Cancelar', 
-        role: 'cancel' 
-      },
+      { text: 'Cancelar', role: 'cancel' },
       {
         text: 'Eliminar',
         role: 'destructive',
+        cssClass: 'danger-button',
         handler: async (data) => {
-          if (!data.currentPassword) {
-            this.showAlert('Error', 'Debes ingresar tu contraseña');
+          const currentPassword = data.currentPassword?.trim();
+          
+          if (!currentPassword) {
+            this.showAlert('Error', 'Debes ingresar tu contraseña actual');
             return false;
           }
 
-          // 🔹 SOLUCIÓN SIMPLE: No usar loading, solo alerts
+          // Confirmación final
           const confirmAlert = await this.alertController.create({
-            header: 'Última Confirmación',
-            message: '¿Estás ABSOLUTAMENTE seguro? Esta acción es irreversible.',
+            header: 'Confirmar Eliminación',
+            message: '¿ESTÁS ABSOLUTAMENTE SEGURO? Se eliminará tu cuenta y todos los datos permanentemente.',
             buttons: [
               { text: 'Cancelar', role: 'cancel' },
               {
-                text: 'ELIMINAR',
+                text: 'ELIMINAR DEFINITIVAMENTE',
+                cssClass: 'danger-button',
                 handler: async () => {
                   try {
-                    await this.auth.deleteUserAccount(data.currentPassword);
-                    
-                    // Cerrar todos los alerts
-                    this.alertController.dismiss();
-                    
-                    // Redirigir
+                    await this.auth.deleteUserAccount(currentPassword);
+                    this.showAlert('Cuenta Eliminada', 'Tu cuenta ha sido eliminada exitosamente');
+                    // Redirigir al login o página principal
                     this.router.navigate(['/login']);
-                    
                   } catch (error: any) {
-                    //this.mostrarError(error);
+                    console.error('Error al eliminar cuenta:', error);
+                    
+                    let errorMessage = 'Error al eliminar cuenta';
+                    if (error.code === 'auth/wrong-password') {
+                      errorMessage = 'Contraseña incorrecta';
+                    } else if (error.code === 'auth/requires-recent-login') {
+                      errorMessage = 'Debes volver a iniciar sesión para realizar esta acción';
+                    }
+                    
+                    this.showAlert('Error', errorMessage);
                   }
                 }
               }
@@ -535,6 +544,7 @@ async showAlert2(header: string, message: string) {
 
   await alert.present();
 }
+
   // ----------------------------------------------------
   // 5. UTILIDADES
   // ----------------------------------------------------
