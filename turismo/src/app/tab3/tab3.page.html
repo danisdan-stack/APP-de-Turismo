@@ -51,9 +51,9 @@
           [readonly]="true"
           placeholder="Ingrese su correo">
         </ion-input>
-        <ion-button fill="clear" slot="end" (click)="editarEmail()">
+        <ion-button fill="clear" slot="end" disabled="true" (click)="editarEmail()">
           <ion-icon name="lock-closed-outline"></ion-icon>
-          <span class="ion-padding-start">Editar</span>
+          <span class="ion-padding-start">Fijo</span>
         </ion-button>
       </ion-item>
 
@@ -92,7 +92,7 @@
   <ion-spinner *ngIf="loading" name="crescent" class="ion-margin-top"></ion-spinner>
 
 </ion-content>
- 
+  
   <ion-tab-bar slot="bottom" class="tabs-navigation">
     <ion-tab-button tab="tab1" (click)="irATab1()">
       <ion-icon name="home-outline"></ion-icon>
