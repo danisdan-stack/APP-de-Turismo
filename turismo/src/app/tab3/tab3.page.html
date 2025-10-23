@@ -42,6 +42,20 @@
         </ion-button>
       </ion-item>
 
+            <!-- TELEFONO -->
+      <ion-item>
+        <ion-label position="stacked">Teléfono</ion-label>
+        <ion-input 
+          [(ngModel)]="editedProfile!.telefono" 
+          [readonly]="!isEditing"
+          placeholder="Ingrese su telefono">
+        </ion-input>
+        <ion-button fill="clear" slot="end" (click)="editarTelefono()">
+          <ion-icon name="create-outline"></ion-icon>
+          <span class="ion-padding-start">Editar</span>
+        </ion-button>
+      </ion-item>
+
       <!-- EMAIL -->
       <ion-item>
         <ion-label position="stacked">Email</ion-label>

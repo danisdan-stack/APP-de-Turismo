@@ -21,6 +21,7 @@ export interface UserProfile {
   email: string;
   nombre?: string;
   apellido?: string;
+  telefono?: string
 }
 
 @Injectable({
@@ -159,7 +160,9 @@ export class AuthService {
       id: user.uid,
       email: user.email || '',
       nombre: user.displayName?.split(' ')[0] || '',
-      apellido: user.displayName?.split(' ')[1] || ''
+      apellido: user.displayName?.split(' ')[1] || '',
+      
+      
     };
   }
 

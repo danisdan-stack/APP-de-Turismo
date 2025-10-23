@@ -65,6 +65,9 @@ export class Tab3Page implements OnInit {
         console.log(`👤 UID: ${this.userProfile.id}`);
         console.log(`✍️ Nombre: ${this.userProfile.nombre} ${this.userProfile.apellido}`);
         console.log(`📧 Email: ${this.userProfile.email}`);
+        console.log(`📧 Telefono: ${this.userProfile.telefono}`);
+
+
       } else {
         console.warn('No se encontró documento de perfil.');
       }
@@ -146,6 +149,38 @@ export class Tab3Page implements OnInit {
             const nuevoNombre = data.nuevoNombre.trim();
             if (nuevoNombre && nuevoNombre !== this.editedProfile!.nombre) {
               this.updateFieldInDatabase('nombre', nuevoNombre);
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+async editarTelefono() {
+    if (!this.editedProfile || !this.userProfile?.id) {
+      this.showAlert('Error', 'No se puede editar, perfil o UID no disponible.');
+      return;
+    }
+
+    const alert = await this.alertController.create({
+      header: 'Editar Teléfono',
+      inputs: [
+        {
+          name: 'nuevoTelefono',
+          type: 'text',
+          placeholder: 'Introduce tu nuevo telefono',
+          value: this.editedProfile!.telefono 
+        }
+      ],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Guardar',
+          handler: (data) => {
+            const nuevoTelefono = data.nuevoTelefono.trim();
+            if (nuevoTelefono && nuevoTelefono !== this.editedProfile!.telefono) {
+              this.updateFieldInDatabase('telefono', nuevoTelefono);
             }
           }
         }
@@ -411,7 +446,7 @@ async showAlert2(header: string, message: string) {
   // ----------------------------------------------------
   // 4. FUNCIONES AUXILIARES
   // ----------------------------------------------------
-  private async updateFieldInDatabase(field: 'nombre' | 'apellido' | 'email', value: string) {
+  private async updateFieldInDatabase(field: 'nombre' | 'apellido' | 'email' | 'telefono', value: string) {
     const uid = this.userProfile!.id || this.userProfile!.id; 
     const dataToUpdate = { [field]: value };
 
