@@ -274,6 +274,98 @@ async editarEmail() {
   await alert.present();
 }
 
+async cambiarContrasena() {
+  const alert = await this.alertController.create({
+    header: 'Cambiar Contraseña',
+    inputs: [
+      {
+        name: 'currentPassword',
+        type: 'password',
+        placeholder: 'Contraseña actual',
+        attributes: {
+          required: true
+        }
+      },
+      {
+        name: 'newPassword',
+        type: 'password',
+        placeholder: 'Nueva contraseña',
+        attributes: {
+          required: true,
+          minlength: 6
+        }
+      },
+      {
+        name: 'confirmPassword',
+        type: 'password',
+        placeholder: 'Confirmar nueva contraseña',
+        attributes: {
+          required: true,
+          minlength: 6
+        }
+      }
+    ],
+    buttons: [
+      { text: 'Cancelar', role: 'cancel' },
+      {
+        text: 'Guardar',
+        handler: async (data) => {
+          const { currentPassword, newPassword, confirmPassword } = data;
+          
+          // Validaciones
+          if (!currentPassword || !newPassword || !confirmPassword) {
+            this.showAlert('Error', 'Todos los campos son obligatorios');
+            return false;
+          }
+
+          if (newPassword.length < 6) {
+            this.showAlert('Error', 'La nueva contraseña debe tener al menos 6 caracteres');
+            return false;
+          }
+
+          if (newPassword !== confirmPassword) {
+            this.showAlert('Error', 'Las contraseñas no coinciden');
+            return false;
+          }
+
+          // Cambiar contraseña
+          try {
+            await this.auth.changePassword(currentPassword, newPassword);
+            this.showAlert('Éxito', 'Contraseña actualizada correctamente');
+            return true;
+          } catch (error: any) {
+            console.error('Error al cambiar contraseña:', error);
+            
+            let errorMessage = 'Error al cambiar contraseña';
+            if (error.code === 'auth/wrong-password') {
+              errorMessage = 'La contraseña actual es incorrecta';
+            } else if (error.code === 'auth/weak-password') {
+              errorMessage = 'La nueva contraseña es muy débil';
+            } else if (error.code === 'auth/requires-recent-login') {
+              errorMessage = 'Debes volver a iniciar sesión para realizar esta acción';
+            }
+            
+            this.showAlert('Error', errorMessage);
+            return false;
+          }
+        }
+      }
+    ]
+  });
+
+  await alert.present();
+}
+
+// Función auxiliar para mostrar alertas (si no la tienes)
+async showAlert2(header: string, message: string) {
+  const alert = await this.alertController.create({
+    header,
+    message,
+    buttons: ['OK']
+  });
+  await alert.present();
+}
+
   // ----------------------------------------------------
   // 🔹 FUNCIÓN CENTRAL: actualizar Auth + Firestore
   // ----------------------------------------------------

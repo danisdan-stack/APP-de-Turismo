@@ -10,7 +10,8 @@ import {
   onAuthStateChanged,
   updateEmail,
   reauthenticateWithCredential,
-  EmailAuthProvider
+  EmailAuthProvider,
+  updatePassword
 } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
 
@@ -71,6 +72,24 @@ export class AuthService {
       console.log(`✅ Email actualizado correctamente a: ${newEmail}`);
     } catch (error) {
       console.error('❌ Error al actualizar el email:', error);
+      throw error;
+    }
+  }
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    const user = this.firebaseAuth.currentUser;
+    if (!user) throw new Error('No hay usuario autenticado');
+
+    try {
+      // 1. Reautenticación obligatoria (por seguridad)
+      const credential = EmailAuthProvider.credential(user.email!, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+
+      // 2. Actualizar contraseña
+      await updatePassword(user, newPassword);
+
+      console.log('✅ Contraseña actualizada correctamente');
+    } catch (error) {
+      console.error('❌ Error al cambiar contraseña:', error);
       throw error;
     }
   }
