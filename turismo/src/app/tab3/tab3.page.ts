@@ -3,7 +3,8 @@ import { AuthService, UserProfile } from '../services/auth';
 import { ProfileService } from '../services/perfil'; 
 import { AlertController, ToastController } from '@ionic/angular'; 
 import { Router } from '@angular/router';
-import { updateEmail, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+import { updateEmail, reauthenticateWithCredential, EmailAuthProvider } from '@angular/fire/auth';
+
 
 @Component({
   selector: 'app-tab3',
