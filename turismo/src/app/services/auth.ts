@@ -10,8 +10,16 @@ import {
   onAuthStateChanged,
   updateEmail,
   reauthenticateWithCredential,
-  EmailAuthProvider
+  EmailAuthProvider,
+  updatePassword,
+  deleteUser,  
 } from '@angular/fire/auth';
+
+import { 
+  Firestore, 
+  doc, 
+  deleteDoc 
+} from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 
 // 🔹 Interfaz para el perfil de usuario
@@ -20,6 +28,7 @@ export interface UserProfile {
   email: string;
   nombre?: string;
   apellido?: string;
+  telefono?: string
 }
 
 @Injectable({
@@ -28,6 +37,7 @@ export interface UserProfile {
 export class AuthService {
   private firebaseAuth = inject(Auth);
   private userId: string | null = null;
+    private firestore = inject(Firestore)
 
   authState$: Observable<User | null> = user(this.firebaseAuth);
   currentUser: any;
@@ -51,7 +61,56 @@ export class AuthService {
     if (storedId) {
       this.userId = storedId;
     }
+  }// =====================================================
+// 🔹 ELIMINAR CUENTA (Usuario autenticado)
+// =====================================================
+async deleteUserAccount(currentPassword: string): Promise<void> {
+  const user = this.firebaseAuth.currentUser;
+  if (!user) throw new Error('No hay usuario autenticado');
+
+  try {
+    // 1. Reautenticación obligatoria por seguridad
+    const credential = EmailAuthProvider.credential(user.email!, currentPassword);
+    await reauthenticateWithCredential(user, credential);
+
+    // 2. Primero eliminar de tu base de datos (Firestore/Realtime DB)
+    await this.deleteUserFromDatabase(user.uid);
+
+    // 3. Luego eliminar de Authentication
+    await deleteUser(user);
+
+    // 4. Limpiar datos locales
+    this.userId = null;
+    localStorage.removeItem('userUID');
+    
+    console.log('✅ Cuenta eliminada completamente');
+  } catch (error) {
+    console.error('❌ Error al eliminar cuenta:', error);
+    throw error;
   }
+}
+
+// =====================================================
+// 🔹 ELIMINAR USUARIO DE LA BASE DE DATOS
+// =====================================================
+private async deleteUserFromDatabase(userId: string): Promise<void> {
+  try {
+    // 👇 ELIGE SEGÚN TU BASE DE DATOS:
+
+    // Si usas Firestore:
+    const userDocRef = doc(this.firestore, 'usuario', userId);
+    await deleteDoc(userDocRef);
+
+    // O si usas Realtime Database:
+    // await this.database.ref('users/' + userId).remove();
+
+    console.log('✅ Usuario eliminado de la base de datos');
+  } catch (error) {
+    console.error('❌ Error al eliminar de la base de datos:', error);
+    throw error;
+  }
+}
+
 
   // =====================================================
   // 🔹 Actualizar email del usuario autenticado
@@ -71,6 +130,24 @@ export class AuthService {
       console.log(`✅ Email actualizado correctamente a: ${newEmail}`);
     } catch (error) {
       console.error('❌ Error al actualizar el email:', error);
+      throw error;
+    }
+  }
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    const user = this.firebaseAuth.currentUser;
+    if (!user) throw new Error('No hay usuario autenticado');
+
+    try {
+      // 1. Reautenticación obligatoria (por seguridad)
+      const credential = EmailAuthProvider.credential(user.email!, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+
+      // 2. Actualizar contraseña
+      await updatePassword(user, newPassword);
+
+      console.log('✅ Contraseña actualizada correctamente');
+    } catch (error) {
+      console.error('❌ Error al cambiar contraseña:', error);
       throw error;
     }
   }
@@ -140,7 +217,9 @@ export class AuthService {
       id: user.uid,
       email: user.email || '',
       nombre: user.displayName?.split(' ')[0] || '',
-      apellido: user.displayName?.split(' ')[1] || ''
+      apellido: user.displayName?.split(' ')[1] || '',
+      
+      
     };
   }
 
