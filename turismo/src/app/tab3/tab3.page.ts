@@ -475,7 +475,66 @@ async showAlert2(header: string, message: string) {
       this.showAlert('Error de Guardado', 'No se pudo actualizar el campo.');
     }
   }
+  async eliminarCuenta() {
+  const alert = await this.alertController.create({
+    header: 'Eliminar Cuenta',
+    message: '¿Estás seguro? Esta acción no se puede deshacer. Se eliminarán todos tus datos.',
+    inputs: [
+      {
+        name: 'currentPassword',
+        type: 'password',
+        placeholder: 'Contraseña actual para confirmar'
+      }
+    ],
+    buttons: [
+      { 
+        text: 'Cancelar', 
+        role: 'cancel' 
+      },
+      {
+        text: 'Eliminar',
+        role: 'destructive',
+        handler: async (data) => {
+          if (!data.currentPassword) {
+            this.showAlert('Error', 'Debes ingresar tu contraseña');
+            return false;
+          }
 
+          // 🔹 SOLUCIÓN SIMPLE: No usar loading, solo alerts
+          const confirmAlert = await this.alertController.create({
+            header: 'Última Confirmación',
+            message: '¿Estás ABSOLUTAMENTE seguro? Esta acción es irreversible.',
+            buttons: [
+              { text: 'Cancelar', role: 'cancel' },
+              {
+                text: 'ELIMINAR',
+                handler: async () => {
+                  try {
+                    await this.auth.deleteUserAccount(data.currentPassword);
+                    
+                    // Cerrar todos los alerts
+                    this.alertController.dismiss();
+                    
+                    // Redirigir
+                    this.router.navigate(['/login']);
+                    
+                  } catch (error: any) {
+                    //this.mostrarError(error);
+                  }
+                }
+              }
+            ]
+          });
+          
+          await confirmAlert.present();
+          return false;
+        }
+      }
+    ]
+  });
+
+  await alert.present();
+}
   // ----------------------------------------------------
   // 5. UTILIDADES
   // ----------------------------------------------------

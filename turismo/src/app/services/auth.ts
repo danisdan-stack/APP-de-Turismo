@@ -11,8 +11,15 @@ import {
   updateEmail,
   reauthenticateWithCredential,
   EmailAuthProvider,
-  updatePassword
+  updatePassword,
+  deleteUser,  
 } from '@angular/fire/auth';
+
+import { 
+  Firestore, 
+  doc, 
+  deleteDoc 
+} from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 
 // 🔹 Interfaz para el perfil de usuario
@@ -30,6 +37,7 @@ export interface UserProfile {
 export class AuthService {
   private firebaseAuth = inject(Auth);
   private userId: string | null = null;
+    private firestore = inject(Firestore)
 
   authState$: Observable<User | null> = user(this.firebaseAuth);
   currentUser: any;
@@ -53,7 +61,56 @@ export class AuthService {
     if (storedId) {
       this.userId = storedId;
     }
+  }// =====================================================
+// 🔹 ELIMINAR CUENTA (Usuario autenticado)
+// =====================================================
+async deleteUserAccount(currentPassword: string): Promise<void> {
+  const user = this.firebaseAuth.currentUser;
+  if (!user) throw new Error('No hay usuario autenticado');
+
+  try {
+    // 1. Reautenticación obligatoria por seguridad
+    const credential = EmailAuthProvider.credential(user.email!, currentPassword);
+    await reauthenticateWithCredential(user, credential);
+
+    // 2. Primero eliminar de tu base de datos (Firestore/Realtime DB)
+    await this.deleteUserFromDatabase(user.uid);
+
+    // 3. Luego eliminar de Authentication
+    await deleteUser(user);
+
+    // 4. Limpiar datos locales
+    this.userId = null;
+    localStorage.removeItem('userUID');
+    
+    console.log('✅ Cuenta eliminada completamente');
+  } catch (error) {
+    console.error('❌ Error al eliminar cuenta:', error);
+    throw error;
   }
+}
+
+// =====================================================
+// 🔹 ELIMINAR USUARIO DE LA BASE DE DATOS
+// =====================================================
+private async deleteUserFromDatabase(userId: string): Promise<void> {
+  try {
+    // 👇 ELIGE SEGÚN TU BASE DE DATOS:
+
+    // Si usas Firestore:
+    const userDocRef = doc(this.firestore, 'usuario', userId);
+    await deleteDoc(userDocRef);
+
+    // O si usas Realtime Database:
+    // await this.database.ref('users/' + userId).remove();
+
+    console.log('✅ Usuario eliminado de la base de datos');
+  } catch (error) {
+    console.error('❌ Error al eliminar de la base de datos:', error);
+    throw error;
+  }
+}
+
 
   // =====================================================
   // 🔹 Actualizar email del usuario autenticado

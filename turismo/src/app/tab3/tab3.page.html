@@ -86,6 +86,8 @@
   </ion-button>
 </ion-item>
 
+
+
       <!-- BOTONES DE ACCIÓN -->
       <div class="buttons-row" style="margin-top: 16px; display: flex; gap: 8px;">
         <ion-button 
@@ -98,7 +100,18 @@
 
    
         
-      </div>
+      </div >
+      <div class="buttons-row" style="margin-top: 16px; display: flex; gap: 8px;">
+      <ion-button 
+  expand="block" 
+  fill="solid" 
+  color="danger"
+  (click)="eliminarCuenta()"
+  class="ion-margin-top">
+  <ion-icon name="trash-outline" slot="start"></ion-icon>
+  Eliminar Cuenta
+</ion-button>
+</div>
     </ion-card-content>
   </ion-card>
 
