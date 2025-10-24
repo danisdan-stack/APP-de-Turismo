@@ -1,0 +1,42 @@
+.filtros-content {
+  right: 80%;
+}
+
+ion-segment-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.internal-tabs {
+  display: flex;
+  flex-direction: row;
+  position: sticky;
+  bottom: 0;
+  background: white;
+  padding: 10px 16px;
+  border-top: 1px solid var(--ion-color-light);
+  margin-top: 20px;
+}
+
+.tabs-segment {
+  --background: var(--ion-color-light);
+  border-radius: 50px;
+  padding: 4px;
+  
+  ion-segment-button {
+    --border-radius: 50px;
+    --color: var(--ion-color-medium);
+    --color-checked: var(--ion-color-primary);
+    --background-checked: white;
+    
+    ion-icon {
+      font-size: 1.2rem;
+      margin-bottom: 4px;
+    }
+    
+    ion-label {
+      font-size: 0.7rem;
+    }
+  }
+}

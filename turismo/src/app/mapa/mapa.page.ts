@@ -36,6 +36,9 @@ export class MapaPage implements OnInit, OnDestroy {
   ngOnInit() {
     console.log('Página de mapa con Leaflet inicializada');
     
+    // ✅ SOLUCIÓN: Configurar iconos antes de inicializar
+    this.configurarIconosLeaflet();
+    
     // Inicializar mapa después de que la vista esté lista
     setTimeout(() => {
       this.inicializarMapa();
@@ -65,6 +68,21 @@ export class MapaPage implements OnInit, OnDestroy {
     });
   }
 
+  // ✅ MÉTODO NUEVO - Configurar iconos de Leaflet
+  private configurarIconosLeaflet() {
+    // Fix para los iconos de Leaflet
+    const iconDefault = L.Icon.Default.prototype as any;
+    delete iconDefault._getIconUrl;
+    
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+    });
+    
+    console.log('✅ Iconos de Leaflet configurados');
+  }
+
   // === INICIALIZAR MAPA LEAFLET ===
   private inicializarMapa() {
     // Verificar que el contenedor existe
@@ -76,13 +94,18 @@ export class MapaPage implements OnInit, OnDestroy {
     try {
       this.map = L.map(this.mapContainer.nativeElement).setView([-34.6037, -58.3816], 5);
 
+      // ✅ Asegurar que el mapa se redimensione correctamente
+      setTimeout(() => {
+        this.map.invalidateSize();
+      }, 300);
+
       // Capa base OpenStreetMap
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 18
       }).addTo(this.map);
 
-      console.log('Mapa Leaflet inicializado correctamente');
+      console.log('✅ Mapa Leaflet inicializado correctamente');
     } catch (error) {
       console.error('Error al inicializar el mapa:', error);
     }
@@ -129,6 +152,8 @@ export class MapaPage implements OnInit, OnDestroy {
 
   // === ACTUALIZAR MAPA CON PUNTOS (LEAFLET DIRECTO) ===
   private actualizarMapaConPuntos(puntos: PuntoInteres[]) {
+    console.log('🔍 Actualizando mapa con puntos:', puntos.length);
+    
     // Limpiar marcadores anteriores
     this.limpiarMarcadores();
 
@@ -140,6 +165,8 @@ export class MapaPage implements OnInit, OnDestroy {
     // Crear marcadores Leaflet directo
     puntos.forEach(punto => {
       if (punto.lat && punto.lon) {
+        console.log('📍 Creando marcador en:', punto.lat, punto.lon, punto.nombre);
+        
         const marcador = L.marker([punto.lat, punto.lon])
           .addTo(this.map)
           .bindPopup(this.crearPopupContent(punto))
@@ -151,9 +178,15 @@ export class MapaPage implements OnInit, OnDestroy {
       }
     });
 
+    console.log('📌 Total de marcadores creados:', this.markers.length);
+
     // Ajustar vista del mapa para mostrar todos los marcadores
     if (this.markers.length > 0) {
-      this.ajustarVistaMapa();
+      // ✅ Forzar redimensionamiento del mapa
+      setTimeout(() => {
+        this.map.invalidateSize();
+        this.ajustarVistaMapa();
+      }, 100);
     }
   }
 
