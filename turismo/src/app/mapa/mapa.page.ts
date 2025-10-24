@@ -36,6 +36,11 @@ export class MapaPage implements OnInit, OnDestroy {
   ngOnInit() {
     console.log('Página de mapa con Leaflet inicializada');
     
+    // ✅ PASO 1: Exponer la función para el popup
+    (window as any).guardarFavorito = (lat: number, lon: number, nombre: string, categoria: string, provincia: string) => {
+      this.guardarFavorito(lat, lon, nombre, categoria, provincia);
+    };
+    
     // ✅ SOLUCIÓN: Configurar iconos antes de inicializar
     this.configurarIconosLeaflet();
     
@@ -192,14 +197,62 @@ export class MapaPage implements OnInit, OnDestroy {
 
   // === CREAR CONTENIDO DEL POPUP ===
   private crearPopupContent(punto: PuntoInteres): string {
+    // ✅ Escapar comillas en el nombre para evitar errores
+    const nombreSeguro = (punto.nombre || 'Sin nombre').replace(/'/g, "\\'");
+    
     return `
-      <div style="text-align: center; min-width: 200px;">
+      <div style="text-align: center; min-width: 220px;">
         <strong style="font-size: 14px;">${punto.nombre || 'Sin nombre'}</strong><br>
         <em style="color: #666;">${punto.categoria}</em><br>
         <small>${punto.provincia || 'Provincia no especificada'}</small><br>
         <small style="color: #888;">${punto.lat.toFixed(4)}, ${punto.lon.toFixed(4)}</small>
+        
+        <!-- ✅ BOTÓN PARA GUARDAR FAVORITO -->
+        <div style="margin-top: 12px; padding: 8px 0; border-top: 1px solid #eee;">
+          <button 
+            onclick="guardarFavorito(${punto.lat}, ${punto.lon}, '${nombreSeguro}', '${punto.categoria}', '${punto.provincia}')"
+            style="
+              background: #3880ff; 
+              color: white; 
+              border: none; 
+              padding: 8px 16px; 
+              border-radius: 20px; 
+              cursor: pointer; 
+              font-size: 12px;
+              font-weight: bold;
+              transition: background 0.3s;
+            "
+            onmouseover="this.style.background='#2e6bd1'"
+            onmouseout="this.style.background='#3880ff'"
+          >
+            💖 Guardar como favorito
+          </button>
+        </div>
       </div>
     `;
+  }
+
+  // === GUARDAR PUNTO FAVORITO (SIN LÓGICA POR AHORA) ===
+  guardarFavorito(lat: number, lon: number, nombre: string, categoria: string, provincia: string) {
+    console.log('🔔 BOTÓN CLICKEADO - Datos recibidos:');
+    console.log('📍 Latitud:', lat);
+    console.log('📍 Longitud:', lon);
+    console.log('🏷️ Nombre:', nombre);
+    console.log('📂 Categoría:', categoria);
+    console.log('🗺️ Provincia:', provincia);
+    
+    // ✅ Por ahora solo mostramos un alerta de prueba
+    this.mostrarConfirmacionFavorito(nombre);
+  }
+
+  // === MOSTRAR CONFIRMACIÓN ===
+  private async mostrarConfirmacionFavorito(nombrePunto: string) {
+    const alert = await this.alertController.create({
+      header: '¡Funciona! 🎉',
+      message: `Botón clickeado para: "${nombrePunto}"<br><br>✅ El botón es cliqueable<br>✅ Recibe los datos correctamente`,
+      buttons: ['OK']
+    });
+    await alert.present();
   }
 
   // === AJUSTAR VISTA DEL MAPA ===
