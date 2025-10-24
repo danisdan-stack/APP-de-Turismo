@@ -314,13 +314,13 @@ export class MapaPage implements OnInit, OnDestroy {
   // === MOSTRAR INFO DEL PUNTO ===
   private async mostrarInfoPunto(punto: PuntoInteres) {
     const alert = await this.alertController.create({
-      header: punto.nombre || 'Punto turístico',
-      message: `
+      /*header: punto.nombre || 'Punto turístico',
+      /*message: `
         <strong>Categoría:</strong> ${punto.categoria}<br>
         <strong>Provincia:</strong> ${punto.provincia || 'No especificada'}<br>
         <strong>Coordenadas:</strong> ${punto.lat.toFixed(4)}, ${punto.lon.toFixed(4)}
       `,
-      buttons: [
+      /*buttons: [
         {
           text: 'Cerrar',
           role: 'cancel'
@@ -331,9 +331,9 @@ export class MapaPage implements OnInit, OnDestroy {
             this.centrarEnPunto(punto);
           }
         }
-      ]
+      ]*/
     });
-    await alert.present();
+    //await alert.present();
   }
 
   private centrarEnPunto(punto: PuntoInteres) {
