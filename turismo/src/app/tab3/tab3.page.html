@@ -1,17 +1,138 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>
-      Tab 3
-    </ion-title>
+    <ion-title>Mi Perfil</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 3</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
 
-  <app-explore-container name="Tab 3 page"></app-explore-container>
+  <ion-card *ngIf="!loading">
+    <ion-card-header>
+      <ion-card-title>Datos del Usuario</ion-card-title>
+      <ion-card-subtitle>UID: {{ userProfile?.id || 'No disponible' }}</ion-card-subtitle>
+    </ion-card-header>
+
+    <ion-card-content>
+
+      <!-- NOMBRE -->
+      <ion-item>
+        <ion-label position="stacked">Nombre</ion-label>
+        <ion-input 
+          [(ngModel)]="editedProfile!.nombre" 
+          [readonly]="!isEditing"
+          placeholder="Ingrese su nombre">
+        </ion-input>
+        <ion-button fill="clear" slot="end" (click)="editarNombre()">
+          <ion-icon name="create-outline"></ion-icon>
+          <span class="ion-padding-start">Editar</span>
+        </ion-button>
+      </ion-item>
+
+      <!-- APELLIDO -->
+      <ion-item>
+        <ion-label position="stacked">Apellido</ion-label>
+        <ion-input 
+          [(ngModel)]="editedProfile!.apellido" 
+          [readonly]="!isEditing"
+          placeholder="Ingrese su apellido">
+        </ion-input>
+        <ion-button fill="clear" slot="end" (click)="editarApellido()">
+          <ion-icon name="create-outline"></ion-icon>
+          <span class="ion-padding-start">Editar</span>
+        </ion-button>
+      </ion-item>
+
+            <!-- TELEFONO -->
+      <ion-item>
+        <ion-label position="stacked">Teléfono</ion-label>
+        <ion-input 
+          [(ngModel)]="editedProfile!.telefono" 
+          [readonly]="!isEditing"
+          placeholder="Ingrese su telefono">
+        </ion-input>
+        <ion-button fill="clear" slot="end" (click)="editarTelefono()">
+          <ion-icon name="create-outline"></ion-icon>
+          <span class="ion-padding-start">Editar</span>
+        </ion-button>
+      </ion-item>
+
+      <!-- EMAIL -->
+      <ion-item>
+        <ion-label position="stacked">Email</ion-label>
+        <ion-input 
+          type="email" 
+          [(ngModel)]="editedProfile!.email" 
+          [readonly]="true"
+          placeholder="Ingrese su correo">
+        </ion-input>
+        <ion-button fill="clear" slot="end" disabled="true" (click)="editarEmail()">
+          <ion-icon name="lock-closed-outline"></ion-icon>
+          <span class="ion-padding-start">Fijo</span>
+        </ion-button>
+      </ion-item>
+
+  
+ <ion-item>
+  <ion-label position="stacked">Contraseña</ion-label>
+  <ion-input 
+    type="password" 
+    value="********" 
+    readonly
+    placeholder="********">
+  </ion-input>
+  <ion-button fill="clear" slot="end" (click)="cambiarContrasena()">
+    <ion-icon name="key-outline"></ion-icon>
+    <span class="ion-padding-start">Cambiar</span>
+  </ion-button>
+</ion-item>
+
+
+
+      <!-- BOTONES DE ACCIÓN -->
+      <div class="buttons-row" style="margin-top: 16px; display: flex; gap: 8px;">
+        <ion-button 
+          color="primary" 
+          expand="block" 
+          
+          (click)="logout()">
+          Cerrar Sesion
+        </ion-button>
+
+   
+        
+      </div >
+      <div class="buttons-row" style="margin-top: 16px; display: flex; gap: 8px;">
+      <ion-button 
+  expand="block" 
+  fill="solid" 
+  color="danger"
+  (click)="eliminarCuenta()"
+  class="ion-margin-top">
+  <ion-icon name="trash-outline" slot="start"></ion-icon>
+  Eliminar Cuenta
+</ion-button>
+</div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Loader -->
+  <ion-spinner *ngIf="loading" name="crescent" class="ion-margin-top"></ion-spinner>
+
 </ion-content>
+  
+  <ion-tab-bar slot="bottom" class="tabs-navigation">
+    <ion-tab-button tab="tab1" (click)="irATab1()">
+      <ion-icon name="home-outline"></ion-icon>
+      <ion-label>Inicio</ion-label>
+    </ion-tab-button>
+    
+    <ion-tab-button tab="tab2" (click)="irATab2()">
+      <ion-icon name="search-outline"></ion-icon>
+      <ion-label>Favoritos</ion-label>
+    </ion-tab-button>
+    
+    <ion-tab-button tab="tab3" (click)="irATab3()" class="tab-active">
+      <ion-icon name="person-outline"></ion-icon>
+      <ion-label>Mi Cuenta</ion-label>
+    </ion-tab-button>
+  </ion-tab-bar>
