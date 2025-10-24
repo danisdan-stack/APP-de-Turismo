@@ -40,6 +40,15 @@ export class MapaPage implements OnInit, OnDestroy {
     (window as any).guardarFavorito = (lat: number, lon: number, nombre: string, categoria: string, provincia: string) => {
       this.guardarFavorito(lat, lon, nombre, categoria, provincia);
     };
+     (window as any).centrarEnPuntoPopup = (lat: number, lon: number) => {
+    if (this.map) {
+      this.map.setView([lat, lon], 14, {
+        animate: true,
+        duration: 1
+      });
+     
+    }
+  };
     
     // ✅ SOLUCIÓN: Configurar iconos antes de inicializar
     this.configurarIconosLeaflet();
@@ -176,7 +185,7 @@ export class MapaPage implements OnInit, OnDestroy {
           .addTo(this.map)
           .bindPopup(this.crearPopupContent(punto))
           .on('click', () => {
-            this.mostrarInfoPunto(punto);
+            
           });
 
         this.markers.push(marcador);
@@ -197,6 +206,9 @@ export class MapaPage implements OnInit, OnDestroy {
 
   // === CREAR CONTENIDO DEL POPUP ===
   private crearPopupContent(punto: PuntoInteres): string {
+   
+
+
     // ✅ Escapar comillas en el nombre para evitar errores
     const nombreSeguro = (punto.nombre || 'Sin nombre').replace(/'/g, "\\'");
     
@@ -224,8 +236,29 @@ export class MapaPage implements OnInit, OnDestroy {
             "
             onmouseover="this.style.background='#2e6bd1'"
             onmouseout="this.style.background='#3880ff'"
+            
           >
             💖 Guardar como favorito
+          </button>
+
+           <button 
+            onclick="centrarEnPuntoPopup(${punto.lat}, ${punto.lon})"
+            style="
+              background: #10dc60; 
+              color: white; 
+              border: none; 
+              padding: 8px 16px; 
+              border-radius: 20px; 
+              cursor: pointer; 
+              font-size: 12px;
+              font-weight: bold;
+              transition: background 0.3s;
+              margin: 4px;
+            "
+            onmouseover="this.style.background='#0ec254'"
+            onmouseout="this.style.background='#10dc60'"
+          >
+            📍 Centrar en mapa
           </button>
         </div>
       </div>
@@ -364,35 +397,7 @@ export class MapaPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  // === MOSTRAR INFO DEL PUNTO ===
-  private async mostrarInfoPunto(punto: PuntoInteres) {
-    const alert = await this.alertController.create({
-      header: punto.nombre || 'Punto turístico',
-     
-      buttons: [
-        {
-          text: 'Cerrar',
-          role: 'cancel'
-        },
-        {
-          text: 'Centrar en mapa',
-          handler: () => {
-            this.centrarEnPunto(punto);
-          }
-        }
-      ]
-    });
-    await alert.present();
-  }
-
-  private centrarEnPunto(punto: PuntoInteres) {
-    if (this.map) {
-      this.map.setView([punto.lat, punto.lon], 14, {
-        animate: true,
-        duration: 1
-      });
-    }
-  }
+  
 
   // === MÉTODOS PÚBLICOS ===
   volverAFiltros() {
