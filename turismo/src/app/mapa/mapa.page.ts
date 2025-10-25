@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/co
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingController, AlertController } from '@ionic/angular';
 import { OverpassService, PuntoInteres, FiltrosBusqueda } from '../components/services/overpass.service';
+import { MeGustaService } from '../services/megusta'; // ✅ SERVICIO AÑADIDO
 
 // ✅ Leaflet directo
 import * as L from 'leaflet';
@@ -27,6 +28,7 @@ export class MapaPage implements OnInit, OnDestroy {
 
   constructor(
     private overpassService: OverpassService,
+    private meGustaService: MeGustaService, // ✅ SERVICIO INYECTADO
     private loadingController: LoadingController,
     private alertController: AlertController,
     private route: ActivatedRoute,
@@ -232,27 +234,42 @@ export class MapaPage implements OnInit, OnDestroy {
     `;
   }
 
-  // === GUARDAR PUNTO FAVORITO (SIN LÓGICA POR AHORA) ===
-  guardarFavorito(lat: number, lon: number, nombre: string, categoria: string, provincia: string) {
-    console.log('🔔 BOTÓN CLICKEADO - Datos recibidos:');
-    console.log('📍 Latitud:', lat);
-    console.log('📍 Longitud:', lon);
-    console.log('🏷️ Nombre:', nombre);
-    console.log('📂 Categoría:', categoria);
-    console.log('🗺️ Provincia:', provincia);
+  // === GUARDAR PUNTO FAVORITO (CON LÓGICA REAL) ===
+  async guardarFavorito(lat: number, lon: number, nombre: string, categoria: string, provincia: string) {
+    console.log('💾 Intentando guardar en Firestore...');
     
-    // ✅ Por ahora solo mostramos un alerta de prueba
-    this.mostrarConfirmacionFavorito(nombre);
+    const resultado = await this.meGustaService.guardarMeGusta({
+      lat: lat,
+      lng: lon, 
+      nombre: nombre,
+      categoria: categoria,
+      provincia: provincia
+    });
+
+    if (resultado) {
+      await this.mostrarConfirmacionFavorito(nombre, true);
+    } else {
+      await this.mostrarConfirmacionFavorito(nombre, false);
+    }
   }
 
-  // === MOSTRAR CONFIRMACIÓN ===
-  private async mostrarConfirmacionFavorito(nombrePunto: string) {
-    const alert = await this.alertController.create({
-      header: '¡Funciona! 🎉',
-      message: `Botón clickeado para: "${nombrePunto}"<br><br>✅ El botón es cliqueable<br>✅ Recibe los datos correctamente`,
-      buttons: ['OK']
-    });
-    await alert.present();
+  // === MOSTRAR CONFIRMACIÓN ACTUALIZADO ===
+  private async mostrarConfirmacionFavorito(nombrePunto: string, exito: boolean) {
+    if (exito) {
+      const alert = await this.alertController.create({
+        header: '¡Agregado a Favoritos! 💖',
+        message: `"${nombrePunto}" ha sido guardado en tus favoritos.`,
+        buttons: ['OK']
+      });
+      await alert.present();
+    } else {
+      const alert = await this.alertController.create({
+        header: 'Ya en Favoritos',
+        message: `"${nombrePunto}" ya está en tu lista de favoritos.`,
+        buttons: ['OK']
+      });
+      await alert.present();
+    }
   }
 
   // === AJUSTAR VISTA DEL MAPA ===
@@ -345,7 +362,7 @@ export class MapaPage implements OnInit, OnDestroy {
         {
           text: 'Volver a Filtros',
           handler: () => {
-            this.router.navigate(['/filtros']);
+            this.router.navigate(['/inicio']);
           }
         }
       ]
@@ -400,7 +417,7 @@ export class MapaPage implements OnInit, OnDestroy {
 
   // === MÉTODOS PÚBLICOS ===
   volverAFiltros() {
-    this.router.navigate(['/filtros'], {
+    this.router.navigate(['/inicio'], {
       queryParams: this.filtrosActuales
     });
   }

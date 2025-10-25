@@ -1,0 +1,35 @@
+.loading-state, .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  text-align: center;
+  padding: 20px;
+  
+  ion-icon {
+    font-size: 64px;
+    color: var(--ion-color-medium);
+    margin-bottom: 16px;
+  }
+  
+  h3 {
+    margin: 8px 0;
+    color: var(--ion-color-dark);
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    margin: 4px 0;
+  }
+}
+
+.fecha {
+  font-size: 12px;
+  color: var(--ion-color-medium);
+}
+
+ion-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
