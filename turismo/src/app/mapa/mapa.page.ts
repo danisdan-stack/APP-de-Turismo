@@ -35,6 +35,11 @@ export class MapaPage implements OnInit, OnDestroy {
     console.log('Página de mapa con Leaflet inicializada');
     
     this.configurarIconosLeaflet();
+      (window as any).centrarEnPuntoPopup = (lat: number, lon: number) => {
+    this.centrarEnPuntoDesdePopup(lat, lon);
+  };
+  this.configurarIconosLeaflet();
+  
     
     setTimeout(() => {
       this.inicializarMapa();
@@ -259,6 +264,10 @@ private mostrarPuntoFavoritoEnMapa(params: any) {
   }
 
   private crearPopupContent(punto: PuntoInteres): string {
+   
+
+
+    // ✅ Escapar comillas en el nombre para evitar errores
     const nombreSeguro = (punto.nombre || 'Sin nombre').replace(/'/g, "\\'");
     
     return `
@@ -268,9 +277,10 @@ private mostrarPuntoFavoritoEnMapa(params: any) {
         <small>${punto.provincia || 'Provincia no especificada'}</small><br>
         <small style="color: #888;">${punto.lat.toFixed(4)}, ${punto.lon.toFixed(4)}</small>
         
+        <!-- ✅ BOTÓN PARA GUARDAR FAVORITO -->
         <div style="margin-top: 12px; padding: 8px 0; border-top: 1px solid #eee;">
           <button 
-            id="btn-favorito-${punto.lat}-${punto.lon}"
+            onclick="guardarFavorito(${punto.lat}, ${punto.lon}, '${nombreSeguro}', '${punto.categoria}', '${punto.provincia}')"
             style="
               background: #3880ff; 
               color: white; 
@@ -284,13 +294,36 @@ private mostrarPuntoFavoritoEnMapa(params: any) {
             "
             onmouseover="this.style.background='#2e6bd1'"
             onmouseout="this.style.background='#3880ff'"
+            
           >
             💖 Guardar como favorito
+          </button>
+
+           <button 
+            onclick="centrarEnPuntoPopup(${punto.lat}, ${punto.lon})"
+            style="
+              background: #10dc60; 
+              color: white; 
+              border: none; 
+              padding: 8px 16px; 
+              border-radius: 20px; 
+              cursor: pointer; 
+              font-size: 12px;
+              font-weight: bold;
+              transition: background 0.3s;
+              margin: 4px;
+            "
+            onmouseover="this.style.background='#0ec254'"
+            onmouseout="this.style.background='#10dc60'"
+          >
+            📍 Centrar en mapa
           </button>
         </div>
       </div>
     `;
   }
+
+
 
   async guardarFavorito(lat: number, lon: number, nombre: string, categoria: string, provincia: string) {
     console.log('💾 Intentando guardar en Firestore...');
@@ -453,7 +486,7 @@ private mostrarPuntoFavoritoEnMapa(params: any) {
         }
       ]
     });
-    await alert.present();
+    //await alert.present();
   }
 
   private centrarEnPunto(punto: PuntoInteres) {
@@ -509,4 +542,14 @@ private mostrarPuntoFavoritoEnMapa(params: any) {
       this.map.remove();
     }
   }
+  private centrarEnPuntoDesdePopup(lat: number, lon: number) {
+  console.log('📍 Centrando en punto desde popup:', lat, lon);
+  
+  if (this.map) {
+    this.map.setView([lat, lon], 14, {
+      animate: true,
+      duration: 1
+    });
+  }
+}
 }
