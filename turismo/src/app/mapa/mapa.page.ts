@@ -2,8 +2,7 @@ import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/co
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingController, AlertController } from '@ionic/angular';
 import { OverpassService, PuntoInteres, FiltrosBusqueda } from '../components/services/overpass.service';
-
-// ✅ Leaflet directo
+import { MeGustaService } from '../services/megusta';
 import * as L from 'leaflet';
 
 @Component({
@@ -15,18 +14,17 @@ import * as L from 'leaflet';
 export class MapaPage implements OnInit, OnDestroy {
   @ViewChild('mapContainer', { static: true }) mapContainer!: ElementRef;
 
-  // Estado de la aplicación
   puntos: PuntoInteres[] = [];
   cargando: boolean = false;
   error: string = '';
   filtrosActuales: FiltrosBusqueda = {};
 
-  // Variables de Leaflet directo
   private map!: L.Map;
   private markers: L.Marker[] = [];
 
   constructor(
     private overpassService: OverpassService,
+    private meGustaService: MeGustaService,
     private loadingController: LoadingController,
     private alertController: AlertController,
     private route: ActivatedRoute,
@@ -36,24 +34,13 @@ export class MapaPage implements OnInit, OnDestroy {
   ngOnInit() {
     console.log('Página de mapa con Leaflet inicializada');
     
-    // ✅ PASO 1: Exponer la función para el popup
-    (window as any).guardarFavorito = (lat: number, lon: number, nombre: string, categoria: string, provincia: string) => {
-      this.guardarFavorito(lat, lon, nombre, categoria, provincia);
-    };
-     (window as any).centrarEnPuntoPopup = (lat: number, lon: number) => {
-    if (this.map) {
-      this.map.setView([lat, lon], 14, {
-        animate: true,
-        duration: 1
-      });
-     
-    }
-  };
-    
-    // ✅ SOLUCIÓN: Configurar iconos antes de inicializar
     this.configurarIconosLeaflet();
+      (window as any).centrarEnPuntoPopup = (lat: number, lon: number) => {
+    this.centrarEnPuntoDesdePopup(lat, lon);
+  };
+  this.configurarIconosLeaflet();
+  
     
-    // Inicializar mapa después de que la vista esté lista
     setTimeout(() => {
       this.inicializarMapa();
     }, 100);
@@ -61,30 +48,96 @@ export class MapaPage implements OnInit, OnDestroy {
     this.route.queryParams.subscribe(params => {
       console.log('Parámetros recibidos en mapa:', params);
       
-      const filtros: FiltrosBusqueda = {
-        provincia: params['provincia'],
-        categoria: params['categoria'],
-        paisaje: params['paisaje']
-      };
-
-      if (filtros.provincia || filtros.paisaje) {
-        this.filtrosActuales = filtros;
-        this.buscarConFiltros(filtros);
+      // ✅ DETECTAR SI VIENE DE FAVORITOS
+      if (params['desdeFavoritos'] && params['lat'] && params['lng']) {
+        console.log('📍 Viene de favoritos - mostrando punto específico');
+        this.mostrarPuntoFavorito(params);
       } else {
-        console.log('No hay filtros - mostrando mapa vacío');
-        this.puntos = [];
-        this.limpiarMarcadores();
-        // Centrar mapa en Argentina si no hay filtros
-        if (this.map) {
-          this.map.setView([-34.6037, -58.3816], 5);
+        // Búsqueda normal con filtros
+        const filtros: FiltrosBusqueda = {
+          provincia: params['provincia'],
+          categoria: params['categoria'],
+          paisaje: params['paisaje']
+        };
+
+        if (filtros.provincia || filtros.paisaje) {
+          this.filtrosActuales = filtros;
+          this.buscarConFiltros(filtros);
+        } else {
+          console.log('No hay filtros - mostrando mapa vacío');
+          this.puntos = [];
+          this.limpiarMarcadores();
+          if (this.map) {
+            this.map.setView([-34.6037, -58.3816], 5);
+          }
         }
       }
     });
   }
 
-  // ✅ MÉTODO NUEVO - Configurar iconos de Leaflet
+// ✅ MÉTODO CORREGIDO - ESPERAR MAPA
+private mostrarPuntoFavorito(params: any) {
+  // Esperar a que el mapa esté inicializado
+  const esperarMapa = setInterval(() => {
+    if (this.map) {
+      clearInterval(esperarMapa);
+      this.mostrarPuntoFavoritoEnMapa(params);
+    }
+  }, 100);
+}
+
+// ✅ NUEVO MÉTODO SEPARADO PARA MOSTRAR EN MAPA
+private mostrarPuntoFavoritoEnMapa(params: any) {
+  const puntoFavorito: PuntoInteres = {
+    id: Date.now(),
+    tipo: 'favorito',
+    nombre: params['nombre'] || 'Sin nombre',
+    categoria: params['categoria'] || 'Sin categoría',
+    lat: parseFloat(params['lat']),
+    lon: parseFloat(params['lng']),
+    provincia: params['provincia'] || 'Sin provincia',
+    tags: {}
+  };
+
+  console.log('📍 Mostrando punto favorito:', puntoFavorito);
+
+  // Limpiar marcadores anteriores
+  this.limpiarMarcadores();
+  
+  // Crear solo el marcador del favorito
+  if (puntoFavorito.lat && puntoFavorito.lon) {
+    const marcador = L.marker([puntoFavorito.lat, puntoFavorito.lon])
+      .addTo(this.map)
+      .bindPopup(this.crearPopupContentFavorito(puntoFavorito))
+      .openPopup();
+
+    this.markers.push(marcador);
+    
+    // Centrar el mapa en el punto favorito
+    this.map.setView([puntoFavorito.lat, puntoFavorito.lon], 14);
+    
+    console.log('✅ Punto favorito mostrado y centrado en el mapa');
+  } else {
+    console.error('❌ Coordenadas inválidas para punto favorito');
+  }
+}
+
+  // ✅ NUEVO MÉTODO PARA POPUP DE FAVORITOS (sin botón guardar)
+  private crearPopupContentFavorito(punto: PuntoInteres): string {
+    return `
+      <div style="text-align: center; min-width: 220px;">
+        <strong style="font-size: 14px;">${punto.nombre || 'Sin nombre'}</strong><br>
+        <em style="color: #666;">${punto.categoria}</em><br>
+        <small>${punto.provincia || 'Provincia no especificada'}</small><br>
+        <small style="color: #888;">${punto.lat.toFixed(4)}, ${punto.lon.toFixed(4)}</small>
+        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+          <small style="color: #3880ff;">⭐ Este es uno de tus favoritos</small>
+        </div>
+      </div>
+    `;
+  }
+
   private configurarIconosLeaflet() {
-    // Fix para los iconos de Leaflet
     const iconDefault = L.Icon.Default.prototype as any;
     delete iconDefault._getIconUrl;
     
@@ -97,9 +150,7 @@ export class MapaPage implements OnInit, OnDestroy {
     console.log('✅ Iconos de Leaflet configurados');
   }
 
-  // === INICIALIZAR MAPA LEAFLET ===
   private inicializarMapa() {
-    // Verificar que el contenedor existe
     if (!this.mapContainer?.nativeElement) {
       console.error('Contenedor del mapa no encontrado');
       return;
@@ -108,12 +159,10 @@ export class MapaPage implements OnInit, OnDestroy {
     try {
       this.map = L.map(this.mapContainer.nativeElement).setView([-34.6037, -58.3816], 5);
 
-      // ✅ Asegurar que el mapa se redimensione correctamente
       setTimeout(() => {
         this.map.invalidateSize();
       }, 300);
 
-      // Capa base OpenStreetMap
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 18
@@ -125,7 +174,6 @@ export class MapaPage implements OnInit, OnDestroy {
     }
   }
 
-  // === BUSCAR CON FILTROS ===
   private async buscarConFiltros(filtros: FiltrosBusqueda) {
     console.log('Buscando con filtros:', filtros);
     
@@ -164,11 +212,9 @@ export class MapaPage implements OnInit, OnDestroy {
     }
   }
 
-  // === ACTUALIZAR MAPA CON PUNTOS (LEAFLET DIRECTO) ===
   private actualizarMapaConPuntos(puntos: PuntoInteres[]) {
     console.log('🔍 Actualizando mapa con puntos:', puntos.length);
     
-    // Limpiar marcadores anteriores
     this.limpiarMarcadores();
 
     if (puntos.length === 0) {
@@ -176,7 +222,6 @@ export class MapaPage implements OnInit, OnDestroy {
       return;
     }
 
-    // Crear marcadores Leaflet directo
     puntos.forEach(punto => {
       if (punto.lat && punto.lon) {
         console.log('📍 Creando marcador en:', punto.lat, punto.lon, punto.nombre);
@@ -184,8 +229,24 @@ export class MapaPage implements OnInit, OnDestroy {
         const marcador = L.marker([punto.lat, punto.lon])
           .addTo(this.map)
           .bindPopup(this.crearPopupContent(punto))
+          .on('popupopen', () => {
+            setTimeout(() => {
+              const boton = document.getElementById(`btn-favorito-${punto.lat}-${punto.lon}`);
+              if (boton) {
+                boton.onclick = () => {
+                  this.guardarFavorito(
+                    punto.lat, 
+                    punto.lon, 
+                    punto.nombre || 'Sin nombre', 
+                    punto.categoria, 
+                    punto.provincia || ''
+                  );
+                };
+              }
+            }, 100);
+          })
           .on('click', () => {
-            
+            this.mostrarInfoPunto(punto);
           });
 
         this.markers.push(marcador);
@@ -194,9 +255,7 @@ export class MapaPage implements OnInit, OnDestroy {
 
     console.log('📌 Total de marcadores creados:', this.markers.length);
 
-    // Ajustar vista del mapa para mostrar todos los marcadores
     if (this.markers.length > 0) {
-      // ✅ Forzar redimensionamiento del mapa
       setTimeout(() => {
         this.map.invalidateSize();
         this.ajustarVistaMapa();
@@ -204,7 +263,6 @@ export class MapaPage implements OnInit, OnDestroy {
     }
   }
 
-  // === CREAR CONTENIDO DEL POPUP ===
   private crearPopupContent(punto: PuntoInteres): string {
    
 
@@ -265,40 +323,52 @@ export class MapaPage implements OnInit, OnDestroy {
     `;
   }
 
-  // === GUARDAR PUNTO FAVORITO (SIN LÓGICA POR AHORA) ===
-  guardarFavorito(lat: number, lon: number, nombre: string, categoria: string, provincia: string) {
-    console.log('🔔 BOTÓN CLICKEADO - Datos recibidos:');
-    console.log('📍 Latitud:', lat);
-    console.log('📍 Longitud:', lon);
-    console.log('🏷️ Nombre:', nombre);
-    console.log('📂 Categoría:', categoria);
-    console.log('🗺️ Provincia:', provincia);
+
+
+  async guardarFavorito(lat: number, lon: number, nombre: string, categoria: string, provincia: string) {
+    console.log('💾 Intentando guardar en Firestore...');
     
-    // ✅ Por ahora solo mostramos un alerta de prueba
-    this.mostrarConfirmacionFavorito(nombre);
-  }
-
-  // === MOSTRAR CONFIRMACIÓN ===
-  private async mostrarConfirmacionFavorito(nombrePunto: string) {
-    const alert = await this.alertController.create({
-      header: '¡Funciona! 🎉',
-      message: `Botón clickeado para: "${nombrePunto}"<br><br>✅ El botón es cliqueable<br>✅ Recibe los datos correctamente`,
-      buttons: ['OK']
+    const resultado = await this.meGustaService.guardarMeGusta({
+      lat: lat,
+      lng: lon, 
+      nombre: nombre,
+      categoria: categoria,
+      provincia: provincia
     });
-    await alert.present();
+
+    if (resultado) {
+      await this.mostrarConfirmacionFavorito(nombre, true);
+    } else {
+      await this.mostrarConfirmacionFavorito(nombre, false);
+    }
   }
 
-  // === AJUSTAR VISTA DEL MAPA ===
+  private async mostrarConfirmacionFavorito(nombrePunto: string, exito: boolean) {
+    if (exito) {
+      const alert = await this.alertController.create({
+        header: '¡Agregado a Favoritos! 💖',
+        message: `"${nombrePunto}" ha sido guardado en tus favoritos.`,
+        buttons: ['OK']
+      });
+      await alert.present();
+    } else {
+      const alert = await this.alertController.create({
+        header: 'Ya en Favoritos',
+        message: `"${nombrePunto}" ya está en tu lista de favoritos.`,
+        buttons: ['OK']
+      });
+      await alert.present();
+    }
+  }
+
   private ajustarVistaMapa() {
     if (this.markers.length === 0) return;
 
     try {
       if (this.markers.length === 1) {
-        // Centrar en el único punto
         const punto = this.puntos[0];
         this.map.setView([punto.lat, punto.lon], 13);
       } else {
-        // Ajustar para mostrar todos los marcadores
         const group = L.featureGroup(this.markers);
         this.map.fitBounds(group.getBounds().pad(0.1), {
           maxZoom: 15,
@@ -311,7 +381,6 @@ export class MapaPage implements OnInit, OnDestroy {
     }
   }
 
-  // === LIMPIAR MARCADORES ===
   private limpiarMarcadores() {
     this.markers.forEach(marker => {
       if (this.map && this.map.hasLayer(marker)) {
@@ -321,7 +390,6 @@ export class MapaPage implements OnInit, OnDestroy {
     this.markers = [];
   }
 
-  // === MÉTODOS AUXILIARES ===
   private generarMensajeBusqueda(filtros: FiltrosBusqueda): string {
     if (filtros.paisaje) {
       const paisaje = filtros.paisaje === 'montañas' ? 'montañas y cerros' : 'ríos y mar';
@@ -378,7 +446,7 @@ export class MapaPage implements OnInit, OnDestroy {
         {
           text: 'Volver a Filtros',
           handler: () => {
-            this.router.navigate(['/filtros']);
+            this.router.navigate(['/inicio']);
           }
         }
       ]
@@ -397,12 +465,42 @@ export class MapaPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  
+  private async mostrarInfoPunto(punto: PuntoInteres) {
+    const alert = await this.alertController.create({
+      header: punto.nombre || 'Punto turístico',
+      message: `
+        <strong>Categoría:</strong> ${punto.categoria}<br>
+        <strong>Provincia:</strong> ${punto.provincia || 'No especificada'}<br>
+        <strong>Coordenadas:</strong> ${punto.lat.toFixed(4)}, ${punto.lon.toFixed(4)}
+      `,
+      buttons: [
+        {
+          text: 'Cerrar',
+          role: 'cancel'
+        },
+        {
+          text: 'Centrar en mapa',
+          handler: () => {
+            this.centrarEnPunto(punto);
+          }
+        }
+      ]
+    });
+    //await alert.present();
+  }
 
-  // === MÉTODOS PÚBLICOS ===
+  private centrarEnPunto(punto: PuntoInteres) {
+    if (this.map) {
+      this.map.setView([punto.lat, punto.lon], 14, {
+        animate: true,
+        duration: 1
+      });
+    }
+  }
+
   volverAFiltros() {
-    this.router.navigate(['/filtros'], {
-      queryParams: this.filtrosActuales
+    this.router.navigate(['/inicio'], {
+      queryParams: {} // Limpiar parámetros
     });
   }
 
@@ -444,4 +542,14 @@ export class MapaPage implements OnInit, OnDestroy {
       this.map.remove();
     }
   }
+  private centrarEnPuntoDesdePopup(lat: number, lon: number) {
+  console.log('📍 Centrando en punto desde popup:', lat, lon);
+  
+  if (this.map) {
+    this.map.setView([lat, lon], 14, {
+      animate: true,
+      duration: 1
+    });
+  }
+}
 }

@@ -1,37 +1,53 @@
 <ion-header [translucent]="true">
-  <ion-toolbar class="arriba">
-    <ion-img src="/turismo/src/app/imagenes/TurisMatch-logo.png" alt="TurisMatch-logo">
-    </ion-img>
-    <div class="titulo" slot="end">
-      <ion-title>
-        <h1>
-          Favoritos
-        </h1>
-      </ion-title>
-    </div>
+  <ion-toolbar>
+    <ion-title>Mis Favoritos 💖</ion-title>
   </ion-toolbar>
 </ion-header>
 
+<ion-content [fullscreen]="true">
+  <!-- ✅ ESTADO DE CARGA -->
+  <div *ngIf="cargando" class="loading-state">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando tus favoritos...</p>
+  </div>
 
-<!--
-Lista para agregar los puntos que dieron me gusta 
-usar ngfor para recorer en la lista y mostrar directamente la lista de me gusta
--->
-<ion-content [fullscreen]="true" class="login-page">
-  <ion-list class="lista">
-    <ion-item>
-      <div class="nombre" (click)="hola()">
-        <p>
-          Nombre del lugar
-        </p>
-      </div>
-      <div class="boton-buscar" slot="end">
-        <ion-button class="buscar" shape="round" size="defauld" color="success" (click)="direccionar()">
-          <ion-icon name="navigate-outline"></ion-icon>
-        </ion-button>
-      </div>
-    </ion-item>
-  </ion-list>
+  <!-- ✅ LISTA VACÍA -->
+  <div *ngIf="!cargando && misFavoritos.length === 0" class="empty-state">
+    <ion-icon name="heart-outline" size="large"></ion-icon>
+    <h3>No tienes favoritos aún</h3>
+    <p>Explora el mapa y guarda tus lugares favoritos</p>
+    <ion-button routerLink="/mapa" fill="solid" color="primary">
+      <ion-icon name="map-outline" slot="start"></ion-icon>
+      Explorar Mapa
+    </ion-button>
+  </div>
+
+  <!-- ✅ LISTA DE FAVORITOS -->
+  <div *ngIf="!cargando && misFavoritos.length > 0">
+    <ion-list>
+      <ion-item *ngFor="let favorito of misFavoritos">
+        <ion-label>
+          <h2>{{ favorito.nombre_lugar }}</h2>
+          <p>{{ favorito.categoria }} • {{ favorito.provincia }}</p>
+          <p class="fecha">
+            Guardado: {{ favorito.fechaCreacion?.toDate() | date:'medium' }}
+          </p>
+        </ion-label>
+        
+        <ion-buttons slot="end">
+          <!-- ✅ BOTÓN PARA IR AL MAPA -->
+          <ion-button fill="clear" (click)="verEnMapa(favorito)">
+            <ion-icon name="navigate-outline" color="primary"></ion-icon>
+          </ion-button>
+          
+          <!-- ✅ NUEVO BOTÓN ELIMINAR -->
+          <ion-button fill="clear" (click)="eliminarFavorito(favorito)" color="danger">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-item>
+    </ion-list>
+  </div>
 </ion-content>
 
 <!-- 🔹 NAVEGACIÓN DE TABS EN LA PARTE INFERIOR -->
