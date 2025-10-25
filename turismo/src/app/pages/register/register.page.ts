@@ -1,68 +1,123 @@
-import { Component } from '@angular/core';
-import { Auth } from '../../services/auth';
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
+// Asegúrate de que las rutas sean correctas
+import { AuthService } from 'src/app/services/auth';
+import { DataService, UserProfile } from 'src/app/services/datas'; 
 
 @Component({
-  selector: 'app-registro', // El selector que se va a usar en otras páginas
-  templateUrl: './register.page.html', // Indica  HTML
-  styleUrls: ['./register.page.scss'], // Indica  CSS
+  selector: 'app-register',
+  templateUrl: './register.page.html',
+  styleUrls: ['./register.page.scss'],
   standalone: false
 })
-export class RegisterPage {
-  // 1. Variables para almacenar los datos del formulario
-  nombre = '';
-  apellido = '';
-  telefono = '';
+export class RegisterPage implements OnInit {
+  
+  // Campos del formulario
+  nombre = ''; 
+  apellido = ''; 
+  telefono = ''; 
   email = '';
   password = '';
   confirmPassword = '';
-  router: any;
+  
+  // No necesitamos 'id' aquí, ya que se toma del UID de Firebase
+  // id: string | null = null; 
 
-  constructor(private authService: Auth, private controladorAlerta: AlertController) { } // 2. Inyectas el servicio
+  constructor(
+    private authService: AuthService, 
+    private dataService: DataService, 
+    private router: Router,
+    private alertController: AlertController
+  ) { }
+
+  ngOnInit() {}
+
+  volverAlLogin() {
+    this.router.navigate(['']);
+  }
 
   async onRegister() {
-    try {
-      // 3. Llama a la lógica de tu compañero
-      await this.authService.register(this.email, this.password);// Éxito: Navegar al login o a la página principal
-      console.log('Registro exitoso!');
-      // TODO: Aquí deberías navegar a otra página usando el Router
-    } catch (e: any) {
-      // 4. Muestra el error de Firebase al usuario
-      console.error('Fallo al registrar:', e.message);
-      // TODO: Mostrar una alerta de Ionic con el mensaje de error (e.message)
-    }
-    if (this.password !== this.confirmPassword) { //Verificamos que las contraseñas coincidan
-      await this.showAlert('Error', 'Las contraseñas ingresadas no coinciden.');
+    
+    // 1. VALIDACIÓN SIMPLE Y UNIFICADA: Chequea campos vacíos y coincidencia de contraseñas
+    const camposRequeridos = [this.nombre, this.apellido, this.telefono, this.email, this.password, this.confirmPassword];
+    
+    // Chequeo de campos vacíos
+    const camposVacios = camposRequeridos.some(campo => !campo || String(campo).trim() === '');
+    
+    if (camposVacios) {
+      this.showAlert('Error de Registro', 'Por favor, completa todos los campos.');
       return;
     }
 
-    //Aca hacemos la verificacion de la contraseña para que sea más segura
-    const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{6,}$/;
-    if (!passwordRegex.test(this.password)) {
-      await this.showAlert(
-        'Contraseña Débil',
-        'La contraseña debe tener al menos 6 caracteres, incluir una letra mayúscula (A-Z) y al menos un número (0-9).'
-      );
+    // Chequeo de contraseñas
+    if (this.password !== this.confirmPassword) {
+      this.showAlert('Error de Contraseña', 'Las contraseñas no coinciden.');
       return;
     }
-    if (!this.nombre || !this.apellido || !this.telefono || !this.email || !this.password || !this.confirmPassword) {
-      this.showAlert('Error', 'Debes completar todos los campos del formulario para registrarte.');  
-      return; 
+    
+    try {
+      // --- PASO 1: REGISTRO EN FIREBASE AUTH ---
+      const userCredential = await this.authService.register(this.email, this.password);
+
+      if (userCredential && userCredential.user) {
+        
+        const userId = userCredential.user.uid; 
+        console.log('✅ Usuario autenticado con UID:', userId);
+        
+        // --- PASO 2: PREPARAR DATOS PARA FIRESTORE ---
+        const initialUserData: UserProfile = {
+          email: this.email.trim(),
+          nombre: this.nombre.trim(),
+          apellido: this.apellido.trim(),
+          telefono: this.telefono.trim(),
+          // Se usa el UID de Firebase como ID principal del documento
+          id: userId, 
+
+
+        };
+        
+        // --- PASO 3: GUARDAR EL PERFIL EN FIRESTORE ---
+        // Se usa el UID como clave del documento para asegurar unicidad
+        await this.dataService.saveUserProfile(userId, initialUserData); 
+        
+        // --- PASO 4: ÉXITO Y REDIRECCIÓN ---
+        this.showAlert('¡Registro Exitoso!', `Bienvenido ${this.nombre}.`);
+        this.router.navigate(['/inicio']);
+        
+      }
+
+    } catch (e: any) {
+      let errorMessage = 'Fallo al registrar. Inténtalo de nuevo.';
+      
+      // Manejo de errores de Firebase Auth (más conciso)
+      switch (e.code) {
+        case 'auth/email-already-in-use':
+          errorMessage = 'Este correo ya está registrado.';
+          break;
+        case 'auth/weak-password':
+          errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'El formato del correo es inválido.';
+          break;
+        default:
+          console.error('❌ Fallo al registrar:', e);
+          break;
+      }
+      this.showAlert('Error de Autenticación', errorMessage);
     }
   }
 
-  //Funcion que muestra alerta
+  /**
+   * Muestra un cuadro de diálogo de alerta
+   */
   async showAlert(header: string, message: string) {
-    const alert = await this.controladorAlerta.create({ // Usando la instancia inyectada
+    const alert = await this.alertController.create({
       header: header,
       message: message,
-      buttons: ['Aceptar']
+      buttons: ['OK']
     });
     await alert.present();
   }
-  irARegistro() {
-    // Esto es para que el boton de registro nos redireccione a la pagina
-    this.router.navigate(['/register']); 
-
-}
 }

@@ -1,120 +1,297 @@
 .login-page {
-  // Degrade del fondo de LOGIN
+
   --background: linear-gradient(180deg, #74e76d 0%, #15c9ff 100%);
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
-  padding: 30px 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 16px 36px;
+  position: relative;
 }
-.input-group,
-.button-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center; // Centra los elementos dentro de estos contenedores
-    width: 100%;
+
+/* Contenedor principal que usás en el HTML */
+.content-container {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
-.logo-container {
-  margin-top: 30px;
-  h1 {
-    // Estilo para TURIS MATCH
-    color: #fff;
-    font-size: 2.2em;
-    font-weight: 700;
-    margin-bottom: 0;
-  }
-  .bienvenido-text {
-    // Estilo para Bienvenido
-    color: #fff;
-    font-size: 1.2em;
-    font-weight: 500;
-  }
-  // (Aquí agregarías estilos para el icono/imagen del logo si lo usas)
+
+/* TITULO */
+.top-title {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 6px;
 }
+.top-title h1 {
+  color: #ffffff;
+  font-size: 2.0rem;
+  font-weight: 700;
+  margin: 6px 0 0 0;
+  letter-spacing: 0.5px;
+}
+
+/* Bienvenido alineado a la izquierda dentro del bloque */
+.bienvenido-text {
+  width: 100%;
+  text-align: left;
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 6px 0 10px 6px;
+}
+
+/* Grupo de inputs */
+.input-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+/* Coincide con ion-item class="input-field" en tu HTML */
 .input-field {
-  --background: rgba(255, 255, 255, 0.9); // Fondo blanco con ligera transparencia
-  --border-radius: 10px; // Bordes redondeados
-  margin-bottom: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); // Sombra sutil
-  --padding-start: 15px;
-  --highlight-color-focused: transparent; // Opcional: elimina el borde de enfoque de Ionic
-  width: 90%; 
-  max-width: 350px;
-
-  ion-input {
-    color: #333; // Color de texto oscuro
-  }
+  width: 100%;
+  --background: rgba(255, 255, 255, 0.93);
+  --border-radius: 12px;
+  --padding-start: 14px;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.08);
+  height: 52px;
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
 }
+
+/* Asegurar que el ion-input ocupe todo el ancho y tenga padding */
+.input-field ion-input {
+  color: #333;
+  font-size: 1rem;
+  width: 100%;
+  padding: 6px 0;
+}
+
+/* Grupo de botones (no lo modifico más allá de lo esencial) */
+.button-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Botones principales */
 .main-button {
-  --border-radius: 30px; // Forma de "píldora"
+  width: 100%;
+  max-width: 360px;
   height: 50px;
-  font-weight: bold;
-  text-transform: none; // No queremos mayúsculas por defecto
+  --border-radius: 12px;
+  font-weight: 700;
+  text-transform: none;
 }
 
-// Botón de Iniciar Sesión (Iniciar sesión)
-.login-button {
-    height: 45px; 
-  --background: rgba(255, 255, 255, 0.65); // Claro y semitransparente
-  --color: #333; // Texto oscuro
-  margin-bottom: 15px;
-   width: 90%; 
-  max-width: 350px;
-}
-
-// Botón de Registrarse (Registrarse)
-.register-button {
-  height: 45px; 
-  --background: rgba(255, 255, 255, 0.4); // Fondo claro, pero más transparente
-  --color: #333; 
-  border: none; 
-  margin-top: 30px; 
-  width: 90%; 
-  max-width: 350px; 
-}
-
-// Botón de Google 'G'
-.social-login-separator {
-    text-align: center;
-    margin: 20px 0;
-}
+/* Botón Google: mantiene el icono a la izquierda */
 .google-button {
-    --background: #fff;
-    --color: #333;
-    width: 50px;
-    height: 50px;
-    font-size: 1.2em;
-    font-weight: bold;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --background: #fff;
+  --color: #0b3b3a;
+  width: 100%;
+  max-width: 360px;
+  height: 48px;
+  --border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 16px;
+  gap: 12px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+  font-weight: 600;
+}
+.google-button ion-icon {
+  font-size: 22px;
+  margin-right: 6px;
 }
 
+/* Texto olvidaste */
 .forgot-password {
-    color: #333; // Color del texto claro
-    text-align: center;
-    font-size: 0.9em;
-    margin-bottom: 25px;
+  color: #fff;
+  font-size: 0.95rem;
+  text-align: center;
+  margin-top: 4px;
 }
 
-// Permisos GPS (Parte inferior)
+/* Permisos GPS fijo abajo */
 .gps-permission {
-    color: #fffefe;
-    font-weight: 500;
-    font-size: 0.9em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute; // Para pegarlo al fondo
-    bottom: 20px;
-    left: 0;
-    right: 0;
-    margin-top: 20px;
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-weight: 600;
+  gap: 10px;
+}
+.gps-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid rgba(250,250,250,0.9);
 }
 
-.gps-dot {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    background-color: #fff; // Punto blanco
-    border-radius: 50%;
-    margin-right: 8px;
-    border: 1px solid #faf8f8; // Borde 
+/* Responsive */
+@media (max-width: 420px) {
+  .top-title h1 {
+    font-size: 1.9rem;
+  }
+  .input-field { height: 50px; }
+  .main-button { height: 48px; }
+  .google-button { height: 46px; padding-left: 14px; }
+}
+/* Encabezado TurisMatch */
+.tm-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto 8px;
+  padding: 4px 6px;
+}
+
+.tm-logo-wrap {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.12);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.tm-logo {
+  width: 42px;
+  height: 42px;
+  display: block;
+}
+
+/* Texto principal: TURIS MATCH */
+.tm-title-wrap {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.tm-title {
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: 0.6px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.tm-match {
+  color: #ffffff;
+  font-weight: 600;
+  opacity: 0.95;
+}
+
+/* Tagline */
+.tm-tagline {
+  color: rgba(255,255,255,0.9);
+  font-size: 0.78rem;
+  margin-top: 2px;
+  opacity: 0.92;
+}
+
+/* Ajustes responsivos: reducir logo/texto en pantallas pequeñas */
+@media (max-width: 360px) {
+  .tm-logo-wrap { width: 48px; height: 48px; }
+  .tm-logo { width: 36px; height: 36px; }
+  .tm-title { font-size: 0.98rem; }
+  .tm-tagline { font-size: 0.72rem; }
+}
+/* Cabecera con logo + texto (como en la segunda imagen) */
+.top-title.row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* centra toda la cabecera horizontalmente */
+  gap: 18px;
+  margin-bottom: 6px;
+}
+
+/* Logo redondeado */
+.app-logo {
+  width: 76px;        /* ajusta tamaño si querés más pequeño/grande */
+  height: 76px;
+  border-radius: 18px; /* redondeado como en la imagen */
+  object-fit: cover;
+  background: #ffffff; /* opcional: blanco detrás si tu logo tiene fondo transparente */
+  padding: 6px;        /* pequeño padding para "piel" blanca */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+}
+
+/* Texto dividido en dos líneas para imitar estilo */
+.title-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* que las letras se alineen a la izquierda (mejor lectura) */
+  line-height: 0.9;
+}
+
+/* Ajustes visuales para cada línea */
+.title-line1 {
+  color: #ffffff;
+  font-size: 2.2rem;  /* "TURIS" más grande */
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.title-line2 {
+  color: #ffffff;
+  font-size: 1.2rem;  /* "MATCH" más pequeño y espaciado */
+  font-weight: 300;
+  letter-spacing: 4px;
+  margin-top: 6px;
+}
+
+/* Responsive: en pantallas pequeñas empilamos el texto debajo del logo */
+@media (max-width: 420px) {
+  .top-title.row {
+    gap: 12px;
+    justify-content: flex-start; /* para que quede similar a la referencia móvil */
+  }
+  .app-logo {
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+  }
+  .title-line1 { font-size: 1.8rem; }
+  .title-line2 { font-size: 1.0rem; letter-spacing: 3px; }
+}
+.tm-logo-wrap {
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  object-fit: contain;
+  background: #fff;
+  padding: 6px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.06);
 }

@@ -1,54 +1,62 @@
-<ion-header>
-  <ion-toolbar color="dark">
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/login"></ion-back-button>
-    </ion-buttons>
-    
-    <ion-title>Registro</ion-title>
-    
-    <ion-buttons slot="end">
-    </ion-buttons>
+<ion-header translucent="true">
+  <ion-toolbar class="custom-toolbar">
+    <div class="toolbar-left">
+      <img src="assets/icon/logo.png" alt="TurisMatch" class="logo" />
+      <div class="site-title">TURIS MATCH</div>
+    </div>
+
+    <div class="toolbar-right">
+      <ion-button fill="clear" class="account-button" routerLink="/login" >
+        <ion-icon name="person-outline" class="account-icon"></ion-icon>
+        <ion-label class="account-label">Mi cuenta</ion-label>
+      </ion-button>
+    </div>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding" style="--background: #1e3f48;">
+<ion-content [fullscreen]="true" class="register-content">
+  <div class="register-box">
+    <h1>Registro</h1>
 
-  <div class="logo-container ion-text-center ion-padding">
-    <img src="assets/icon/turisMatch_logo.png" alt="Logo TurisMatch" class="app-logo"> 
+    <ion-list class="form-list" lines="none">
+      <ion-item class="input-item" lines="none">
+        <div class="input-field">
+          <ion-input placeholder="Nombre" [(ngModel)]="nombre" type="text"></ion-input>
+        </div>
+      </ion-item>
+
+      <ion-item class="input-item" lines="none">
+        <div class="input-field">
+          <ion-input placeholder="Apellido" [(ngModel)]="apellido" type="text"></ion-input>
+        </div>
+      </ion-item>
+
+      <ion-item class="input-item" lines="none">
+        <div class="input-field">
+          <ion-input placeholder="Teléfono" [(ngModel)]="telefono" type="tel"></ion-input>
+        </div>
+      </ion-item>
+
+      <ion-item class="input-item" lines="none">
+        <div class="input-field">
+          <ion-input placeholder="Email" [(ngModel)]="email" type="email"></ion-input>
+        </div>
+      </ion-item>
+
+      <ion-item class="input-item" lines="none">
+        <div class="input-field">
+          <ion-input placeholder="Contraseña" [(ngModel)]="password" type="password"></ion-input>
+        </div>
+      </ion-item>
+
+      <ion-item class="input-item" lines="none">
+        <div class="input-field">
+          <ion-input placeholder="Repita Contraseña" [(ngModel)]="confirmPassword" type="password"></ion-input>
+        </div>
+      </ion-item>
+    </ion-list>
+
+    <ion-button expand="block" class="btn-crear" (click)="onRegister()">Crear Cuenta</ion-button>
+      <ion-button expand="block" class="btn-crear" (click)="volverAlLogin()">Volver al Login</ion-button>
   </div>
-
-  <h1 class="registro-title">Registro</h1>
-
-  <ion-list lines="none" class="input-list">
-    <ion-item class="custom-input-item">
-      <ion-input [(ngModel)]="nombre" placeholder="Nombre"></ion-input>
-    </ion-item>
-
-    <ion-item class="custom-input-item">
-      <ion-input [(ngModel)]="apellido" placeholder="Apellido"></ion-input>
-    </ion-item>
-
-    <ion-item class="custom-input-item">
-      <ion-input type="tel" [(ngModel)]="telefono" placeholder="Teléfono"></ion-input>
-    </ion-item>
-
-    <ion-item class="custom-input-item">
-      <ion-input type="email" [(ngModel)]="email" placeholder="Email"></ion-input>
-    </ion-item>
-
-    <ion-item class="custom-input-item">
-      <ion-input type="password" [(ngModel)]="password" placeholder="Contraseña"></ion-input>
-    </ion-item>
-
-    <ion-item class="custom-input-item">
-      <ion-input type="password" [(ngModel)]="confirmPassword" placeholder="Repita Contraseña"></ion-input>
-    </ion-item>
-  </ion-list>
-
-  <ion-button 
-    expand="full" 
-    class="create-account-button ion-margin-top" 
-    (click)="onRegister()">
-    Crear Cuenta
-  </ion-button>
 </ion-content>

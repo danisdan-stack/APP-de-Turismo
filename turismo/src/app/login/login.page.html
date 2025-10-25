@@ -1,39 +1,55 @@
 <ion-content class="login-page">
+  <!-- contenedor central; mantiene todo centrado en la pantalla -->
+  <header class="tm-header">
+  <div class="tm-logo-wrap" role="img" aria-label="Logotipo TurisMatch">
+   <img src="assets/icon/logo.png" alt="Logo TurisMatch" class="app-logo" />
 
-    <div class="logo-container ion-text-center">
-        <h1>TURIS MATCH</h1>
-        <p class="bienvenido-text">Bienvenido</p>
-    </div>
+  </div>
 
+  <div class="tm-title-wrap">
+    <div class="tm-title">TURIS <span class="tm-match">MATCH</span></div>
+    <div class="tm-tagline">Destinos a tu medida</div>
+  </div>
+</header>
+
+  
+  <div class="content-container">
+   
+    <div class="bienvenido-text">Bienvenido</div>
+
+    
     <div class="input-group">
-        <ion-item class="input-field" lines="none">
-            <ion-input type="email" placeholder="Email" [(ngModel)]="email"></ion-input>
-        </ion-item>
+      <ion-item class="input-field" lines="none">
+        <ion-input type="email" placeholder="Email" [(ngModel)]="email"></ion-input>
+      </ion-item>
 
-        <ion-item class="input-field" lines="none">
-            <ion-input type="password" placeholder="Contraseña" [(ngModel)]="password"></ion-input>
-        </ion-item>
+      <ion-item class="input-field" lines="none">
+        <ion-input type="password" placeholder="Contraseña" [(ngModel)]="password"></ion-input>
+      </ion-item>
     </div>
 
+    <!-- botones -->
     <div class="button-group">
-        <ion-button expand="full" class="main-button login-button" (click)="iniciarSesion()">
-            Iniciar sesión
-        </ion-button>
+      <ion-button expand="full" class="main-button login-button" (click)="iniciarSesion()">
+        Iniciar sesión
+      </ion-button>
 
-        <div class="social-login-separator">
-            <ion-button shape="round" fill="solid" class="google-button">
-                G
-            </ion-button>
-        </div>
-        <p class="forgot-password">¿Olvidaste tu contraseña?</p>
+      <ion-button expand="full" fill="solid" class="google-button">
+        <ion-icon name="logo-google"></ion-icon>
+        Continuar con Google
+      </ion-button>
 
-        <ion-button expand="full" fill="solid" class="main-button register-button" (click)="irARegistro()">
-            Registrarse
-        </ion-button>
+      <a (click)="forgotPassword()">¿Olvidaste tu contraseña?</a>
+
+      <ion-button expand="full" class="main-button register-button" (click)="irARegistro()">
+        Registrarse
+      </ion-button>
     </div>
+  </div>
 
-    <div class="gps-permission ion-text-center">
-        <span class="gps-dot"></span> Permisos GPS
-    </div>
-
+  <!-- permisos GPS -->
+  <div class="gps-permission">
+    <div class="gps-dot"></div>
+    Permisos GPS
+  </div>
 </ion-content>
