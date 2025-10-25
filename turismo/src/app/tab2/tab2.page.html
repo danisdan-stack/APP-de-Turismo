@@ -39,6 +39,11 @@
           <ion-button fill="clear" (click)="verEnMapa(favorito)">
             <ion-icon name="navigate-outline" color="primary"></ion-icon>
           </ion-button>
+          
+          <!-- ✅ NUEVO BOTÓN ELIMINAR -->
+          <ion-button fill="clear" (click)="eliminarFavorito(favorito)" color="danger">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
         </ion-buttons>
       </ion-item>
     </ion-list>
