@@ -32,19 +32,35 @@ export class MapaPage implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    console.log('Página de mapa con Leaflet inicializada');
-    
-    this.configurarIconosLeaflet();
-      (window as any).centrarEnPuntoPopup = (lat: number, lon: number) => {
+  console.log('Página de mapa con Leaflet inicializada');
+  
+  // ✅ CONFIGURAR FUNCIONES GLOBALES PRIMERO
+  (window as any).centrarEnPuntoPopup = (lat: number, lon: number) => {
     this.centrarEnPuntoDesdePopup(lat, lon);
   };
+  
+  (window as any).guardarFavorito = (lat: number, lon: number, nombre: string, categoria: string, provincia: string) => {
+    this.guardarFavorito(lat, lon, nombre, categoria, provincia);
+  };
+  
+  // ✅ NUEVAS FUNCIONES PARA NAVEGACIÓN DESDE POPUP
+  (window as any).irAInicio = () => {
+    this.router.navigate(['/inicio']);
+  };
+  
+  (window as any).irAFavoritos = () => {
+    this.router.navigate(['/favoritos']);
+  };
+  
+  (window as any).irAMiCuenta = () => {
+    this.router.navigate(['/mi-cuenta']);
+  };
+  
   this.configurarIconosLeaflet();
   
-    
-    setTimeout(() => {
-      this.inicializarMapa();
-    }, 100);
-    
+  setTimeout(() => {
+    this.inicializarMapa();
+  }, 100)  
     this.route.queryParams.subscribe(params => {
       console.log('Parámetros recibidos en mapa:', params);
       
@@ -75,68 +91,130 @@ export class MapaPage implements OnInit, OnDestroy {
     });
   }
 
-// ✅ MÉTODO CORREGIDO - ESPERAR MAPA
-private mostrarPuntoFavorito(params: any) {
-  // Esperar a que el mapa esté inicializado
-  const esperarMapa = setInterval(() => {
-    if (this.map) {
-      clearInterval(esperarMapa);
-      this.mostrarPuntoFavoritoEnMapa(params);
+  // ✅ MÉTODO CORREGIDO - ESPERAR MAPA
+  private mostrarPuntoFavorito(params: any) {
+    // Esperar a que el mapa esté inicializado
+    const esperarMapa = setInterval(() => {
+      if (this.map) {
+        clearInterval(esperarMapa);
+        this.mostrarPuntoFavoritoEnMapa(params);
+      }
+    }, 100);
+  }
+
+  // ✅ NUEVO MÉTODO SEPARADO PARA MOSTRAR EN MAPA
+  private mostrarPuntoFavoritoEnMapa(params: any) {
+    const puntoFavorito: PuntoInteres = {
+      id: Date.now(),
+      tipo: 'favorito',
+      nombre: params['nombre'] || 'Sin nombre',
+      categoria: params['categoria'] || 'Sin categoría',
+      lat: parseFloat(params['lat']),
+      lon: parseFloat(params['lng']),
+      provincia: params['provincia'] || 'Sin provincia',
+      tags: {}
+    };
+
+    console.log('📍 Mostrando punto favorito:', puntoFavorito);
+
+    // Limpiar marcadores anteriores
+    this.limpiarMarcadores();
+    
+    // Crear solo el marcador del favorito
+    if (puntoFavorito.lat && puntoFavorito.lon) {
+      const marcador = L.marker([puntoFavorito.lat, puntoFavorito.lon])
+        .addTo(this.map)
+        .bindPopup(this.crearPopupContentFavorito(puntoFavorito))
+        .openPopup();
+
+      this.markers.push(marcador);
+      
+      // Centrar el mapa en el punto favorito
+      this.map.setView([puntoFavorito.lat, puntoFavorito.lon], 14);
+      
+      console.log('✅ Punto favorito mostrado y centrado en el mapa');
+    } else {
+      console.error('❌ Coordenadas inválidas para punto favorito');
     }
-  }, 100);
-}
-
-// ✅ NUEVO MÉTODO SEPARADO PARA MOSTRAR EN MAPA
-private mostrarPuntoFavoritoEnMapa(params: any) {
-  const puntoFavorito: PuntoInteres = {
-    id: Date.now(),
-    tipo: 'favorito',
-    nombre: params['nombre'] || 'Sin nombre',
-    categoria: params['categoria'] || 'Sin categoría',
-    lat: parseFloat(params['lat']),
-    lon: parseFloat(params['lng']),
-    provincia: params['provincia'] || 'Sin provincia',
-    tags: {}
-  };
-
-  console.log('📍 Mostrando punto favorito:', puntoFavorito);
-
-  // Limpiar marcadores anteriores
-  this.limpiarMarcadores();
-  
-  // Crear solo el marcador del favorito
-  if (puntoFavorito.lat && puntoFavorito.lon) {
-    const marcador = L.marker([puntoFavorito.lat, puntoFavorito.lon])
-      .addTo(this.map)
-      .bindPopup(this.crearPopupContentFavorito(puntoFavorito))
-      .openPopup();
-
-    this.markers.push(marcador);
-    
-    // Centrar el mapa en el punto favorito
-    this.map.setView([puntoFavorito.lat, puntoFavorito.lon], 14);
-    
-    console.log('✅ Punto favorito mostrado y centrado en el mapa');
-  } else {
-    console.error('❌ Coordenadas inválidas para punto favorito');
   }
-}
 
-  // ✅ NUEVO MÉTODO PARA POPUP DE FAVORITOS (sin botón guardar)
-  private crearPopupContentFavorito(punto: PuntoInteres): string {
-    return `
-      <div style="text-align: center; min-width: 220px;">
-        <strong style="font-size: 14px;">${punto.nombre || 'Sin nombre'}</strong><br>
-        <em style="color: #666;">${punto.categoria}</em><br>
-        <small>${punto.provincia || 'Provincia no especificada'}</small><br>
-        <small style="color: #888;">${punto.lat.toFixed(4)}, ${punto.lon.toFixed(4)}</small>
-        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
-          <small style="color: #3880ff;">⭐ Este es uno de tus favoritos</small>
-        </div>
+// ✅ NUEVO MÉTODO PARA POPUP DE FAVORITOS (con botones de navegación)
+private crearPopupContentFavorito(punto: PuntoInteres): string {
+  return `
+    <div style="text-align: center; min-width: 250px;">
+      <strong style="font-size: 14px;">${punto.nombre || 'Sin nombre'}</strong><br>
+      <em style="color: #666;">${punto.categoria}</em><br>
+      <small>${punto.provincia || 'Provincia no especificada'}</small><br>
+      <small style="color: #888;">${punto.lat.toFixed(4)}, ${punto.lon.toFixed(4)}</small>
+      <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+        <small style="color: #3880ff;">⭐ Este es uno de tus favoritos</small>
       </div>
-    `;
-  }
+      
+      <!-- ✅ BOTONES DE NAVEGACIÓN -->
+      <div style="margin-top: 12px; padding: 8px 0; border-top: 1px solid #eee; display: flex; justify-content: space-between; gap: 4px;">
+        <button 
+          onclick="irAInicio()"
+          style="
+            background: #3880ff; 
+            color: white; 
+            border: none; 
+            padding: 6px 12px; 
+            border-radius: 15px; 
+            cursor: pointer; 
+            font-size: 10px;
+            font-weight: bold;
+            flex: 1;
+            transition: background 0.3s;
+          "
+          onmouseover="this.style.background='#2e6bd1'"
+          onmouseout="this.style.background='#3880ff'"
+        >
+          🏠 Inicio
+        </button>
 
+        <button 
+          onclick="irAFavoritos()"
+          style="
+            background: #ff4081; 
+            color: white; 
+            border: none; 
+            padding: 6px 12px; 
+            border-radius: 15px; 
+            cursor: pointer; 
+            font-size: 10px;
+            font-weight: bold;
+            flex: 1;
+            transition: background 0.3s;
+          "
+          onmouseover="this.style.background='#e03670'"
+          onmouseout="this.style.background='#ff4081'"
+        >
+          💖 Favoritos
+        </button>
+
+        <button 
+          onclick="irAMiCuenta()"
+          style="
+            background: #10dc60; 
+            color: white; 
+            border: none; 
+            padding: 6px 12px; 
+            border-radius: 15px; 
+            cursor: pointer; 
+            font-size: 10px;
+            font-weight: bold;
+            flex: 1;
+            transition: background 0.3s;
+          "
+          onmouseover="this.style.background='#0ec254'"
+          onmouseout="this.style.background='#10dc60'"
+        >
+          👤 Mi Cuenta
+        </button>
+      </div>
+    </div>
+  `;
+}
   private configurarIconosLeaflet() {
     const iconDefault = L.Icon.Default.prototype as any;
     delete iconDefault._getIconUrl;
@@ -228,26 +306,7 @@ private mostrarPuntoFavoritoEnMapa(params: any) {
         
         const marcador = L.marker([punto.lat, punto.lon])
           .addTo(this.map)
-          .bindPopup(this.crearPopupContent(punto))
-          .on('popupopen', () => {
-            setTimeout(() => {
-              const boton = document.getElementById(`btn-favorito-${punto.lat}-${punto.lon}`);
-              if (boton) {
-                boton.onclick = () => {
-                  this.guardarFavorito(
-                    punto.lat, 
-                    punto.lon, 
-                    punto.nombre || 'Sin nombre', 
-                    punto.categoria, 
-                    punto.provincia || ''
-                  );
-                };
-              }
-            }, 100);
-          })
-          .on('click', () => {
-            this.mostrarInfoPunto(punto);
-          });
+          .bindPopup(this.crearPopupContent(punto));
 
         this.markers.push(marcador);
       }
@@ -264,11 +323,10 @@ private mostrarPuntoFavoritoEnMapa(params: any) {
   }
 
   private crearPopupContent(punto: PuntoInteres): string {
-   
-
-
     // ✅ Escapar comillas en el nombre para evitar errores
     const nombreSeguro = (punto.nombre || 'Sin nombre').replace(/'/g, "\\'");
+    const categoriaSegura = (punto.categoria || '').replace(/'/g, "\\'");
+    const provinciaSegura = (punto.provincia || '').replace(/'/g, "\\'");
     
     return `
       <div style="text-align: center; min-width: 220px;">
@@ -280,7 +338,7 @@ private mostrarPuntoFavoritoEnMapa(params: any) {
         <!-- ✅ BOTÓN PARA GUARDAR FAVORITO -->
         <div style="margin-top: 12px; padding: 8px 0; border-top: 1px solid #eee;">
           <button 
-            onclick="guardarFavorito(${punto.lat}, ${punto.lon}, '${nombreSeguro}', '${punto.categoria}', '${punto.provincia}')"
+            onclick="guardarFavorito(${punto.lat}, ${punto.lon}, '${nombreSeguro}', '${categoriaSegura}', '${provinciaSegura}')"
             style="
               background: #3880ff; 
               color: white; 
@@ -291,15 +349,15 @@ private mostrarPuntoFavoritoEnMapa(params: any) {
               font-size: 12px;
               font-weight: bold;
               transition: background 0.3s;
+              margin: 4px;
             "
             onmouseover="this.style.background='#2e6bd1'"
             onmouseout="this.style.background='#3880ff'"
-            
           >
             💖 Guardar como favorito
           </button>
 
-           <button 
+          <button 
             onclick="centrarEnPuntoPopup(${punto.lat}, ${punto.lon})"
             style="
               background: #10dc60; 
@@ -322,8 +380,6 @@ private mostrarPuntoFavoritoEnMapa(params: any) {
       </div>
     `;
   }
-
-
 
   async guardarFavorito(lat: number, lon: number, nombre: string, categoria: string, provincia: string) {
     console.log('💾 Intentando guardar en Firestore...');
@@ -465,30 +521,6 @@ private mostrarPuntoFavoritoEnMapa(params: any) {
     await alert.present();
   }
 
-  private async mostrarInfoPunto(punto: PuntoInteres) {
-    const alert = await this.alertController.create({
-      header: punto.nombre || 'Punto turístico',
-      message: `
-        <strong>Categoría:</strong> ${punto.categoria}<br>
-        <strong>Provincia:</strong> ${punto.provincia || 'No especificada'}<br>
-        <strong>Coordenadas:</strong> ${punto.lat.toFixed(4)}, ${punto.lon.toFixed(4)}
-      `,
-      buttons: [
-        {
-          text: 'Cerrar',
-          role: 'cancel'
-        },
-        {
-          text: 'Centrar en mapa',
-          handler: () => {
-            this.centrarEnPunto(punto);
-          }
-        }
-      ]
-    });
-    //await alert.present();
-  }
-
   private centrarEnPunto(punto: PuntoInteres) {
     if (this.map) {
       this.map.setView([punto.lat, punto.lon], 14, {
@@ -537,19 +569,27 @@ private mostrarPuntoFavoritoEnMapa(params: any) {
     return `${this.puntos.length} puntos encontrados`;
   }
 
-  ngOnDestroy() {
+ngOnDestroy() {
+  if (this.map) {
+    this.map.remove();
+  }
+  
+  // ✅ LIMPIAR FUNCIONES GLOBALES
+  delete (window as any).centrarEnPuntoPopup;
+  delete (window as any).guardarFavorito;
+  delete (window as any).irAInicio;
+  delete (window as any).irAFavoritos;
+  delete (window as any).irAMiCuenta;
+}
+
+  private centrarEnPuntoDesdePopup(lat: number, lon: number) {
+    console.log('📍 Centrando en punto desde popup:', lat, lon);
+    
     if (this.map) {
-      this.map.remove();
+      this.map.setView([lat, lon], 14, {
+        animate: true,
+        duration: 1
+      });
     }
   }
-  private centrarEnPuntoDesdePopup(lat: number, lon: number) {
-  console.log('📍 Centrando en punto desde popup:', lat, lon);
-  
-  if (this.map) {
-    this.map.setView([lat, lon], 14, {
-      animate: true,
-      duration: 1
-    });
-  }
-}
 }
