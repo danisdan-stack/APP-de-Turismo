@@ -13,6 +13,8 @@ import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { environment } from '../environments/environment';
+import { MeGustaService } from './services/megusta'; 
+
 
 @NgModule({
     declarations: [AppComponent],
@@ -28,7 +30,8 @@ import { environment } from '../environments/environment';
         // --- Providers de Firebase ---
         provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
         provideFirestore(() => getFirestore()),
-        provideAuth(() => getAuth())
+        provideAuth(() => getAuth()),
+        MeGustaService
     ],
     bootstrap: [AppComponent],
 })
