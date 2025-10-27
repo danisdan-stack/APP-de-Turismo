@@ -12,7 +12,10 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider,
   updatePassword,
-  deleteUser,  
+  deleteUser,
+  signInWithPopup, // ✅ AGREGAR
+  GoogleAuthProvider, // ✅ AGREGAR
+  UserCredential   
 } from '@angular/fire/auth';
 
 import { 
@@ -239,6 +242,57 @@ private async deleteUserFromDatabase(userId: string): Promise<void> {
       displayName: fullName || null
     });
   }
+  // =====================================================
+// 🔹 LOGIN CON GOOGLE
+// =====================================================
+async loginWithGoogle(): Promise<UserCredential> {
+  try {
+    const provider = new GoogleAuthProvider();
+    
+    // Agregar scopes adicionales si necesitas
+    provider.addScope('profile');
+    provider.addScope('email');
+    
+    const result = await signInWithPopup(this.firebaseAuth, provider);
+    
+    if (result.user?.uid) {
+      this.userId = result.user.uid;
+      localStorage.setItem('userUID', result.user.uid);
+    }
+    
+    console.log('✅ Login con Google exitoso:', result.user?.email);
+    return result;
+    
+  } catch (error: any) {
+    console.error('❌ Error en login con Google:', error);
+    throw error;
+  }
+}
+
+// =====================================================
+// 🔹 OBTENER CREDENCIALES DE GOOGLE (para reautenticación)
+// =====================================================
+getGoogleCredentials(): any {
+  const user = this.firebaseAuth.currentUser;
+  if (!user) return null;
+  
+  // Para usuarios de Google, puedes usar esto para reautenticación
+  const provider = new GoogleAuthProvider();
+  return provider;
+}
+
+// =====================================================
+// 🔹 VERIFICAR SI ES USUARIO DE GOOGLE
+// =====================================================
+isGoogleUser(): boolean {
+  const user = this.firebaseAuth.currentUser;
+  if (!user) return false;
+  
+  // Verificar si el proveedor es Google
+  return user.providerData.some(provider => 
+    provider.providerId === 'google.com'
+  );
+}
 
   // =====================================================
   // 🔹 Obtener UID guardado
