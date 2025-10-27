@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, from, map, catchError } from 'rxjs';
+import { Observable, forkJoin, of, map, catchError } from 'rxjs';
 import { PROVINCIAS, CATEGORIAS_OVERPASS, PAISAJES_OVERPASS, OVERPASS_CONFIG, TIPOS_ELEMENTOS } from '../constants/overpass.constants';
-
 export interface PuntoInteres {
   id: number;
   tipo: string;
@@ -149,45 +148,34 @@ export class OverpassService {
     return '';
   }
 
-  // ====== Método principal para buscar puntos ======
-  buscarPuntos(filtros: FiltrosBusqueda): Observable<PuntoInteres[]> {
-    return new Observable(observer => {
-      // Validar filtros
-      if (!filtros.provincia && !filtros.paisaje) {
-        observer.error('Se requiere al menos provincia o paisaje');
+// ====== Método principal para buscar puntos ======
+buscarPuntos(filtros: FiltrosBusqueda): Observable<PuntoInteres[]> {
+  return new Observable(observer => {
+    // Validar filtros
+    if (!filtros.provincia && !filtros.paisaje) {
+      observer.error('Se requiere al menos provincia o paisaje');
+      return;
+    }
+
+    if (filtros.provincia) {
+      // 🔹 MODO NORMAL: Búsqueda por provincia específica
+      const codigo = this.obtenerCodigoProvincia(filtros.provincia);
+      if (!codigo) {
+        observer.error(`Provincia no válida: ${filtros.provincia}`);
         return;
       }
 
-      // Si hay paisaje, no requiere provincia específica
-      // Pero para Overpass necesitamos un área, así que usamos Argentina completa
-      let codigoISO: string;
-
-      if (filtros.provincia) {
-        // Modo normal: usar provincia específica
-        const codigo = this.obtenerCodigoProvincia(filtros.provincia);
-        if (!codigo) {
-          observer.error(`Provincia no válida: ${filtros.provincia}`);
-          return;
-        }
-        codigoISO = codigo;
-      } else {
-        // Modo paisaje: usar Argentina completa (AR)
-        codigoISO = "AR";
-      }
-
-      // Construir query
-      const query = this.construirQueryOverpass(codigoISO, filtros);
+      const query = this.construirQueryOverpass(codigo, filtros);
       
       if (!query) {
         observer.error('No se pudo generar la query para los filtros seleccionados');
         return;
       }
 
-      // Llamar a Overpass
       this.llamarOverpass(query).subscribe({
         next: (elementos) => {
           const puntos = this.procesarElementos(elementos, filtros);
-          console.log(`✅ ${puntos.length} puntos encontrados`);
+          console.log(`✅ ${puntos.length} puntos encontrados en ${filtros.provincia}`);
           observer.next(puntos);
           observer.complete();
         },
@@ -196,9 +184,68 @@ export class OverpassService {
           observer.error(error);
         }
       });
-    });
-  }
 
+    } else {
+      // 🔹 MODO PAISAJE: Búsqueda en TODA ARGENTINA
+      console.log('🔍 Buscando paisaje en toda Argentina...');
+      
+      const provincias = PROVINCIAS.map(p => p.iso);
+      console.log('📍 Provincias a buscar:', provincias.length);
+
+      // Array para almacenar todas las búsquedas
+      const todasLasBusquedas: Observable<PuntoInteres[]>[] = [];
+
+      // Crear una búsqueda para cada provincia
+      provincias.forEach(provinciaISO => {
+        const query = this.construirQueryOverpass(provinciaISO, filtros);
+        
+        if (query) {
+          const busqueda = this.llamarOverpass(query).pipe(
+            map(elementos => this.procesarElementos(elementos, filtros)),
+            catchError(error => {
+              console.warn(`⚠️ Provincia ${provinciaISO}: error -`, error.message);
+              return of([]); // Retornar array vacío si hay error
+            })
+          );
+          todasLasBusquedas.push(busqueda);
+        }
+      });
+
+      // Combinar todas las búsquedas
+      if (todasLasBusquedas.length === 0) {
+        observer.error('No se pudieron generar queries para ninguna provincia');
+        return;
+      }
+
+      // Esperar a que todas las búsquedas terminen
+      forkJoin(todasLasBusquedas).subscribe({
+        next: (resultadosArray) => {
+          // ✅ CORREGIDO: Usar reduce en lugar de flat()
+          const todosLosPuntos = resultadosArray.reduce((acc, val) => acc.concat(val), []);
+          
+          // ✅ CORREGIDO: Especificar tipo del parámetro
+          const seen = new Set();
+          const puntosUnicos = todosLosPuntos.filter((punto: PuntoInteres) => {
+            const key = `${punto.lat.toFixed(4)}_${punto.lon.toFixed(4)}`;
+            if (seen.has(key)) {
+              return false;
+            }
+            seen.add(key);
+            return true;
+          });
+          
+          console.log(`🎯 RESULTADO FINAL: ${puntosUnicos.length} puntos únicos encontrados en toda Argentina`);
+          observer.next(puntosUnicos);
+          observer.complete();
+        },
+        error: (error) => {
+          console.error('❌ Error en búsqueda nacional:', error);
+          observer.error(error);
+        }
+      });
+    }
+  });
+}
   // ====== Llamar a la API de Overpass ======
   private llamarOverpass(query: string): Observable<any[]> {
     const formData = new FormData();

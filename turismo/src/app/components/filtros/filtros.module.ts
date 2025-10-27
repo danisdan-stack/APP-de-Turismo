@@ -7,10 +7,10 @@ import { FiltrosComponent } from './filtros.component';
 @NgModule({
   declarations: [FiltrosComponent],
   imports: [
-    CommonModule,    // ← Para *ngIf, *ngFor
-    IonicModule,     // ← Para componentes Ionic (ion-card, ion-button, etc.)
-    RouterModule     // ← Para navegación con Router
+    CommonModule,    
+    IonicModule,     
+    RouterModule     
   ],
-  exports: [FiltrosComponent] // ← IMPORTANTE: para usar en otros módulos
+  exports: [FiltrosComponent] 
 })
 export class FiltrosModule { }
