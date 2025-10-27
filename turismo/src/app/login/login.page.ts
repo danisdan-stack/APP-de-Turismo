@@ -2,7 +2,8 @@ import { Component, inject } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth';
-import { ProfileService } from 'src/app/services/perfil'; // ✅ AGREGAR
+import { ProfileService } from 'src/app/services/perfil';
+import { Localizacion } from 'src/app/services/localizacion'; // ✅ IMPORTAR SERVICIO
 
 // ✅ API MODULAR
 import { Auth as FirebaseAuth, sendPasswordResetEmail } from '@angular/fire/auth';
@@ -11,41 +12,102 @@ import { Auth as FirebaseAuth, sendPasswordResetEmail } from '@angular/fire/auth
   selector: 'app-login',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
-  standalone: false,
+  standalone:false
+
 })
 export class LoginPage {
   // Variables para capturar los datos de los inputs del HTML
   email: string = '';
   password: string = '';
+  loading: boolean = false;
+  gpsHabilitado: boolean = true;
   
   // ✅ Inyectar Firebase Auth modular (con alias para evitar conflicto)
   private firebaseAuth = inject(FirebaseAuth);
 
   constructor(
     private authService: AuthService,
-    private profileService: ProfileService, // ✅ AGREGAR
+    private profileService: ProfileService,
+    private localizacion: Localizacion, // ✅ INYECTAR SERVICIO LOCALIZACION
     private router: Router,
     public alertController: AlertController
-  ) { }
+  ) { 
+    this.limpiarFormulario();
+  }
 
-  // --- NUEVO MÉTODO: LOGIN CON GOOGLE ---
-  async continuarConGoogle() {
+  ngOnInit() {
+    this.limpiarFormulario();
+    this.cargarEstadoGPS();
+  }
+
+  ionViewWillEnter() {
+    this.limpiarFormulario();
+    this.cargarEstadoGPS();
+  }
+
+  // ✅ MODIFICADO: USAR SERVICIO LOCALIZACION
+  cargarEstadoGPS() {
+    this.gpsHabilitado = this.localizacion.estaGPSHabilitado();
+    console.log('📍 Estado GPS cargado desde servicio:', this.gpsHabilitado);
+  }
+  probarEstadoGPS() {
+  console.log('📍 Estado actual GPS:', this.gpsHabilitado);
+  console.log('📍 localStorage GPS:', localStorage.getItem('gpsHabilitado'));
+  console.log('📍 Servicio GPS:', this.localizacion.estaGPSHabilitado());
+  
+  // Cambiar estado manualmente para probar
+  this.gpsHabilitado = !this.gpsHabilitado;
+  localStorage.setItem('gpsHabilitado', JSON.stringify(this.gpsHabilitado));
+  console.log('📍 Nuevo estado GPS:', this.gpsHabilitado);
+}
+
+  // ✅ MODIFICADO: USAR SERVICIO LOCALIZACION
+  async onGPSChange(event: any) {
+    const habilitado = event.detail.checked;
+    
     try {
-      // 1. Login/Registro con Google
+      // ✅ USAR EL SERVICIO PARA CAMBIAR ESTADO
+      const exito = await this.localizacion.cambiarEstadoGPS(habilitado);
+      
+      if (habilitado) {
+        if (exito) {
+          console.log('📍 GPS habilitado correctamente');
+          this.showAlert('GPS Activado', 'Ubicación habilitada correctamente');
+        } else {
+          // Si falló la activación, revertir el checkbox
+          this.gpsHabilitado = false;
+          this.showAlert('GPS No Disponible', 'No se pudieron obtener los permisos de ubicación. Verifica que tengas los permisos habilitados en tu dispositivo.');
+        }
+      } else {
+        console.log('📍 GPS deshabilitado por el usuario');
+        this.showAlert('GPS Desactivado', 'La ubicación ha sido deshabilitada');
+      }
+    } catch (error) {
+      console.error('Error cambiando estado GPS:', error);
+      // Revertir en caso de error
+      this.gpsHabilitado = !habilitado;
+      this.showAlert('Error', 'Ocurrió un error al cambiar el estado del GPS');
+    }
+  }
+
+  // ❌ ELIMINADO: solicitarPermisosGPS() - YA LO MANEJA EL SERVICIO
+
+  async continuarConGoogle() {
+    if (this.loading) return;
+    
+    this.loading = true;
+    try {
       const result = await this.authService.loginWithGoogle();
       
-      // 2. Verificar si es primera vez (si no existe perfil en Firestore)
       const perfilExistente = await this.profileService.getUserProfile(result.user.uid);
       
       if (!perfilExistente) {
-        // 3. Crear perfil automáticamente
         await this.profileService.createUserProfileFromGoogle(result.user);
         this.showAlert('¡Bienvenido!', 'Tu cuenta de Google ha sido registrada exitosamente.');
       } else {
         this.showAlert('¡Bienvenido de vuelta!', 'Sesión iniciada con Google.');
       }
       
-      // 4. Redirigir a inicio
       this.router.navigate(['/inicio']);
       
     } catch (error: any) {
@@ -56,93 +118,170 @@ export class LoginPage {
         errorMessage = 'El inicio de sesión fue cancelado.';
       } else if (error.code === 'auth/popup-blocked') {
         errorMessage = 'El popup fue bloqueado. Permite popups para este sitio.';
+      } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = 'Error de conexión. Verifica tu internet.';
       }
       
       this.showAlert('Error Google', errorMessage);
+    } finally {
+      this.loading = false;
     }
   }
 
-  // --- FUNCIÓN DE INICIO DE SESIÓN (Botón 'Iniciar sesión') ---
   async iniciarSesion() {
+    if (this.loading) return;
+    
     if (!this.email || !this.password) {
-      this.showAlert('Error', 'Por favor, ingresa tu correo y contraseña.');
+      this.showAlert('Campos requeridos', 'Por favor ingresa email y contraseña');
       return;
     }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.email)) {
+      this.showAlert('Email inválido', 'Por favor ingresa un email válido');
+      return;
+    }
+
+    this.loading = true;
     
     try {
-      const userCredential = await this.authService.login(this.email, this.password);
-      if (userCredential) {
-        const uid = userCredential.user.uid;
-        localStorage.setItem('userUID', uid);
-        this.router.navigateByUrl('/inicio');
-        return userCredential;
-      }
-    } catch (error: any) { 
-      let errorMessage = 'Error desconocido al iniciar sesión.';
+      await this.authService.login(this.email, this.password);
+      this.showAlert('¡Bienvenido!', 'Sesión iniciada correctamente');
       
-      // Manejo de errores específicos de LOGIN
+      this.limpiarFormulario();
+      this.router.navigate(['/inicio']);
+      
+    } catch (error: any) {
+      console.error('Error en login:', error);
+      
+      let errorMessage = 'No se pudo iniciar sesión. ';
+      
       switch (error.code) {
-          case 'auth/wrong-password':
-              errorMessage = 'Contraseña incorrecta.';
-              break;
-          case 'auth/user-not-found':
-          case 'auth/invalid-credential':
-              errorMessage = 'Usuario no encontrado. Revisa tu email.';
-              break;
-          case 'auth/invalid-email':
-              errorMessage = 'El formato del correo es inválido.';
-              break;
-          default:
-              errorMessage = 'Fallo en la conexión. Inténtalo más tarde.';
-              console.error("Firebase Error:", error);
-              break;
+        case 'auth/invalid-credential':
+        case 'auth/wrong-password':
+          errorMessage += 'Email o contraseña incorrectos.';
+          this.password = '';
+          break;
+          
+        case 'auth/user-not-found':
+          errorMessage += 'No existe una cuenta con este email.';
+          break;
+          
+        case 'auth/user-disabled':
+          errorMessage += 'Esta cuenta ha sido deshabilitada.';
+          break;
+          
+        case 'auth/too-many-requests':
+          errorMessage += 'Demasiados intentos fallidos. Intenta más tarde o restablece tu contraseña.';
+          this.password = '';
+          break;
+          
+        case 'auth/network-request-failed':
+          errorMessage += 'Error de conexión. Verifica tu internet.';
+          break;
+          
+        case 'auth/invalid-email':
+          errorMessage += 'El formato del email no es válido.';
+          break;
+          
+        case 'auth/operation-not-allowed':
+          errorMessage += 'El inicio de sesión con email/contraseña no está habilitado.';
+          break;
+          
+        default:
+          errorMessage += 'Error desconocido. Intenta nuevamente.';
+          break;
       }
-      this.showAlert('Acceso Denegado', errorMessage);
+      
+      this.showAlert('Error al iniciar sesión', errorMessage);
+      
+    } finally {
+      this.loading = false;
     }
   }
 
-  // --- FUNCIÓN DE REGISTRO (Botón 'Registrarse') ---
   async registrarse() {
+    if (this.loading) return;
+    
     if (!this.email || !this.password) {
-      this.showAlert('Error', 'Por favor, ingresa email y contraseña para registrarte.');
+      this.showAlert('Campos requeridos', 'Por favor, ingresa email y contraseña para registrarte.');
       return;
     }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.email)) {
+      this.showAlert('Email inválido', 'Por favor ingresa un email válido');
+      return;
+    }
+
+    if (this.password.length < 6) {
+      this.showAlert('Contraseña débil', 'La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    this.loading = true;
 
     try {
       const userCredential = await this.authService.register(this.email, this.password);
       if (userCredential) {
         this.showAlert('¡Registro Exitoso!', 'Bienvenido a TurisMatch. Te hemos iniciado sesión automáticamente.');
-        this.router.navigateByUrl('/home');
+        
+        this.limpiarFormulario();
+        this.router.navigate(['/tabs']);
       }
     } catch (error: any) {
-      let errorMessage = 'Error desconocido al registrarse.';
+      console.error('Error en registro:', error);
       
-      // Manejo de errores específicos de REGISTRO
+      let errorMessage = 'Error al registrarse. ';
+      
       switch (error.code) {
-          case 'auth/email-already-in-use':
-              errorMessage = 'Este correo ya está registrado.';
-              break;
-          case 'auth/weak-password':
-              errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
-              break;
-          case 'auth/invalid-email':
-              errorMessage = 'El formato del correo es inválido.';
-              break;
-          default:
-              errorMessage = 'Fallo en el registro. Inténtalo más tarde.';
-              console.error("Firebase Error:", error);
-              break;
+        case 'auth/email-already-in-use':
+          errorMessage += 'Este correo ya está registrado. ¿Quieres iniciar sesión?';
+          break;
+          
+        case 'auth/weak-password':
+          errorMessage += 'La contraseña debe tener al menos 6 caracteres.';
+          break;
+          
+        case 'auth/invalid-email':
+          errorMessage += 'El formato del correo es inválido.';
+          break;
+          
+        case 'auth/operation-not-allowed':
+          errorMessage += 'El registro con email/contraseña no está habilitado.';
+          break;
+          
+        case 'auth/network-request-failed':
+          errorMessage += 'Error de conexión. Verifica tu internet.';
+          break;
+          
+        default:
+          errorMessage += 'Error desconocido. Intenta nuevamente.';
+          break;
       }
+      
       this.showAlert('Fallo de Registro', errorMessage);
+      
+    } finally {
+      this.loading = false;
     }
   }
   
-  // --- FUNCIÓN AUXILIAR PARA MOSTRAR LA ALERTA (Unificado) ---
   async showAlert(header: string, message: string) {
     const alert = await this.alertController.create({
-        header: header,
-        message: message,
-        buttons: ['OK']
+      header: header,
+      message: message,
+      buttons: ['OK']
+    });
+
+    await alert.present();
+  }
+
+  async showAlertWithOptions(header: string, message: string, buttons: any[]) {
+    const alert = await this.alertController.create({
+      header: header,
+      message: message,
+      buttons: buttons
     });
 
     await alert.present();
@@ -152,9 +291,6 @@ export class LoginPage {
     this.router.navigate(['/register']);
   }
 
-  /**
-   * Muestra el cuadro de diálogo y maneja la lógica de recuperación de contraseña.
-   */
   async forgotPassword() {
     const alert = await this.alertController.create({
       header: 'Recuperar Contraseña',
@@ -163,6 +299,7 @@ export class LoginPage {
           name: 'email',
           type: 'email',
           placeholder: 'Introduce tu correo electrónico',
+          value: this.email
         },
       ],
       buttons: [
@@ -182,17 +319,19 @@ export class LoginPage {
     await alert.present();
   }
 
-  /**
-   * Envía el correo de restablecimiento usando Firebase Auth MODULAR.
-   */
   async sendResetEmail(email: string) {
     if (!email) {
       this.showAlert('Error', 'Debes introducir un correo electrónico.');
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      this.showAlert('Email inválido', 'Por favor ingresa un email válido');
+      return;
+    }
+
     try {
-      // ✅ Usar la función modular con el Firebase Auth inyectado
       await sendPasswordResetEmail(this.firebaseAuth, email);
       this.showAlert('Éxito', 'Se ha enviado un correo electrónico con instrucciones para restablecer tu contraseña.');
     } catch (error: any) {
@@ -202,9 +341,23 @@ export class LoginPage {
         message = 'El correo electrónico no se encuentra registrado en nuestro sistema. Por favor, verifica el mail ingresado.';
       } else if (error.code === 'auth/invalid-email') {
         message = 'Formato de correo electrónico inválido.';
+      } else if (error.code === 'auth/network-request-failed') {
+        message = 'Error de conexión. Verifica tu internet.';
       }
       
       this.showAlert('Error', message);
+    }
+  }
+
+  limpiarFormulario() {
+    this.email = '';
+    this.password = '';
+    console.log('✅ Formulario de login limpiado');
+  }
+
+  onKeyPress(event: any) {
+    if (event.key === 'Enter') {
+      this.iniciarSesion();
     }
   }
 }

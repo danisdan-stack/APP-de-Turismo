@@ -31,7 +31,7 @@ export interface UserProfile {
   email: string;
   nombre?: string;
   apellido?: string;
-  telefono?: string
+  telefono?: string;
 }
 
 @Injectable({
@@ -40,14 +40,16 @@ export interface UserProfile {
 export class AuthService {
   private firebaseAuth = inject(Auth);
   private userId: string | null = null;
-  private firestore = inject(Firestore)
+  private firestore = inject(Firestore);
 
   authState$: Observable<User | null> = user(this.firebaseAuth);
-  currentUser: any;
+  currentUser: User | null = null;
 
   constructor() {
-    // Escucha los cambios de sesión
+    // ✅ MEJORA: Mejor manejo del estado de autenticación
     onAuthStateChanged(this.firebaseAuth, (user) => {
+      this.currentUser = user;
+      
       if (user) {
         this.userId = user.uid;
         localStorage.setItem('userUID', user.uid);
@@ -67,6 +69,29 @@ export class AuthService {
   }
 
   // =====================================================
+  // 🔹 REAUTENTICACIÓN
+  // =====================================================
+  async reauthenticate(password: string): Promise<void> {
+    const user = this.firebaseAuth.currentUser;
+    if (!user) {
+      throw new Error('No hay usuario autenticado');
+    }
+
+    if (!user.email) {
+      throw new Error('El usuario no tiene email');
+    }
+
+    try {
+      const credential = EmailAuthProvider.credential(user.email, password);
+      await reauthenticateWithCredential(user, credential);
+      console.log('✅ Reautenticación exitosa');
+    } catch (error: any) {
+      console.error('❌ Error en reautenticación:', error);
+      throw error;
+    }
+  }
+
+  // =====================================================
   // 🔹 ELIMINAR CUENTA (Compatible con Google y Email)
   // =====================================================
   async deleteUserAccount(currentPassword?: string): Promise<void> {
@@ -81,12 +106,24 @@ export class AuthService {
         if (!currentPassword) {
           throw new Error('Se requiere la contraseña actual para eliminar la cuenta');
         }
-        const credential = EmailAuthProvider.credential(user.email!, currentPassword);
+        
+        if (!user.email) {
+          throw new Error('El usuario no tiene email asociado');
+        }
+
+        const credential = EmailAuthProvider.credential(user.email, currentPassword);
         await reauthenticateWithCredential(user, credential);
+        console.log('✅ Contraseña validada correctamente');
       } else {
         // ✅ PARA USUARIOS GOOGLE: Reautenticación con popup de Google
+        console.log('🔐 Iniciando reautenticación Google...');
         const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ 
+          prompt: 'select_account',
+          login_hint: user.email || '' 
+        });
         await signInWithPopup(this.firebaseAuth, provider);
+        console.log('✅ Reautenticación Google exitosa');
       }
 
       // 2. Eliminar de la base de datos
@@ -97,11 +134,22 @@ export class AuthService {
 
       // 4. Limpiar datos locales
       this.userId = null;
+      this.currentUser = null;
       localStorage.removeItem('userUID');
       
       console.log('✅ Cuenta eliminada completamente');
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error al eliminar cuenta:', error);
+      
+      // ✅ MEJORA: Manejo específico de errores
+      if (error.code === 'auth/requires-recent-login') {
+        throw new Error('Debes volver a iniciar sesión para realizar esta acción');
+      } else if (error.code === 'auth/wrong-password') {
+        throw new Error('Contraseña incorrecta');
+      } else if (error.code === 'auth/network-request-failed') {
+        throw new Error('Error de conexión. Verifica tu internet');
+      }
+      
       throw error;
     }
   }
@@ -116,7 +164,9 @@ export class AuthService {
       console.log('✅ Usuario eliminado de la base de datos');
     } catch (error) {
       console.error('❌ Error al eliminar de la base de datos:', error);
-      throw error;
+      // ✅ MEJORA: No lanzar error para que la cuenta se elimine de Auth igual
+      // Puedes decidir si quieres lanzar el error o solo loguearlo
+      // throw error;
     }
   }
 
@@ -128,39 +178,66 @@ export class AuthService {
     if (!user) throw new Error('No hay usuario autenticado');
 
     try {
-      // Solo para usuarios email (Google no permite cambiar email así)
       if (this.isGoogleUser()) {
         throw new Error('Los usuarios de Google no pueden cambiar su email desde la aplicación');
       }
 
-      const credential = EmailAuthProvider.credential(user.email!, currentPassword);
+      if (!user.email) {
+        throw new Error('El usuario no tiene email actual');
+      }
+
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
       await reauthenticateWithCredential(user, credential);
       await updateEmail(user, newEmail);
 
       console.log(`✅ Email actualizado correctamente a: ${newEmail}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error al actualizar el email:', error);
+      
+      // ✅ MEJORA: Manejo específico de errores
+      if (error.code === 'auth/email-already-in-use') {
+        throw new Error('El email ya está en uso por otra cuenta');
+      } else if (error.code === 'auth/invalid-email') {
+        throw new Error('El formato del email no es válido');
+      } else if (error.code === 'auth/requires-recent-login') {
+        throw new Error('Debes volver a iniciar sesión para cambiar tu email');
+      }
+      
       throw error;
     }
   }
 
+  // =====================================================
+  // 🔹 CAMBIAR CONTRASEÑA
+  // =====================================================
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
     const user = this.firebaseAuth.currentUser;
     if (!user) throw new Error('No hay usuario autenticado');
 
     try {
-      // Solo para usuarios email (Google no tiene contraseña en tu app)
       if (this.isGoogleUser()) {
         throw new Error('Los usuarios de Google no pueden cambiar contraseña desde la aplicación');
       }
 
-      const credential = EmailAuthProvider.credential(user.email!, currentPassword);
+      if (!user.email) {
+        throw new Error('El usuario no tiene email');
+      }
+
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
       await reauthenticateWithCredential(user, credential);
       await updatePassword(user, newPassword);
 
       console.log('✅ Contraseña actualizada correctamente');
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error al cambiar contraseña:', error);
+      
+      // ✅ MEJORA: Manejo específico de errores
+      if (error.code === 'auth/weak-password') {
+        throw new Error('La nueva contraseña es muy débil. Debe tener al menos 6 caracteres');
+      } else if (error.code === 'auth/requires-recent-login') {
+        throw new Error('Debes volver a iniciar sesión para cambiar tu contraseña');
+      }
+      
       throw error;
     }
   }
@@ -168,7 +245,7 @@ export class AuthService {
   // =====================================================
   // 🔹 Registro
   // =====================================================
-  async register(email: string, password: string): Promise<any> {
+  async register(email: string, password: string): Promise<UserCredential> {
     try {
       const result = await createUserWithEmailAndPassword(this.firebaseAuth, email, password);
       console.log("✅ Usuario registrado correctamente:", result.user?.email);
@@ -182,7 +259,7 @@ export class AuthService {
   // =====================================================
   // 🔹 Inicio de sesión
   // =====================================================
-  async login(email: string, password: string): Promise<any> {
+  async login(email: string, password: string): Promise<UserCredential> {
     try {
       const result = await signInWithEmailAndPassword(this.firebaseAuth, email, password);
       if (result.user?.uid) {
@@ -204,17 +281,19 @@ export class AuthService {
     try {
       await signOut(this.firebaseAuth);
       this.userId = null;
+      this.currentUser = null;
       localStorage.removeItem('userUID');
       console.log("👋 Sesión cerrada correctamente");
     } catch (error) {
       console.error("❌ Error al cerrar sesión:", error);
+      throw error;
     }
   }
 
   // =====================================================
   // 🔹 Obtener datos de sesión
   // =====================================================
-  getAuthState() {
+  getAuthState(): Observable<User | null> {
     return this.authState$;
   }
 
@@ -242,12 +321,19 @@ export class AuthService {
     apellido?: string;
   }): Promise<void> {
     const user = this.firebaseAuth.currentUser;
-    if (!user) throw new Error('No user logged in');
+    if (!user) throw new Error('No hay usuario autenticado');
 
     const fullName = `${profileData.nombre || ''} ${profileData.apellido || ''}`.trim();
-    await updateProfile(user, {
-      displayName: fullName || null
-    });
+    
+    try {
+      await updateProfile(user, {
+        displayName: fullName || null
+      });
+      console.log('✅ Perfil actualizado correctamente');
+    } catch (error) {
+      console.error('❌ Error al actualizar perfil:', error);
+      throw error;
+    }
   }
 
   // =====================================================
@@ -258,6 +344,9 @@ export class AuthService {
       const provider = new GoogleAuthProvider();
       provider.addScope('profile');
       provider.addScope('email');
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
       
       const result = await signInWithPopup(this.firebaseAuth, provider);
       
@@ -271,6 +360,13 @@ export class AuthService {
       
     } catch (error: any) {
       console.error('❌ Error en login con Google:', error);
+      
+      if (error.code === 'auth/popup-closed-by-user') {
+        throw new Error('El popup de Google fue cerrado');
+      } else if (error.code === 'auth/popup-blocked') {
+        throw new Error('El popup fue bloqueado. Permite ventanas emergentes');
+      }
+      
       throw error;
     }
   }
@@ -296,5 +392,15 @@ export class AuthService {
 
   getUserId(): string | null {
     return this.userId;
+  }
+
+  // ✅ MEJORA: Nuevo método para verificar autenticación
+  isAuthenticated(): boolean {
+    return this.firebaseAuth.currentUser !== null;
+  }
+
+  // ✅ MEJORA: Obtener email del usuario actual
+  getCurrentUserEmail(): string | null {
+    return this.firebaseAuth.currentUser?.email || null;
   }
 }

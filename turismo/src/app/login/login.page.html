@@ -50,10 +50,15 @@
     </div>
 
     
-    <div class="gps-permission">
-      <div class="gps-dot"></div>
-      Permisos GPS
-    </div>
+<div class="gps-permission">
+  <ion-checkbox 
+    class="gps-toggle custom-checkbox" 
+    [(ngModel)]="gpsHabilitado"
+    (ionChange)="onGPSChange($event)">
+  </ion-checkbox>
+  Permisos GPS
+</div>
+
 
   </div>
 </ion-content>

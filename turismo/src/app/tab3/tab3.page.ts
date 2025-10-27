@@ -13,7 +13,13 @@ import { Router } from '@angular/router';
 export class Tab3Page implements OnInit {
 
   userProfile: UserProfile | null = null;
-  editedProfile: UserProfile | null = null;
+  editedProfile: UserProfile = {
+    id: '',
+    email: '',
+    nombre: '',
+    apellido: '',
+    telefono: ''
+  };
   isEditing = false;
   loading = true;
 
@@ -25,9 +31,6 @@ export class Tab3Page implements OnInit {
     private toastController: ToastController
   ) {}
 
-  // ----------------------------------------------------
-  // 1. NG ON INIT Y LOAD PROFILE
-  // ----------------------------------------------------
   async ngOnInit() {
     this.loading = true;
 
@@ -40,6 +43,11 @@ export class Tab3Page implements OnInit {
         this.router.navigate(['/login']); 
       }
     });
+  }
+
+  // ✅ MÉTODO: Para usar en el template
+  isGoogleUser(): boolean {
+    return this.auth.isGoogleUser();
   }
 
   async onLogout() {
@@ -56,8 +64,15 @@ export class Tab3Page implements OnInit {
       this.loading = true;
       const userData = await this.profileService.getUserProfileById(uid);
 
+      // ✅ ASIGNACIÓN SEGURA CON VALORES POR DEFECTO
       this.userProfile = userData;
-      this.editedProfile = userData ? { ...userData } : null;
+      this.editedProfile = userData ? { ...userData } : {
+        id: uid,
+        email: '',
+        nombre: '',
+        apellido: '',
+        telefono: ''
+      };
 
       if (this.userProfile) {
         console.log('✅ Perfil cargado exitosamente:');
@@ -68,18 +83,22 @@ export class Tab3Page implements OnInit {
         console.log(`🔐 Tipo: ${this.auth.isGoogleUser() ? 'Google' : 'Email'}`);
       } else {
         console.warn('No se encontró documento de perfil.');
+        // ✅ LIMPIAR DATOS SI NO HAY PERFIL
+        this.limpiarDatosUsuario();
       }
 
     } catch (error) {
       console.error('Error cargando perfil:', error);
       this.showAlert('Error', 'No se pudo cargar el perfil del usuario');
+      // ✅ LIMPIAR DATOS EN CASO DE ERROR
+      this.limpiarDatosUsuario();
     } finally {
       this.loading = false;
     }
   }
 
   // ----------------------------------------------------
-  // 2. EDICIÓN GLOBAL
+  // EDICIÓN GLOBAL
   // ----------------------------------------------------
   enableEditing() {
     this.isEditing = true;
@@ -87,11 +106,13 @@ export class Tab3Page implements OnInit {
 
   cancelEditing() {
     this.isEditing = false;
-    this.editedProfile = this.userProfile ? { ...this.userProfile } : null;
+    if (this.userProfile) {
+      this.editedProfile = { ...this.userProfile };
+    }
   }
 
   async saveProfile() {
-    if (!this.editedProfile || !this.userProfile || !this.editedProfile.nombre || !this.editedProfile.apellido) {
+    if (!this.userProfile || !this.editedProfile.nombre || !this.editedProfile.apellido) {
       this.showAlert('Advertencia', 'Por favor, complete el nombre y apellido.');
       return;
     }
@@ -121,10 +142,10 @@ export class Tab3Page implements OnInit {
   }
 
   // ----------------------------------------------------
-  // 3. EDICIÓN POR DIÁLOGOS
+  // EDICIÓN POR DIÁLOGOS
   // ----------------------------------------------------
   async editarNombre() {
-    if (!this.editedProfile || !this.userProfile?.id) {
+    if (!this.userProfile?.id) {
       this.showAlert('Error', 'No se puede editar, perfil o UID no disponible.');
       return;
     }
@@ -136,7 +157,7 @@ export class Tab3Page implements OnInit {
           name: 'nuevoNombre',
           type: 'text',
           placeholder: 'Introduce tu nuevo nombre',
-          value: this.editedProfile!.nombre 
+          value: this.editedProfile.nombre
         }
       ],
       buttons: [
@@ -145,7 +166,7 @@ export class Tab3Page implements OnInit {
           text: 'Guardar',
           handler: (data) => {
             const nuevoNombre = data.nuevoNombre.trim();
-            if (nuevoNombre && nuevoNombre !== this.editedProfile!.nombre) {
+            if (nuevoNombre && nuevoNombre !== this.editedProfile.nombre) {
               this.updateFieldInDatabase('nombre', nuevoNombre);
             }
           }
@@ -157,7 +178,7 @@ export class Tab3Page implements OnInit {
   }
 
   async editarTelefono() {
-    if (!this.editedProfile || !this.userProfile?.id) {
+    if (!this.userProfile?.id) {
       this.showAlert('Error', 'No se puede editar, perfil o UID no disponible.');
       return;
     }
@@ -169,7 +190,7 @@ export class Tab3Page implements OnInit {
           name: 'nuevoTelefono',
           type: 'text',
           placeholder: 'Introduce tu nuevo telefono',
-          value: this.editedProfile!.telefono 
+          value: this.editedProfile.telefono
         }
       ],
       buttons: [
@@ -178,7 +199,7 @@ export class Tab3Page implements OnInit {
           text: 'Guardar',
           handler: (data) => {
             const nuevoTelefono = data.nuevoTelefono.trim();
-            if (nuevoTelefono && nuevoTelefono !== this.editedProfile!.telefono) {
+            if (nuevoTelefono && nuevoTelefono !== this.editedProfile.telefono) {
               this.updateFieldInDatabase('telefono', nuevoTelefono);
             }
           }
@@ -190,7 +211,7 @@ export class Tab3Page implements OnInit {
   }
 
   async editarApellido() {
-    if (!this.editedProfile || !this.userProfile?.id) {
+    if (!this.userProfile?.id) {
       this.showAlert('Error', 'No se puede editar, perfil o UID no disponible.');
       return;
     }
@@ -202,7 +223,7 @@ export class Tab3Page implements OnInit {
           name: 'nuevoApellido',
           type: 'text',
           placeholder: 'Introduce tu nuevo apellido',
-          value: this.editedProfile!.apellido 
+          value: this.editedProfile.apellido
         }
       ],
       buttons: [
@@ -211,7 +232,7 @@ export class Tab3Page implements OnInit {
           text: 'Guardar',
           handler: (data) => {
             const nuevoApellido = data.nuevoApellido.trim();
-            if (nuevoApellido && nuevoApellido !== this.editedProfile!.apellido) {
+            if (nuevoApellido && nuevoApellido !== this.editedProfile.apellido) {
               this.updateFieldInDatabase('apellido', nuevoApellido);
             }
           }
@@ -223,87 +244,96 @@ export class Tab3Page implements OnInit {
   }
 
   // ----------------------------------------------------
-  // 🔹 EDITAR EMAIL (BLOQUEAR PARA GOOGLE)
+  // EDITAR EMAIL (BLOQUEAR PARA GOOGLE)
   // ----------------------------------------------------
-  async editarEmail() {
-    if (this.auth.isGoogleUser()) {
-      this.showAlert('No disponible', 'Los usuarios de Google no pueden cambiar su email desde la aplicación.');
-      return;
-    }
-
-    if (!this.editedProfile || !this.userProfile?.id) {
-      this.showAlert('Error', 'No se puede editar: perfil o UID no disponible.');
-      return;
-    }
-
-    const alert = await this.alertController.create({
-      header: 'Editar Email',
-      inputs: [
-        {
-          name: 'nuevoEmail',
-          type: 'email',
-          placeholder: 'Introduce tu nuevo email',
-          value: this.editedProfile!.email
-        },
-        {
-          name: 'password',
-          type: 'password',
-          placeholder: 'Introduce tu contraseña actual',
-        }
-      ],
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Guardar',
-          handler: async (data) => {
-            const nuevoEmail = data.nuevoEmail.trim();
-            const password = data.password.trim();
-
-            if (!nuevoEmail || !password) {
-              this.showAlert('Advertencia', 'Debe ingresar el nuevo email y su contraseña actual.');
-              return false;
-            }
-
-            if (nuevoEmail === this.editedProfile!.email) {
-              this.showAlert('Aviso', 'El nuevo email es igual al actual.');
-              return false;
-            }
-
-            try {
-              await this.auth.updateAuthEmail(nuevoEmail, password);
-              await this.profileService.updateUserProfile(this.userProfile!.id, { email: nuevoEmail });
-
-              this.userProfile = { ...this.userProfile!, email: nuevoEmail };
-              this.editedProfile = { ...this.editedProfile!, email: nuevoEmail };
-
-              const toast = await this.toastController.create({
-                message: `Email actualizado con éxito a: ${nuevoEmail}`,
-                duration: 3000,
-                color: 'success'
-              });
-              toast.present();
-
-            } catch (error: any) {
-              let errorMessage = 'Error desconocido al actualizar el email.';
-              if (error.code === 'auth/email-already-in-use') errorMessage = 'El email ya está en uso por otra cuenta.';
-              else if (error.code === 'auth/wrong-password') errorMessage = 'Contraseña incorrecta.';
-              else if (error.code === 'auth/requires-recent-login') errorMessage = 'Debes iniciar sesión de nuevo para cambiar tu email.';
-
-              console.error('Error al actualizar email:', error);
-              this.showAlert('Error', errorMessage);
-            }
-
-            return true;
-          }
-        }
-      ]
-    });
-
-    await alert.present();
+ // EDITAR EMAIL (BLOQUEAR PARA GOOGLE)
+async editarEmail() {
+  if (this.auth.isGoogleUser()) {
+    this.showAlert('No disponible', 'Los usuarios de Google no pueden cambiar su email desde la aplicación.');
+    return;
   }
 
+  // ✅ CORRECCIÓN: Validar que userProfile no sea null
+  if (!this.userProfile || !this.userProfile.id) {
+    this.showAlert('Error', 'No se puede editar: perfil o UID no disponible.');
+    return;
+  }
+
+  const alert = await this.alertController.create({
+    header: 'Editar Email',
+    inputs: [
+      {
+        name: 'nuevoEmail',
+        type: 'email',
+        placeholder: 'Introduce tu nuevo email',
+        value: this.editedProfile.email
+      },
+      {
+        name: 'password',
+        type: 'password',
+        placeholder: 'Introduce tu contraseña actual',
+      }
+    ],
+    buttons: [
+      { text: 'Cancelar', role: 'cancel' },
+      {
+        text: 'Guardar',
+        handler: async (data) => {
+          const nuevoEmail = data.nuevoEmail.trim();
+          const password = data.password.trim();
+
+          if (!nuevoEmail || !password) {
+            this.showAlert('Advertencia', 'Debe ingresar el nuevo email y su contraseña actual.');
+            return false;
+          }
+
+          if (nuevoEmail === this.editedProfile.email) {
+            this.showAlert('Aviso', 'El nuevo email es igual al actual.');
+            return false;
+          }
+
+          try {
+            // ✅ CORRECCIÓN: Usar la variable validada
+            await this.auth.updateAuthEmail(nuevoEmail, password);
+            await this.profileService.updateUserProfile(this.userProfile!.id, { email: nuevoEmail });
+
+            // ✅ CORRECCIÓN: Asignación correcta manteniendo todos los campos
+            this.userProfile = {
+              ...this.userProfile!,
+              email: nuevoEmail
+            };
+            this.editedProfile = {
+              ...this.editedProfile,
+              email: nuevoEmail
+            };
+
+            const toast = await this.toastController.create({
+              message: `Email actualizado con éxito a: ${nuevoEmail}`,
+              duration: 3000,
+              color: 'success'
+            });
+            toast.present();
+
+          } catch (error: any) {
+            let errorMessage = 'Error desconocido al actualizar el email.';
+            if (error.code === 'auth/email-already-in-use') errorMessage = 'El email ya está en uso por otra cuenta.';
+            else if (error.code === 'auth/wrong-password') errorMessage = 'Contraseña incorrecta.';
+            else if (error.code === 'auth/requires-recent-login') errorMessage = 'Debes iniciar sesión de nuevo para cambiar tu email.';
+
+            console.error('Error al actualizar email:', error);
+            this.showAlert('Error', errorMessage);
+          }
+
+          return true;
+        }
+      }
+    ]
+  });
+
+  await alert.present();
+}
   // ----------------------------------------------------
-  // 🔹 CAMBIAR CONTRASEÑA (BLOQUEAR PARA GOOGLE)
+  // CAMBIAR CONTRASEÑA (BLOQUEAR PARA GOOGLE)
   // ----------------------------------------------------
   async cambiarContrasena() {
     if (this.auth.isGoogleUser()) {
@@ -383,7 +413,7 @@ export class Tab3Page implements OnInit {
   }
 
   // ----------------------------------------------------
-  // 🔹 ELIMINAR CUENTA (COMPATIBLE CON GOOGLE Y EMAIL)
+  // ELIMINAR CUENTA (COMPATIBLE CON GOOGLE Y EMAIL)
   // ----------------------------------------------------
   async eliminarCuenta() {
     const isGoogleUser = this.auth.isGoogleUser();
@@ -395,7 +425,7 @@ export class Tab3Page implements OnInit {
     }
   }
 
-  // 🔹 ELIMINAR CUENTA PARA USUARIOS GOOGLE
+  // ELIMINAR CUENTA PARA USUARIOS GOOGLE
   private async eliminarCuentaGoogle() {
     const alert = await this.alertController.create({
       header: 'Eliminar Cuenta Google',
@@ -415,10 +445,20 @@ export class Tab3Page implements OnInit {
                   cssClass: 'danger-button',
                   handler: async () => {
                     try {
-                      // Para Google: sin contraseña
                       await this.auth.deleteUserAccount();
-                      this.showAlert('Cuenta Eliminada', 'Tu cuenta de Google ha sido eliminada exitosamente');
-                      this.router.navigate(['/login']);
+                      
+                      // ✅ LIMPIAR DATOS LOCALES INMEDIATAMENTE
+                      this.limpiarDatosUsuario();
+                      
+                      const toast = await this.toastController.create({
+                        message: 'Tu cuenta de Google ha sido eliminada exitosamente',
+                        duration: 3000,
+                        color: 'success'
+                      });
+                      await toast.present();
+                      
+                      this.router.navigate(['/login'], { replaceUrl: true });
+                      
                     } catch (error: any) {
                       console.error('Error al eliminar cuenta Google:', error);
                       this.manejarErrorEliminacion(error);
@@ -435,9 +475,12 @@ export class Tab3Page implements OnInit {
     await alert.present();
   }
 
-  // 🔹 ELIMINAR CUENTA PARA USUARIOS EMAIL
+  // ELIMINAR CUENTA PARA USUARIOS EMAIL
   private async eliminarCuentaEmail() {
-    const alert = await this.alertController.create({
+    let currentPassword = '';
+    
+    // Primer alert: solicitar contraseña
+    const passwordAlert = await this.alertController.create({
       header: 'Eliminar Cuenta',
       message: 'Para eliminar tu cuenta, ingresa tu contraseña actual:',
       inputs: [
@@ -449,77 +492,128 @@ export class Tab3Page implements OnInit {
         }
       ],
       buttons: [
-        { text: 'Cancelar', role: 'cancel' },
+        { 
+          text: 'Cancelar', 
+          role: 'cancel' 
+        },
         {
           text: 'Continuar',
-          handler: async (data) => {
-            const currentPassword = data.currentPassword?.trim();
+          handler: (data) => {
+            currentPassword = data.currentPassword?.trim();
             
             if (!currentPassword) {
               this.showAlert('Error', 'Debes ingresar tu contraseña actual');
-              return false;
+              return false; // Mantener alert abierto
             }
-
-            const confirmAlert = await this.alertController.create({
-              header: '⚠️ ELIMINACIÓN PERMANENTE',
-              message: '¿ESTÁS ABSOLUTAMENTE SEGURO? Se eliminará tu cuenta y todos los datos permanentemente.',
-              buttons: [
-                { text: 'Cancelar', role: 'cancel' },
-                {
-                  text: 'ELIMINAR DEFINITIVAMENTE',
-                  cssClass: 'danger-button',
-                  handler: async () => {
-                    try {
-                      // Para Email: con contraseña
-                      await this.auth.deleteUserAccount(currentPassword);
-                      this.showAlert('Cuenta Eliminada', 'Tu cuenta ha sido eliminada exitosamente');
-                      this.router.navigate(['/login']);
-                    } catch (error: any) {
-                      console.error('Error al eliminar cuenta Email:', error);
-                      this.manejarErrorEliminacion(error);
-                    }
-                  }
-                }
-              ]
-            });
-            await confirmAlert.present();
-            return false;
+            
+            // Cerrar este alert y proceder a confirmación
+            return true;
           }
         }
       ]
     });
-    await alert.present();
+
+    await passwordAlert.present();
+    
+    // Esperar a que se cierre el primer alert
+    const { data } = await passwordAlert.onDidDismiss();
+    
+    if (data && data.role !== 'cancel' && currentPassword) {
+      // Mostrar confirmación final
+      await this.mostrarConfirmacionEliminacion(currentPassword);
+    }
   }
 
-  // 🔹 MANEJAR ERRORES DE ELIMINACIÓN
+  // MOSTRAR CONFIRMACIÓN FINAL
+  private async mostrarConfirmacionEliminacion(currentPassword: string) {
+    const confirmAlert = await this.alertController.create({
+      header: '⚠️ ELIMINACIÓN PERMANENTE',
+      message: '¿ESTÁS ABSOLUTAMENTE SEGURO? Se eliminará tu cuenta y todos los datos permanentemente. Esta acción NO se puede deshacer.',
+      buttons: [
+        { 
+          text: 'Cancelar', 
+          role: 'cancel' 
+        },
+        {
+          text: 'ELIMINAR DEFINITIVAMENTE',
+          cssClass: 'danger-button',
+          handler: async () => {
+            try {
+              await this.auth.deleteUserAccount(currentPassword);
+              
+              // ✅ LIMPIAR DATOS LOCALES INMEDIATAMENTE
+              this.limpiarDatosUsuario();
+              
+              const toast = await this.toastController.create({
+                message: 'Tu cuenta ha sido eliminada exitosamente',
+                duration: 3000,
+                color: 'success'
+              });
+              await toast.present();
+              
+              this.router.navigate(['/login'], { replaceUrl: true });
+              
+            } catch (error: any) {
+              console.error('Error al eliminar cuenta Email:', error);
+              this.manejarErrorEliminacion(error);
+            }
+          }
+        }
+      ]
+    });
+    await confirmAlert.present();
+  }
+
+  // ✅ MÉTODO PARA LIMPIAR DATOS DEL USUARIO
+  private limpiarDatosUsuario() {
+    this.userProfile = null;
+    this.editedProfile = {
+      id: '',
+      email: '',
+      nombre: '',
+      apellido: '',
+      telefono: ''
+    };
+    this.isEditing = false;
+    this.loading = false;
+  }
+
+  // MANEJAR ERRORES DE ELIMINACIÓN
   private manejarErrorEliminacion(error: any) {
     let errorMessage = 'Error al eliminar cuenta';
     
     if (error.code === 'auth/wrong-password') {
-      errorMessage = 'Contraseña incorrecta';
+      errorMessage = 'Contraseña incorrecta. Intenta nuevamente.';
     } else if (error.code === 'auth/requires-recent-login') {
       errorMessage = 'Debes volver a iniciar sesión para realizar esta acción';
     } else if (error.code === 'auth/popup-closed-by-user') {
       errorMessage = 'La ventana de Google fue cerrada. Operación cancelada.';
     } else if (error.code === 'auth/popup-blocked') {
       errorMessage = 'El popup fue bloqueado. Permite ventanas emergentes para este sitio.';
+    } else if (error.code === 'auth/too-many-requests') {
+      errorMessage = 'Demasiados intentos fallidos. Intenta más tarde.';
     }
     
     this.showAlert('Error', errorMessage);
   }
 
   // ----------------------------------------------------
-  // 4. FUNCIONES AUXILIARES
+  // FUNCIONES AUXILIARES
   // ----------------------------------------------------
   private async updateFieldInDatabase(field: 'nombre' | 'apellido' | 'email' | 'telefono', value: string) {
-    const uid = this.userProfile!.id;
+    if (!this.userProfile) {
+      console.error('No se puede actualizar: userProfile es null');
+      return;
+    }
+
+    const uid = this.userProfile.id;
     const dataToUpdate = { [field]: value };
 
     try {
       await this.profileService.updateUserProfile(uid, dataToUpdate);
 
-      this.userProfile = { ...this.userProfile!, ...dataToUpdate };
-      this.editedProfile = { ...this.editedProfile!, ...dataToUpdate };
+      this.userProfile = { ...this.userProfile, ...dataToUpdate };
+      this.editedProfile = { ...this.editedProfile, ...dataToUpdate };
       
       if (field === 'nombre' || field === 'apellido') {
         await this.auth.updateUserProfile({
@@ -542,7 +636,7 @@ export class Tab3Page implements OnInit {
   }
 
   // ----------------------------------------------------
-  // 5. UTILIDADES
+  // UTILIDADES
   // ----------------------------------------------------
   async showAlert(header: string, message: string) {
     const alert = await this.alertController.create({
@@ -553,14 +647,31 @@ export class Tab3Page implements OnInit {
     await alert.present();
   }
 
-  async logout() {
-    try {
-      await this.auth.logout();
-      this.router.navigate(['/login']);
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-    }
+async logout() {
+  try {
+    // ✅ MEJORA: Limpiar datos antes de hacer logout
+    this.limpiarDatosUsuario();
+    await this.auth.logout();
+    
+    // ✅ NUEVO: Limpiar también el formulario de login
+    this.limpiarFormularioLogin();
+    
+    this.router.navigate(['/login'], { replaceUrl: true });
+  } catch (error) {
+    console.error('Error al cerrar sesión:', error);
+    this.showAlert('Error', 'No se pudo cerrar sesión');
   }
+}
+
+// ✅ NUEVO MÉTODO: Limpiar formulario de login
+private limpiarFormularioLogin() {
+  // Esta función necesita comunicarse con el LoginPage
+  // Podemos usar localStorage o un servicio compartido
+  localStorage.removeItem('loginEmail');
+  localStorage.removeItem('loginPassword');
+  
+  console.log('✅ Formulario de login limpiado');
+}
 
   irATab1() { this.router.navigate(['/inicio']); }
   irATab2() { this.router.navigate(['/favoritos']); }
