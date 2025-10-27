@@ -7,10 +7,14 @@
 <ion-content class="ion-padding">
 
   <ion-card *ngIf="!loading">
-    <ion-card-header>
-      <ion-card-title>Datos del Usuario</ion-card-title>
-      <ion-card-subtitle>UID: {{ userProfile?.id || 'No disponible' }}</ion-card-subtitle>
-    </ion-card-header>
+<ion-card-header>
+  <ion-card-title>Mi Perfil</ion-card-title>
+
+  <ion-card-subtitle>
+    ¡Bienvenido/a, {{ editedProfile?.nombre }}!
+  </ion-card-subtitle> 
+
+</ion-card-header>
 
     <ion-card-content>
 
