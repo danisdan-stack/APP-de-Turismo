@@ -14,7 +14,6 @@
 
     <ion-card-content>
 
-      <!-- NOMBRE -->
       <ion-item>
         <ion-label position="stacked">Nombre</ion-label>
         <ion-input 
@@ -28,7 +27,6 @@
         </ion-button>
       </ion-item>
 
-      <!-- APELLIDO -->
       <ion-item>
         <ion-label position="stacked">Apellido</ion-label>
         <ion-input 
@@ -42,7 +40,6 @@
         </ion-button>
       </ion-item>
 
-            <!-- TELEFONO -->
       <ion-item>
         <ion-label position="stacked">Teléfono</ion-label>
         <ion-input 
@@ -56,7 +53,6 @@
         </ion-button>
       </ion-item>
 
-      <!-- EMAIL -->
       <ion-item>
         <ion-label position="stacked">Email</ion-label>
         <ion-input 
@@ -71,51 +67,47 @@
         </ion-button>
       </ion-item>
 
-  
- <ion-item>
-  <ion-label position="stacked">Contraseña</ion-label>
-  <ion-input 
-    type="password" 
-    value="********" 
-    readonly
-    placeholder="********">
-  </ion-input>
-  <ion-button fill="clear" slot="end" (click)="cambiarContrasena()">
-    <ion-icon name="key-outline"></ion-icon>
-    <span class="ion-padding-start">Cambiar</span>
-  </ion-button>
-</ion-item>
-
-
-
-      <!-- BOTONES DE ACCIÓN -->
-      <div class="buttons-row" style="margin-top: 16px; display: flex; gap: 8px;">
-        <ion-button 
-          color="primary" 
-          expand="block" 
-          
-          (click)="logout()">
-          Cerrar Sesion
+      <ion-item>
+        <ion-label position="stacked">Contraseña</ion-label>
+        <ion-input 
+          type="password" 
+          value="********" 
+          readonly
+          placeholder="********">
+        </ion-input>
+        <ion-button fill="clear" slot="end" (click)="cambiarContrasena()">
+          <ion-icon name="key-outline"></ion-icon>
+          <span class="ion-padding-start">Cambiar</span>
         </ion-button>
+      </ion-item>
 
-   
+
+      <div class="action-buttons ion-padding">
         
-      </div >
-      <div class="buttons-row" style="margin-top: 16px; display: flex; gap: 8px;">
-      <ion-button 
-  expand="block" 
-  fill="solid" 
-  color="danger"
-  (click)="eliminarCuenta()"
-  class="ion-margin-top">
-  <ion-icon name="trash-outline" slot="start"></ion-icon>
-  Eliminar Cuenta
-</ion-button>
-</div>
+        <ion-button 
+          expand="block" 
+          fill="solid" 
+          color="primary"
+          (click)="logout()"
+          class="logout-button">
+          <ion-icon name="log-out-outline" slot="start"></ion-icon>
+          CERRAR SESION
+        </ion-button>
+        
+        <ion-button 
+          expand="block" 
+          fill="solid" 
+          color="danger"
+          (click)="eliminarCuenta()"
+          class="delete-button">
+          <ion-icon name="trash-outline" slot="start"></ion-icon>
+          ELIMINAR CUENTA
+        </ion-button>
+      </div>
+
     </ion-card-content>
   </ion-card>
 
-  <!-- Loader -->
   <ion-spinner *ngIf="loading" name="crescent" class="ion-margin-top"></ion-spinner>
 
 </ion-content>
