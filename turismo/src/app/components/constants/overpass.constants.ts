@@ -1,4 +1,5 @@
 export const PROVINCIAS = [
+  { nombre: "Ciudad de Buenos Aires", iso: "AR-C" },
   { nombre: "Buenos Aires", iso: "AR-B" },
   { nombre: "Córdoba", iso: "AR-X" },
   { nombre: "Mendoza", iso: "AR-M" },
@@ -112,7 +113,7 @@ export const PAISAJES_OVERPASS = {
 
 export const OVERPASS_CONFIG = {
   url: "https://overpass-api.de/api/interpreter",
-  timeout: 60,
+  timeout: 180,
   maxElements: 1000
 };
 
