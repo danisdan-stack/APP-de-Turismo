@@ -1,140 +1,215 @@
 .login-page {
-
-  --background: linear-gradient(180deg, #74e76d 0%, #15c9ff 100%);
-  height: 100vh;
+  --background: transparent;
+  min-height: 100vh; 
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 18px 16px 36px;
+
   position: relative;
+  overflow: hidden;
 }
 
-/* Contenedor principal que usás en el HTML */
+.background-overlay {
+  position: fixed; 
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: url('/assets/icon/fondo.png') center center no-repeat;
+  background-size: cover;
+  background-attachment: fixed; 
+  z-index: -2;
+}
+
+
+.background-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  z-index: -1;
+}
+
 .content-container {
-  width: 100%;
-  max-width: 360px;
+  width: 90%;
+  max-width: 380px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 32px 22px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
+
+.tm-header {
+  display: flex;
+  flex-direction: row; 
+  align-items: center;
+  justify-content: center;
+  text-align: left;
+  margin-bottom: 16px;
   gap: 12px;
 }
 
-/* TITULO */
-.top-title {
-  width: 100%;
-  text-align: center;
-  margin-bottom: 6px;
-}
-.top-title h1 {
-  color: #ffffff;
-  font-size: 2.0rem;
-  font-weight: 700;
-  margin: 6px 0 0 0;
-  letter-spacing: 0.5px;
+.tm-logo-wrap img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
 }
 
-/* Bienvenido alineado a la izquierda dentro del bloque */
-.bienvenido-text {
-  width: 100%;
-  text-align: left;
-  color: #ffffff;
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 6px 0 10px 6px;
-}
-
-/* Grupo de inputs */
-.input-group {
-  width: 100%;
+.tm-title-wrap {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  align-items: flex-start;
+}
+
+.tm-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.tm-match {
+  color: #a8ffdc;
+}
+
+.tm-tagline {
+  color: rgba(255,255,255,0.9);
+  font-size: 0.9rem;
+  margin-top: 2px;
+}
+
+
+.bienvenido-text {
+  color: #fff;
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-align: center;
   margin-bottom: 8px;
 }
 
-/* Coincide con ion-item class="input-field" en tu HTML */
-.input-field {
+/* Inputs  */
+.input-group {
   width: 100%;
-  --background: rgba(255, 255, 255, 0.93);
-  --border-radius: 12px;
-  --padding-start: 14px;
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.08);
-  height: 52px;
+
+}
+
+
+.input-field {
+  --background: rgba(255, 255, 255, 0.2);
+  --border-radius: 14px;
+  height: 48px; 
+  width: 100%; 
   display: flex;
   align-items: center;
-  padding-left: 8px;
+  backdrop-filter: blur(4px);
+  margin-bottom: 12px;
 }
 
-/* Asegurar que el ion-input ocupe todo el ancho y tenga padding */
+
 .input-field ion-input {
-  color: #333;
+  color: #fff;
   font-size: 1rem;
-  width: 100%;
-  padding: 6px 0;
+  padding-left: 12px;
+  width: 100%; 
 }
 
-/* Grupo de botones (no lo modifico más allá de lo esencial) */
+.forgot-password {
+  color: #ffffff;
+  font-size: 0.9rem;
+  text-align: center; 
+  margin: 6px 0;
+  cursor: pointer;
+  transition: 0.3s ease;
+  text-decoration: underline rgba(255, 255, 255, 0.3);
+}
+
+.forgot-password:hover {
+  color: #a8ffdc;
+  text-decoration: underline rgba(168, 255, 220, 0.8);
+}
+
 .button-group {
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
+
   gap: 14px;
+  margin-top: 8px;
 }
 
-/* Botones principales */
+
 .main-button {
   width: 100%;
-  max-width: 360px;
-  height: 50px;
-  --border-radius: 12px;
+  height: 48px;
+  --border-radius: 14px;
   font-weight: 700;
   text-transform: none;
+  letter-spacing: 0.5px;
 }
 
-/* Botón Google: mantiene el icono a la izquierda */
+.login-button {
+  --background: #1b3c55;
+  color: #fff;
+  font-size: 1rem;
+}
+
+/* Boton google */
 .google-button {
-  --background: #fff;
-  --color: #0b3b3a;
-  width: 100%;
-  max-width: 360px;
-  height: 48px;
-  --border-radius: 12px;
+  background: transparent;
+  color: #1b3c55;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  padding-left: 16px;
-  gap: 12px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.08);
-  font-weight: 600;
-}
-.google-button ion-icon {
-  font-size: 22px;
-  margin-right: 6px;
+  justify-content: center;
+  gap: 10px;
+  height: 48px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+  text-transform: none;
+  font-size: 1rem;
 }
 
-/* Texto olvidaste */
-.forgot-password {
+.google-button img.google-icon {
+  width: 22px;
+  height: 22px;
+  margin-left: 6px; 
+}
+.google-button:hover {
+  border-color: #a8ffdc;
+  transform: translateY(-2px);
+}
+
+.register-button {
+  --background: #1b3c55; 
   color: #fff;
-  font-size: 0.95rem;
-  text-align: center;
-  margin-top: 4px;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
-/* Permisos GPS fijo abajo */
+
+.content-container {
+  padding-bottom: 80px; 
+}
+
+
 .gps-permission {
-  position: absolute;
-  bottom: 16px;
-  left: 0;
-  right: 0;
+  position: relative; /* vuelve al flujo normal */
+  margin-top: 20px;   /* deja espacio con el botón de registro */
   display: flex;
   justify-content: center;
   align-items: center;
   color: #fff;
   font-weight: 600;
   gap: 10px;
+  background: transparent;
 }
+
 .gps-dot {
   width: 14px;
   height: 14px;
@@ -143,155 +218,5 @@
   border: 1px solid rgba(250,250,250,0.9);
 }
 
-/* Responsive */
-@media (max-width: 420px) {
-  .top-title h1 {
-    font-size: 1.9rem;
-  }
-  .input-field { height: 50px; }
-  .main-button { height: 48px; }
-  .google-button { height: 46px; padding-left: 14px; }
-}
-/* Encabezado TurisMatch */
-.tm-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  max-width: 360px;
-  margin: 0 auto 8px;
-  padding: 4px 6px;
-}
 
-.tm-logo-wrap {
-  width: 56px;
-  height: 56px;
-  flex: 0 0 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.12);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-}
 
-.tm-logo {
-  width: 42px;
-  height: 42px;
-  display: block;
-}
-
-/* Texto principal: TURIS MATCH */
-.tm-title-wrap {
-  display: flex;
-  flex-direction: column;
-  line-height: 1;
-}
-
-.tm-title {
-  color: #ffffff;
-  font-weight: 800;
-  font-size: 1.05rem;
-  letter-spacing: 0.6px;
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
-
-.tm-match {
-  color: #ffffff;
-  font-weight: 600;
-  opacity: 0.95;
-}
-
-/* Tagline */
-.tm-tagline {
-  color: rgba(255,255,255,0.9);
-  font-size: 0.78rem;
-  margin-top: 2px;
-  opacity: 0.92;
-}
-
-/* Ajustes responsivos: reducir logo/texto en pantallas pequeñas */
-@media (max-width: 360px) {
-  .tm-logo-wrap { width: 48px; height: 48px; }
-  .tm-logo { width: 36px; height: 36px; }
-  .tm-title { font-size: 0.98rem; }
-  .tm-tagline { font-size: 0.72rem; }
-}
-/* Cabecera con logo + texto (como en la segunda imagen) */
-.top-title.row {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center; /* centra toda la cabecera horizontalmente */
-  gap: 18px;
-  margin-bottom: 6px;
-}
-
-/* Logo redondeado */
-.app-logo {
-  width: 76px;        /* ajusta tamaño si querés más pequeño/grande */
-  height: 76px;
-  border-radius: 18px; /* redondeado como en la imagen */
-  object-fit: cover;
-  background: #ffffff; /* opcional: blanco detrás si tu logo tiene fondo transparente */
-  padding: 6px;        /* pequeño padding para "piel" blanca */
-  box-shadow: 0 4px 8px rgba(0,0,0,0.06);
-}
-
-/* Texto dividido en dos líneas para imitar estilo */
-.title-text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; /* que las letras se alineen a la izquierda (mejor lectura) */
-  line-height: 0.9;
-}
-
-/* Ajustes visuales para cada línea */
-.title-line1 {
-  color: #ffffff;
-  font-size: 2.2rem;  /* "TURIS" más grande */
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
-.title-line2 {
-  color: #ffffff;
-  font-size: 1.2rem;  /* "MATCH" más pequeño y espaciado */
-  font-weight: 300;
-  letter-spacing: 4px;
-  margin-top: 6px;
-}
-
-/* Responsive: en pantallas pequeñas empilamos el texto debajo del logo */
-@media (max-width: 420px) {
-  .top-title.row {
-    gap: 12px;
-    justify-content: flex-start; /* para que quede similar a la referencia móvil */
-  }
-  .app-logo {
-    width: 64px;
-    height: 64px;
-    border-radius: 14px;
-  }
-  .title-line1 { font-size: 1.8rem; }
-  .title-line2 { font-size: 1.0rem; letter-spacing: 3px; }
-}
-.tm-logo-wrap {
-  width: 70px;
-  height: 70px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.app-logo {
-  width: 64px;
-  height: 64px;
-  border-radius: 12px;
-  object-fit: contain;
-  background: #fff;
-  padding: 6px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.06);
-}

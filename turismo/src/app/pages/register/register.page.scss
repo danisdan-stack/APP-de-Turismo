@@ -89,7 +89,7 @@
   width: 100%;
   background: transparent;
   padding: 0;
-  margin: 0;
+  margin: 0; 
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -133,9 +133,14 @@ ion-input {
   border-radius: 10px;
   width: 92%;
   max-width: 360px;
-  align-self: center;
-  margin-bottom: 18px;  
+  margin-left: 4%; 
+  margin-right: 0;
+  margin-bottom: 18px;
+  display: block;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.06) inset;
 }
+
+
 
 @media (max-height: 620px) {
   .register-content { padding-bottom: 24px; }
