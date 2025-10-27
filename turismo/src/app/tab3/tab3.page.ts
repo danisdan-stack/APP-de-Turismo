@@ -3,8 +3,6 @@ import { AuthService, UserProfile } from '../services/auth';
 import { ProfileService } from '../services/perfil'; 
 import { AlertController, ToastController } from '@ionic/angular'; 
 import { Router } from '@angular/router';
-import { updateEmail, reauthenticateWithCredential, EmailAuthProvider } from '@angular/fire/auth';
-
 
 @Component({
   selector: 'app-tab3',
@@ -66,9 +64,8 @@ export class Tab3Page implements OnInit {
         console.log(`👤 UID: ${this.userProfile.id}`);
         console.log(`✍️ Nombre: ${this.userProfile.nombre} ${this.userProfile.apellido}`);
         console.log(`📧 Email: ${this.userProfile.email}`);
-        console.log(`📧 Telefono: ${this.userProfile.telefono}`);
-
-
+        console.log(`📱 Telefono: ${this.userProfile.telefono}`);
+        console.log(`🔐 Tipo: ${this.auth.isGoogleUser() ? 'Google' : 'Email'}`);
       } else {
         console.warn('No se encontró documento de perfil.');
       }
@@ -158,7 +155,8 @@ export class Tab3Page implements OnInit {
 
     await alert.present();
   }
-async editarTelefono() {
+
+  async editarTelefono() {
     if (!this.editedProfile || !this.userProfile?.id) {
       this.showAlert('Error', 'No se puede editar, perfil o UID no disponible.');
       return;
@@ -225,230 +223,296 @@ async editarTelefono() {
   }
 
   // ----------------------------------------------------
-  // 🔹 NUEVO: EDITAR EMAIL (CON REAUTENTICACIÓN)
+  // 🔹 EDITAR EMAIL (BLOQUEAR PARA GOOGLE)
   // ----------------------------------------------------
-// ----------------------------------------------------
-// 🔹 EDITAR EMAIL (USANDO AuthService)
-// ----------------------------------------------------
-// ----------------------------------------------------
-// 🔹 EDITAR EMAIL (USANDO AuthService)
-// ----------------------------------------------------
-async editarEmail() {
-  if (!this.editedProfile || !this.userProfile?.id) {
-    this.showAlert('Error', 'No se puede editar: perfil o UID no disponible.');
-    return;
+  async editarEmail() {
+    if (this.auth.isGoogleUser()) {
+      this.showAlert('No disponible', 'Los usuarios de Google no pueden cambiar su email desde la aplicación.');
+      return;
+    }
+
+    if (!this.editedProfile || !this.userProfile?.id) {
+      this.showAlert('Error', 'No se puede editar: perfil o UID no disponible.');
+      return;
+    }
+
+    const alert = await this.alertController.create({
+      header: 'Editar Email',
+      inputs: [
+        {
+          name: 'nuevoEmail',
+          type: 'email',
+          placeholder: 'Introduce tu nuevo email',
+          value: this.editedProfile!.email
+        },
+        {
+          name: 'password',
+          type: 'password',
+          placeholder: 'Introduce tu contraseña actual',
+        }
+      ],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Guardar',
+          handler: async (data) => {
+            const nuevoEmail = data.nuevoEmail.trim();
+            const password = data.password.trim();
+
+            if (!nuevoEmail || !password) {
+              this.showAlert('Advertencia', 'Debe ingresar el nuevo email y su contraseña actual.');
+              return false;
+            }
+
+            if (nuevoEmail === this.editedProfile!.email) {
+              this.showAlert('Aviso', 'El nuevo email es igual al actual.');
+              return false;
+            }
+
+            try {
+              await this.auth.updateAuthEmail(nuevoEmail, password);
+              await this.profileService.updateUserProfile(this.userProfile!.id, { email: nuevoEmail });
+
+              this.userProfile = { ...this.userProfile!, email: nuevoEmail };
+              this.editedProfile = { ...this.editedProfile!, email: nuevoEmail };
+
+              const toast = await this.toastController.create({
+                message: `Email actualizado con éxito a: ${nuevoEmail}`,
+                duration: 3000,
+                color: 'success'
+              });
+              toast.present();
+
+            } catch (error: any) {
+              let errorMessage = 'Error desconocido al actualizar el email.';
+              if (error.code === 'auth/email-already-in-use') errorMessage = 'El email ya está en uso por otra cuenta.';
+              else if (error.code === 'auth/wrong-password') errorMessage = 'Contraseña incorrecta.';
+              else if (error.code === 'auth/requires-recent-login') errorMessage = 'Debes iniciar sesión de nuevo para cambiar tu email.';
+
+              console.error('Error al actualizar email:', error);
+              this.showAlert('Error', errorMessage);
+            }
+
+            return true;
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
-  const alert = await this.alertController.create({
-    header: 'Editar Email',
-    inputs: [
-      {
-        name: 'nuevoEmail',
-        type: 'email',
-        placeholder: 'Introduce tu nuevo email',
-        value: this.editedProfile!.email
-      },
-      {
-        name: 'password',
-        type: 'password',
-        placeholder: 'Introduce tu contraseña actual',
-      }
-    ],
-    buttons: [
-      { text: 'Cancelar', role: 'cancel' },
-      {
-        text: 'Guardar',
-        handler: async (data) => {
-          const nuevoEmail = data.nuevoEmail.trim();
-          const password = data.password.trim();
-
-          if (!nuevoEmail || !password) {
-            this.showAlert('Advertencia', 'Debe ingresar el nuevo email y su contraseña actual.');
-            return false;
-          }
-
-          if (nuevoEmail === this.editedProfile!.email) {
-            this.showAlert('Aviso', 'El nuevo email es igual al actual.');
-            return false;
-          }
-
-          try {
-            // 🔹 Llamamos a AuthService para actualizar email
-            await this.auth.updateAuthEmail(nuevoEmail, password);
-
-            // 🔹 Actualizamos Firestore
-            await this.profileService.updateUserProfile(this.userProfile!.id, { email: nuevoEmail });
-
-            // 🔹 Actualizamos localmente
-            this.userProfile = { ...this.userProfile!, email: nuevoEmail };
-            this.editedProfile = { ...this.editedProfile!, email: nuevoEmail };
-
-            // 🔹 Mostramos toast de éxito
-            const toast = await this.toastController.create({
-              message: `Email actualizado con éxito a: ${nuevoEmail}`,
-              duration: 3000,
-              color: 'success'
-            });
-            toast.present();
-
-          } catch (error: any) {
-            let errorMessage = 'Error desconocido al actualizar el email.';
-            if (error.code === 'auth/email-already-in-use') errorMessage = 'El email ya está en uso por otra cuenta.';
-            else if (error.code === 'auth/wrong-password') errorMessage = 'Contraseña incorrecta.';
-            else if (error.code === 'auth/requires-recent-login') errorMessage = 'Debes iniciar sesión de nuevo para cambiar tu email.';
-
-            console.error('Error al actualizar email:', error);
-            this.showAlert('Error', errorMessage);
-          }
-
-          return true; // ✅ evita error TS7030
-        }
-      }
-    ]
-  });
-
-  await alert.present();
-}
-
-async cambiarContrasena() {
-  const alert = await this.alertController.create({
-    header: 'Cambiar Contraseña',
-    inputs: [
-      {
-        name: 'currentPassword',
-        type: 'password',
-        placeholder: 'Contraseña actual',
-        attributes: {
-          required: true
-        }
-      },
-      {
-        name: 'newPassword',
-        type: 'password',
-        placeholder: 'Nueva contraseña',
-        attributes: {
-          required: true,
-          minlength: 6
-        }
-      },
-      {
-        name: 'confirmPassword',
-        type: 'password',
-        placeholder: 'Confirmar nueva contraseña',
-        attributes: {
-          required: true,
-          minlength: 6
-        }
-      }
-    ],
-    buttons: [
-      { text: 'Cancelar', role: 'cancel' },
-      {
-        text: 'Guardar',
-        handler: async (data) => {
-          const { currentPassword, newPassword, confirmPassword } = data;
-          
-          // Validaciones
-          if (!currentPassword || !newPassword || !confirmPassword) {
-            this.showAlert('Error', 'Todos los campos son obligatorios');
-            return false;
-          }
-
-          if (newPassword.length < 6) {
-            this.showAlert('Error', 'La nueva contraseña debe tener al menos 6 caracteres');
-            return false;
-          }
-
-          if (newPassword !== confirmPassword) {
-            this.showAlert('Error', 'Las contraseñas no coinciden');
-            return false;
-          }
-
-          // Cambiar contraseña
-          try {
-            await this.auth.changePassword(currentPassword, newPassword);
-            this.showAlert('Éxito', 'Contraseña actualizada correctamente');
-            return true;
-          } catch (error: any) {
-            console.error('Error al cambiar contraseña:', error);
-            
-            let errorMessage = 'Error al cambiar contraseña';
-            if (error.code === 'auth/wrong-password') {
-              errorMessage = 'La contraseña actual es incorrecta';
-            } else if (error.code === 'auth/weak-password') {
-              errorMessage = 'La nueva contraseña es muy débil';
-            } else if (error.code === 'auth/requires-recent-login') {
-              errorMessage = 'Debes volver a iniciar sesión para realizar esta acción';
-            }
-            
-            this.showAlert('Error', errorMessage);
-            return false;
-          }
-        }
-      }
-    ]
-  });
-
-  await alert.present();
-}
-
-// Función auxiliar para mostrar alertas (si no la tienes)
-async showAlert2(header: string, message: string) {
-  const alert = await this.alertController.create({
-    header,
-    message,
-    buttons: ['OK']
-  });
-  await alert.present();
-}
-
   // ----------------------------------------------------
-  // 🔹 FUNCIÓN CENTRAL: actualizar Auth + Firestore
+  // 🔹 CAMBIAR CONTRASEÑA (BLOQUEAR PARA GOOGLE)
   // ----------------------------------------------------
-  private async updateEmailAndFirestore(newEmail: string, password: string) {
-    const uid = this.userProfile!.id || this.userProfile!.id;
-
-    try {
-      const user = this.auth.currentUser;
-      if (!user) throw new Error('No hay usuario autenticado.');
-
-      const credential = EmailAuthProvider.credential(user.email!, password);
-      await reauthenticateWithCredential(user, credential);
-
-      await updateEmail(user, newEmail);
-      await this.profileService.updateUserProfile(uid, { email: newEmail });
-
-      this.userProfile = { ...this.userProfile!, email: newEmail };
-      this.editedProfile = { ...this.editedProfile!, email: newEmail };
-
-      const toast = await this.toastController.create({
-        message: `Email actualizado con éxito a: ${newEmail}`,
-        duration: 3000,
-        color: 'success'
-      });
-      toast.present();
-
-    } catch (error: any) {
-      let errorMessage = 'Error desconocido al actualizar el email.';
-
-      if (error.code === 'auth/email-already-in-use') {
-        errorMessage = 'El email ya está en uso por otra cuenta.';
-      } else if (error.code === 'auth/wrong-password') {
-        errorMessage = 'Contraseña incorrecta.';
-      } else if (error.code === 'auth/requires-recent-login') {
-        errorMessage = 'Debes iniciar sesión de nuevo para cambiar tu email.';
-      }
-
-      console.error('Error al actualizar email:', error);
-      this.showAlert('Error', errorMessage);
+  async cambiarContrasena() {
+    if (this.auth.isGoogleUser()) {
+      this.showAlert('No disponible', 'Los usuarios de Google no pueden cambiar contraseña desde la aplicación.');
+      return;
     }
+
+    const alert = await this.alertController.create({
+      header: 'Cambiar Contraseña',
+      inputs: [
+        {
+          name: 'currentPassword',
+          type: 'password',
+          placeholder: 'Contraseña actual',
+          attributes: { required: true }
+        },
+        {
+          name: 'newPassword',
+          type: 'password',
+          placeholder: 'Nueva contraseña',
+          attributes: { required: true, minlength: 6 }
+        },
+        {
+          name: 'confirmPassword',
+          type: 'password',
+          placeholder: 'Confirmar nueva contraseña',
+          attributes: { required: true, minlength: 6 }
+        }
+      ],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Guardar',
+          handler: async (data) => {
+            const { currentPassword, newPassword, confirmPassword } = data;
+            
+            if (!currentPassword || !newPassword || !confirmPassword) {
+              this.showAlert('Error', 'Todos los campos son obligatorios');
+              return false;
+            }
+
+            if (newPassword.length < 6) {
+              this.showAlert('Error', 'La nueva contraseña debe tener al menos 6 caracteres');
+              return false;
+            }
+
+            if (newPassword !== confirmPassword) {
+              this.showAlert('Error', 'Las contraseñas no coinciden');
+              return false;
+            }
+
+            try {
+              await this.auth.changePassword(currentPassword, newPassword);
+              this.showAlert('Éxito', 'Contraseña actualizada correctamente');
+              return true;
+            } catch (error: any) {
+              console.error('Error al cambiar contraseña:', error);
+              
+              let errorMessage = 'Error al cambiar contraseña';
+              if (error.code === 'auth/wrong-password') {
+                errorMessage = 'La contraseña actual es incorrecta';
+              } else if (error.code === 'auth/weak-password') {
+                errorMessage = 'La nueva contraseña es muy débil';
+              } else if (error.code === 'auth/requires-recent-login') {
+                errorMessage = 'Debes volver a iniciar sesión para realizar esta acción';
+              }
+              
+              this.showAlert('Error', errorMessage);
+              return false;
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  // ----------------------------------------------------
+  // 🔹 ELIMINAR CUENTA (COMPATIBLE CON GOOGLE Y EMAIL)
+  // ----------------------------------------------------
+  async eliminarCuenta() {
+    const isGoogleUser = this.auth.isGoogleUser();
+    
+    if (isGoogleUser) {
+      await this.eliminarCuentaGoogle();
+    } else {
+      await this.eliminarCuentaEmail();
+    }
+  }
+
+  // 🔹 ELIMINAR CUENTA PARA USUARIOS GOOGLE
+  private async eliminarCuentaGoogle() {
+    const alert = await this.alertController.create({
+      header: 'Eliminar Cuenta Google',
+      message: '¿Estás seguro de eliminar tu cuenta? Se abrirá una ventana de Google para confirmar tu identidad.',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Continuar',
+          handler: async () => {
+            const confirmAlert = await this.alertController.create({
+              header: '⚠️ ELIMINACIÓN PERMANENTE',
+              message: '¿ESTÁS ABSOLUTAMENTE SEGURO? Se eliminará tu cuenta y todos los datos permanentemente.',
+              buttons: [
+                { text: 'Cancelar', role: 'cancel' },
+                {
+                  text: 'ELIMINAR DEFINITIVAMENTE',
+                  cssClass: 'danger-button',
+                  handler: async () => {
+                    try {
+                      // Para Google: sin contraseña
+                      await this.auth.deleteUserAccount();
+                      this.showAlert('Cuenta Eliminada', 'Tu cuenta de Google ha sido eliminada exitosamente');
+                      this.router.navigate(['/login']);
+                    } catch (error: any) {
+                      console.error('Error al eliminar cuenta Google:', error);
+                      this.manejarErrorEliminacion(error);
+                    }
+                  }
+                }
+              ]
+            });
+            await confirmAlert.present();
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  // 🔹 ELIMINAR CUENTA PARA USUARIOS EMAIL
+  private async eliminarCuentaEmail() {
+    const alert = await this.alertController.create({
+      header: 'Eliminar Cuenta',
+      message: 'Para eliminar tu cuenta, ingresa tu contraseña actual:',
+      inputs: [
+        {
+          name: 'currentPassword',
+          type: 'password',
+          placeholder: 'Contraseña actual',
+          attributes: { required: true }
+        }
+      ],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Continuar',
+          handler: async (data) => {
+            const currentPassword = data.currentPassword?.trim();
+            
+            if (!currentPassword) {
+              this.showAlert('Error', 'Debes ingresar tu contraseña actual');
+              return false;
+            }
+
+            const confirmAlert = await this.alertController.create({
+              header: '⚠️ ELIMINACIÓN PERMANENTE',
+              message: '¿ESTÁS ABSOLUTAMENTE SEGURO? Se eliminará tu cuenta y todos los datos permanentemente.',
+              buttons: [
+                { text: 'Cancelar', role: 'cancel' },
+                {
+                  text: 'ELIMINAR DEFINITIVAMENTE',
+                  cssClass: 'danger-button',
+                  handler: async () => {
+                    try {
+                      // Para Email: con contraseña
+                      await this.auth.deleteUserAccount(currentPassword);
+                      this.showAlert('Cuenta Eliminada', 'Tu cuenta ha sido eliminada exitosamente');
+                      this.router.navigate(['/login']);
+                    } catch (error: any) {
+                      console.error('Error al eliminar cuenta Email:', error);
+                      this.manejarErrorEliminacion(error);
+                    }
+                  }
+                }
+              ]
+            });
+            await confirmAlert.present();
+            return false;
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  // 🔹 MANEJAR ERRORES DE ELIMINACIÓN
+  private manejarErrorEliminacion(error: any) {
+    let errorMessage = 'Error al eliminar cuenta';
+    
+    if (error.code === 'auth/wrong-password') {
+      errorMessage = 'Contraseña incorrecta';
+    } else if (error.code === 'auth/requires-recent-login') {
+      errorMessage = 'Debes volver a iniciar sesión para realizar esta acción';
+    } else if (error.code === 'auth/popup-closed-by-user') {
+      errorMessage = 'La ventana de Google fue cerrada. Operación cancelada.';
+    } else if (error.code === 'auth/popup-blocked') {
+      errorMessage = 'El popup fue bloqueado. Permite ventanas emergentes para este sitio.';
+    }
+    
+    this.showAlert('Error', errorMessage);
   }
 
   // ----------------------------------------------------
   // 4. FUNCIONES AUXILIARES
   // ----------------------------------------------------
   private async updateFieldInDatabase(field: 'nombre' | 'apellido' | 'email' | 'telefono', value: string) {
-    const uid = this.userProfile!.id || this.userProfile!.id; 
+    const uid = this.userProfile!.id;
     const dataToUpdate = { [field]: value };
 
     try {
@@ -476,75 +540,6 @@ async showAlert2(header: string, message: string) {
       this.showAlert('Error de Guardado', 'No se pudo actualizar el campo.');
     }
   }
-  async eliminarCuenta() {
-  const alert = await this.alertController.create({
-    header: 'Eliminar Cuenta',
-    message: '¿Estás seguro? Esta acción no se puede deshacer. Se eliminarán todos tus datos.',
-    inputs: [
-      {
-        name: 'currentPassword',
-        type: 'password',
-        placeholder: 'Contraseña actual para confirmar',
-        attributes: {
-          required: true
-        }
-      }
-    ],
-    buttons: [
-      { text: 'Cancelar', role: 'cancel' },
-      {
-        text: 'Eliminar',
-        role: 'destructive',
-        cssClass: 'danger-button',
-        handler: async (data) => {
-          const currentPassword = data.currentPassword?.trim();
-          
-          if (!currentPassword) {
-            this.showAlert('Error', 'Debes ingresar tu contraseña actual');
-            return false;
-          }
-
-          // Confirmación final
-          const confirmAlert = await this.alertController.create({
-            header: 'Confirmar Eliminación',
-            message: '¿ESTÁS ABSOLUTAMENTE SEGURO? Se eliminará tu cuenta y todos los datos permanentemente.',
-            buttons: [
-              { text: 'Cancelar', role: 'cancel' },
-              {
-                text: 'ELIMINAR DEFINITIVAMENTE',
-                cssClass: 'danger-button',
-                handler: async () => {
-                  try {
-                    await this.auth.deleteUserAccount(currentPassword);
-                    this.showAlert('Cuenta Eliminada', 'Tu cuenta ha sido eliminada exitosamente');
-                    // Redirigir al login o página principal
-                    this.router.navigate(['/login']);
-                  } catch (error: any) {
-                    console.error('Error al eliminar cuenta:', error);
-                    
-                    let errorMessage = 'Error al eliminar cuenta';
-                    if (error.code === 'auth/wrong-password') {
-                      errorMessage = 'Contraseña incorrecta';
-                    } else if (error.code === 'auth/requires-recent-login') {
-                      errorMessage = 'Debes volver a iniciar sesión para realizar esta acción';
-                    }
-                    
-                    this.showAlert('Error', errorMessage);
-                  }
-                }
-              }
-            ]
-          });
-          
-          await confirmAlert.present();
-          return false;
-        }
-      }
-    ]
-  });
-
-  await alert.present();
-}
 
   // ----------------------------------------------------
   // 5. UTILIDADES

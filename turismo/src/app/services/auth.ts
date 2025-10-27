@@ -13,8 +13,8 @@ import {
   EmailAuthProvider,
   updatePassword,
   deleteUser,
-  signInWithPopup, // ✅ AGREGAR
-  GoogleAuthProvider, // ✅ AGREGAR
+  signInWithPopup,
+  GoogleAuthProvider,
   UserCredential   
 } from '@angular/fire/auth';
 
@@ -40,7 +40,7 @@ export interface UserProfile {
 export class AuthService {
   private firebaseAuth = inject(Auth);
   private userId: string | null = null;
-    private firestore = inject(Firestore)
+  private firestore = inject(Firestore)
 
   authState$: Observable<User | null> = user(this.firebaseAuth);
   currentUser: any;
@@ -64,70 +64,77 @@ export class AuthService {
     if (storedId) {
       this.userId = storedId;
     }
-  }// =====================================================
-// 🔹 ELIMINAR CUENTA (Usuario autenticado)
-// =====================================================
-async deleteUserAccount(currentPassword: string): Promise<void> {
-  const user = this.firebaseAuth.currentUser;
-  if (!user) throw new Error('No hay usuario autenticado');
-
-  try {
-    // 1. Reautenticación obligatoria por seguridad
-    const credential = EmailAuthProvider.credential(user.email!, currentPassword);
-    await reauthenticateWithCredential(user, credential);
-
-    // 2. Primero eliminar de tu base de datos (Firestore/Realtime DB)
-    await this.deleteUserFromDatabase(user.uid);
-
-    // 3. Luego eliminar de Authentication
-    await deleteUser(user);
-
-    // 4. Limpiar datos locales
-    this.userId = null;
-    localStorage.removeItem('userUID');
-    
-    console.log('✅ Cuenta eliminada completamente');
-  } catch (error) {
-    console.error('❌ Error al eliminar cuenta:', error);
-    throw error;
   }
-}
 
-// =====================================================
-// 🔹 ELIMINAR USUARIO DE LA BASE DE DATOS
-// =====================================================
-private async deleteUserFromDatabase(userId: string): Promise<void> {
-  try {
-    // 👇 ELIGE SEGÚN TU BASE DE DATOS:
+  // =====================================================
+  // 🔹 ELIMINAR CUENTA (Compatible con Google y Email)
+  // =====================================================
+  async deleteUserAccount(currentPassword?: string): Promise<void> {
+    const user = this.firebaseAuth.currentUser;
+    if (!user) throw new Error('No hay usuario autenticado');
 
-    // Si usas Firestore:
-    const userDocRef = doc(this.firestore, 'usuario', userId);
-    await deleteDoc(userDocRef);
+    try {
+      const isGoogleUser = this.isGoogleUser();
+      
+      if (!isGoogleUser) {
+        // ✅ PARA USUARIOS EMAIL: Reautenticación con contraseña
+        if (!currentPassword) {
+          throw new Error('Se requiere la contraseña actual para eliminar la cuenta');
+        }
+        const credential = EmailAuthProvider.credential(user.email!, currentPassword);
+        await reauthenticateWithCredential(user, credential);
+      } else {
+        // ✅ PARA USUARIOS GOOGLE: Reautenticación con popup de Google
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(this.firebaseAuth, provider);
+      }
 
-    // O si usas Realtime Database:
-    // await this.database.ref('users/' + userId).remove();
+      // 2. Eliminar de la base de datos
+      await this.deleteUserFromDatabase(user.uid);
 
-    console.log('✅ Usuario eliminado de la base de datos');
-  } catch (error) {
-    console.error('❌ Error al eliminar de la base de datos:', error);
-    throw error;
+      // 3. Eliminar de Authentication
+      await deleteUser(user);
+
+      // 4. Limpiar datos locales
+      this.userId = null;
+      localStorage.removeItem('userUID');
+      
+      console.log('✅ Cuenta eliminada completamente');
+    } catch (error) {
+      console.error('❌ Error al eliminar cuenta:', error);
+      throw error;
+    }
   }
-}
 
+  // =====================================================
+  // 🔹 ELIMINAR USUARIO DE LA BASE DE DATOS
+  // =====================================================
+  private async deleteUserFromDatabase(userId: string): Promise<void> {
+    try {
+      const userDocRef = doc(this.firestore, 'usuario', userId);
+      await deleteDoc(userDocRef);
+      console.log('✅ Usuario eliminado de la base de datos');
+    } catch (error) {
+      console.error('❌ Error al eliminar de la base de datos:', error);
+      throw error;
+    }
+  }
 
   // =====================================================
   // 🔹 Actualizar email del usuario autenticado
   // =====================================================
   async updateAuthEmail(newEmail: string, currentPassword: string): Promise<void> {
-    const user = this.firebaseAuth.currentUser; // ✅ USAMOS firebaseAuth, NO this.auth
+    const user = this.firebaseAuth.currentUser;
     if (!user) throw new Error('No hay usuario autenticado');
 
     try {
-      // Reautenticación obligatoria antes de cambiar el email
+      // Solo para usuarios email (Google no permite cambiar email así)
+      if (this.isGoogleUser()) {
+        throw new Error('Los usuarios de Google no pueden cambiar su email desde la aplicación');
+      }
+
       const credential = EmailAuthProvider.credential(user.email!, currentPassword);
       await reauthenticateWithCredential(user, credential);
-
-      // Luego actualizamos el email
       await updateEmail(user, newEmail);
 
       console.log(`✅ Email actualizado correctamente a: ${newEmail}`);
@@ -136,16 +143,19 @@ private async deleteUserFromDatabase(userId: string): Promise<void> {
       throw error;
     }
   }
+
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
     const user = this.firebaseAuth.currentUser;
     if (!user) throw new Error('No hay usuario autenticado');
 
     try {
-      // 1. Reautenticación obligatoria (por seguridad)
+      // Solo para usuarios email (Google no tiene contraseña en tu app)
+      if (this.isGoogleUser()) {
+        throw new Error('Los usuarios de Google no pueden cambiar contraseña desde la aplicación');
+      }
+
       const credential = EmailAuthProvider.credential(user.email!, currentPassword);
       await reauthenticateWithCredential(user, credential);
-
-      // 2. Actualizar contraseña
       await updatePassword(user, newPassword);
 
       console.log('✅ Contraseña actualizada correctamente');
@@ -221,8 +231,6 @@ private async deleteUserFromDatabase(userId: string): Promise<void> {
       email: user.email || '',
       nombre: user.displayName?.split(' ')[0] || '',
       apellido: user.displayName?.split(' ')[1] || '',
-      
-      
     };
   }
 
@@ -237,62 +245,47 @@ private async deleteUserFromDatabase(userId: string): Promise<void> {
     if (!user) throw new Error('No user logged in');
 
     const fullName = `${profileData.nombre || ''} ${profileData.apellido || ''}`.trim();
-
     await updateProfile(user, {
       displayName: fullName || null
     });
   }
+
   // =====================================================
-// 🔹 LOGIN CON GOOGLE
-// =====================================================
-async loginWithGoogle(): Promise<UserCredential> {
-  try {
-    const provider = new GoogleAuthProvider();
-    
-    // Agregar scopes adicionales si necesitas
-    provider.addScope('profile');
-    provider.addScope('email');
-    
-    const result = await signInWithPopup(this.firebaseAuth, provider);
-    
-    if (result.user?.uid) {
-      this.userId = result.user.uid;
-      localStorage.setItem('userUID', result.user.uid);
+  // 🔹 LOGIN CON GOOGLE
+  // =====================================================
+  async loginWithGoogle(): Promise<UserCredential> {
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.addScope('profile');
+      provider.addScope('email');
+      
+      const result = await signInWithPopup(this.firebaseAuth, provider);
+      
+      if (result.user?.uid) {
+        this.userId = result.user.uid;
+        localStorage.setItem('userUID', result.user.uid);
+      }
+      
+      console.log('✅ Login con Google exitoso:', result.user?.email);
+      return result;
+      
+    } catch (error: any) {
+      console.error('❌ Error en login con Google:', error);
+      throw error;
     }
-    
-    console.log('✅ Login con Google exitoso:', result.user?.email);
-    return result;
-    
-  } catch (error: any) {
-    console.error('❌ Error en login con Google:', error);
-    throw error;
   }
-}
 
-// =====================================================
-// 🔹 OBTENER CREDENCIALES DE GOOGLE (para reautenticación)
-// =====================================================
-getGoogleCredentials(): any {
-  const user = this.firebaseAuth.currentUser;
-  if (!user) return null;
-  
-  // Para usuarios de Google, puedes usar esto para reautenticación
-  const provider = new GoogleAuthProvider();
-  return provider;
-}
-
-// =====================================================
-// 🔹 VERIFICAR SI ES USUARIO DE GOOGLE
-// =====================================================
-isGoogleUser(): boolean {
-  const user = this.firebaseAuth.currentUser;
-  if (!user) return false;
-  
-  // Verificar si el proveedor es Google
-  return user.providerData.some(provider => 
-    provider.providerId === 'google.com'
-  );
-}
+  // =====================================================
+  // 🔹 VERIFICAR SI ES USUARIO DE GOOGLE
+  // =====================================================
+  isGoogleUser(): boolean {
+    const user = this.firebaseAuth.currentUser;
+    if (!user) return false;
+    
+    return user.providerData.some(provider => 
+      provider.providerId === 'google.com'
+    );
+  }
 
   // =====================================================
   // 🔹 Obtener UID guardado
