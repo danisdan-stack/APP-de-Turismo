@@ -94,6 +94,37 @@ export class MapaPage implements OnInit, OnDestroy {
       }
     });
   }
+  // ✅ MÉTODO PARA ACTIVAR GPS CON CONFIRMACIÓN
+async activarGPS() {
+  const alert = await this.alertController.create({
+    header: 'Activar GPS',
+    message: '¿Deseas activar el GPS para ver tu ubicación en el mapa?',
+    buttons: [
+      {
+        text: 'Cancelar',
+        role: 'cancel',
+        handler: () => {
+          console.log('📍 Activación de GPS cancelada');
+        }
+      },
+      {
+        text: 'Activar',
+        handler: () => {
+          console.log('📍 Activando GPS...');
+          this.activarGPSConfirmado();
+        }
+      }
+    ]
+  });
+
+  await alert.present();
+}
+
+// ✅ MÉTODO QUE SE EJECUTA CUANDO CONFIRMAN
+private async activarGPSConfirmado() {
+  // Aquí va la lógica para activar el GPS
+  console.log('📍 GPS activado por confirmación');
+}
 
   // ✅ MÉTODO CORREGIDO - ESPERAR MAPA
   private mostrarPuntoFavorito(params: any) {
