@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth';
+import { ProfileService } from 'src/app/services/perfil'; // ✅ AGREGAR
 
 // ✅ API MODULAR
 import { Auth as FirebaseAuth, sendPasswordResetEmail } from '@angular/fire/auth';
@@ -21,10 +22,45 @@ export class LoginPage {
   private firebaseAuth = inject(FirebaseAuth);
 
   constructor(
-    private authService: AuthService, // Tu servicio personalizado
+    private authService: AuthService,
+    private profileService: ProfileService, // ✅ AGREGAR
     private router: Router,
     public alertController: AlertController
   ) { }
+
+  // --- NUEVO MÉTODO: LOGIN CON GOOGLE ---
+  async continuarConGoogle() {
+    try {
+      // 1. Login/Registro con Google
+      const result = await this.authService.loginWithGoogle();
+      
+      // 2. Verificar si es primera vez (si no existe perfil en Firestore)
+      const perfilExistente = await this.profileService.getUserProfile(result.user.uid);
+      
+      if (!perfilExistente) {
+        // 3. Crear perfil automáticamente
+        await this.profileService.createUserProfileFromGoogle(result.user);
+        this.showAlert('¡Bienvenido!', 'Tu cuenta de Google ha sido registrada exitosamente.');
+      } else {
+        this.showAlert('¡Bienvenido de vuelta!', 'Sesión iniciada con Google.');
+      }
+      
+      // 4. Redirigir a inicio
+      this.router.navigate(['/inicio']);
+      
+    } catch (error: any) {
+      console.error('Error con Google Auth:', error);
+      
+      let errorMessage = 'Error al iniciar sesión con Google.';
+      if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = 'El inicio de sesión fue cancelado.';
+      } else if (error.code === 'auth/popup-blocked') {
+        errorMessage = 'El popup fue bloqueado. Permite popups para este sitio.';
+      }
+      
+      this.showAlert('Error Google', errorMessage);
+    }
+  }
 
   // --- FUNCIÓN DE INICIO DE SESIÓN (Botón 'Iniciar sesión') ---
   async iniciarSesion() {
@@ -36,7 +72,6 @@ export class LoginPage {
     try {
       const userCredential = await this.authService.login(this.email, this.password);
       if (userCredential) {
-       
         const uid = userCredential.user.uid;
         localStorage.setItem('userUID', uid);
         this.router.navigateByUrl('/inicio');
