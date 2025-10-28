@@ -1,23 +1,22 @@
 <ion-content class="login-page">
-  <!-- contenedor central; mantiene todo centrado en la pantalla -->
+  <!-- Fondo -->
+  <div class="background-overlay"></div>
+
   <header class="tm-header">
-  <div class="tm-logo-wrap" role="img" aria-label="Logotipo TurisMatch">
-   <img src="assets/icon/logo.png" alt="Logo TurisMatch" class="app-logo" />
+    <div class="tm-logo-wrap" role="img" aria-label="Logotipo TurisMatch">
+      <img src="assets/icon/logo.png" alt="Logo TurisMatch" class="app-logo" />
+    </div>
 
-  </div>
+    <div class="tm-title-wrap">
+      <div class="tm-title">Turis <span class="tm-match">Match</span></div>
+      <div class="tm-tagline">Destinos a tu medida</div>
+    </div>
+  </header>
 
-  <div class="tm-title-wrap">
-    <div class="tm-title">TURIS <span class="tm-match">MATCH</span></div>
-    <div class="tm-tagline">Destinos a tu medida</div>
-  </div>
-</header>
-
-  
   <div class="content-container">
-   
+
     <div class="bienvenido-text">Bienvenido</div>
 
-    
     <div class="input-group">
       <ion-item class="input-field" lines="none">
         <ion-input type="email" placeholder="Email" [(ngModel)]="email"></ion-input>
@@ -28,14 +27,18 @@
       </ion-item>
     </div>
 
-    <!-- botones -->
+    <div class="forgot-password">
+      ¿Olvidaste tu contraseña?
+    </div>
+
     <div class="button-group">
       <ion-button expand="full" class="main-button login-button" (click)="iniciarSesion()">
         Iniciar sesión
       </ion-button>
 
-      <ion-button expand="full" fill="solid" class="google-button">
-        <ion-icon name="logo-google"></ion-icon>
+      <!-- ✅ BOTÓN GOOGLE CON (click) AGREGADO -->
+      <ion-button expand="full" fill="solid" class="google-button" (click)="continuarConGoogle()">
+        <img src="assets/icon/google.png" alt="Google" class="google-icon" />
         Continuar con Google
       </ion-button>
 
@@ -45,11 +48,17 @@
         Registrarse
       </ion-button>
     </div>
-  </div>
 
-  <!-- permisos GPS -->
-  <div class="gps-permission">
-    <div class="gps-dot"></div>
-    Permisos GPS
+    
+<div class="gps-permission">
+  <ion-checkbox 
+    class="gps-toggle custom-checkbox" 
+    [(ngModel)]="gpsHabilitado"
+    (ionChange)="onGPSChange($event)">
+  </ion-checkbox>
+  Permisos GPS
+</div>
+
+
   </div>
 </ion-content>

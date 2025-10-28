@@ -21,7 +21,7 @@
       <ion-item>
         <ion-label position="stacked">Nombre</ion-label>
         <ion-input 
-          [(ngModel)]="editedProfile!.nombre" 
+          [(ngModel)]="editedProfile.nombre" 
           [readonly]="!isEditing"
           placeholder="Ingrese su nombre">
         </ion-input>
@@ -34,7 +34,7 @@
       <ion-item>
         <ion-label position="stacked">Apellido</ion-label>
         <ion-input 
-          [(ngModel)]="editedProfile!.apellido" 
+          [(ngModel)]="editedProfile.apellido" 
           [readonly]="!isEditing"
           placeholder="Ingrese su apellido">
         </ion-input>
@@ -47,7 +47,7 @@
       <ion-item>
         <ion-label position="stacked">Teléfono</ion-label>
         <ion-input 
-          [(ngModel)]="editedProfile!.telefono" 
+          [(ngModel)]="editedProfile.telefono" 
           [readonly]="!isEditing"
           placeholder="Ingrese su telefono">
         </ion-input>
@@ -61,13 +61,21 @@
         <ion-label position="stacked">Email</ion-label>
         <ion-input 
           type="email" 
-          [(ngModel)]="editedProfile!.email" 
+          [(ngModel)]="editedProfile.email" 
           [readonly]="true"
           placeholder="Ingrese su correo">
         </ion-input>
-        <ion-button fill="clear" slot="end" disabled="true" (click)="editarEmail()">
-          <ion-icon name="lock-closed-outline"></ion-icon>
-          <span class="ion-padding-start">Fijo</span>
+        <ion-button 
+          fill="clear" 
+          slot="end" 
+          [disabled]="true" 
+          (click)="editarEmail()">
+          <ion-icon 
+            [name]="isGoogleUser() ? 'lock-closed-outline' : 'create-outline'">
+          </ion-icon>
+          <span class="ion-padding-start">
+            {{ isGoogleUser() ? 'Fijo' : 'Editar' }}
+          </span>
         </ion-button>
       </ion-item>
 
@@ -75,13 +83,48 @@
         <ion-label position="stacked">Contraseña</ion-label>
         <ion-input 
           type="password" 
-          value="********" 
+          [value]="'********'" 
           readonly
           placeholder="********">
         </ion-input>
-        <ion-button fill="clear" slot="end" (click)="cambiarContrasena()">
-          <ion-icon name="key-outline"></ion-icon>
-          <span class="ion-padding-start">Cambiar</span>
+        <ion-button 
+          fill="clear" 
+          slot="end" 
+          [disabled]="isGoogleUser()" 
+          (click)="cambiarContrasena()">
+          <ion-icon 
+            [name]="isGoogleUser() ? 'lock-closed-outline' : 'key-outline'">
+          </ion-icon>
+          <span class="ion-padding-start">
+            {{ isGoogleUser() ? 'Fija' : 'Cambiar' }}
+          </span>
+        </ion-button>
+      </ion-item>
+
+      <!-- ✅ CORRECCIÓN: Indicador de tipo de cuenta -->
+      <ion-item lines="none">
+        <ion-label>
+          <h3>Tipo de cuenta</h3>
+          <p>{{ isGoogleUser() ? 'Google' : 'Email/Contraseña' }}</p>
+        </ion-label>
+        <ion-icon 
+          [name]="isGoogleUser() ? 'logo-google' : 'mail-outline'" 
+          slot="end"
+          [color]="isGoogleUser() ? 'primary' : 'medium'">
+        </ion-icon>
+      </ion-item>
+
+      <!-- BOTONES DE ACCIÓN -->
+      <div class="buttons-container" style="margin-top: 24px;">
+        
+        <!-- Cerrar Sesión -->
+        <ion-button 
+          color="primary" 
+          expand="block" 
+          fill="outline"
+          (click)="logout()">
+          <ion-icon name="log-out-outline" slot="start"></ion-icon>
+          Cerrar Sesión
         </ion-button>
       </ion-item>
 
@@ -103,32 +146,53 @@
           fill="solid" 
           color="danger"
           (click)="eliminarCuenta()"
-          class="delete-button">
+          style="margin-top: 16px;">
           <ion-icon name="trash-outline" slot="start"></ion-icon>
-          ELIMINAR CUENTA
+          Eliminar Cuenta
         </ion-button>
+
+        <!-- ✅ CORRECCIÓN: Mensaje informativo -->
+        <div *ngIf="!isGoogleUser()" class="ion-text-center ion-margin-top">
+          <ion-text color="warning">
+            <small>
+              <ion-icon name="warning-outline"></ion-icon>
+              Para eliminar tu cuenta necesitarás ingresar tu contraseña
+            </small>
+          </ion-text>
+        </div>
+
       </div>
 
     </ion-card-content>
   </ion-card>
 
-  <ion-spinner *ngIf="loading" name="crescent" class="ion-margin-top"></ion-spinner>
+  <!-- ✅ CORRECCIÓN: Mensaje cuando no hay perfil -->
+  <div *ngIf="!userProfile && !loading" class="ion-text-center ion-padding">
+    <ion-icon name="person-circle-outline" size="large" color="medium"></ion-icon>
+    <p>No se pudo cargar la información del perfil</p>
+  </div>
+
+  <!-- Loader -->
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner name="crescent" class="ion-margin"></ion-spinner>
+    <p>Cargando perfil...</p>
+  </div>
 
 </ion-content>
   
-  <ion-tab-bar slot="bottom" class="tabs-navigation">
-    <ion-tab-button tab="tab1" (click)="irATab1()">
-      <ion-icon name="home-outline"></ion-icon>
-      <ion-label>Inicio</ion-label>
-    </ion-tab-button>
-    
-    <ion-tab-button tab="tab2" (click)="irATab2()">
-      <ion-icon name="search-outline"></ion-icon>
-      <ion-label>Favoritos</ion-label>
-    </ion-tab-button>
-    
-    <ion-tab-button tab="tab3" (click)="irATab3()" class="tab-active">
-      <ion-icon name="person-outline"></ion-icon>
-      <ion-label>Mi Cuenta</ion-label>
-    </ion-tab-button>
-  </ion-tab-bar>
+<ion-tab-bar slot="bottom" class="tabs-navigation">
+  <ion-tab-button tab="tab1" (click)="irATab1()">
+    <ion-icon name="home-outline"></ion-icon>
+    <ion-label>Inicio</ion-label>
+  </ion-tab-button>
+  
+  <ion-tab-button tab="tab2" (click)="irATab2()">
+    <ion-icon name="search-outline"></ion-icon>
+    <ion-label>Favoritos</ion-label>
+  </ion-tab-button>
+  
+  <ion-tab-button tab="tab3" (click)="irATab3()" class="tab-active">
+    <ion-icon name="person-outline"></ion-icon>
+    <ion-label>Mi Cuenta</ion-label>
+  </ion-tab-button>
+</ion-tab-bar>
