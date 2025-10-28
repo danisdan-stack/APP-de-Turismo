@@ -49,6 +49,7 @@ export class ProfileService {
     return firestoreProfile;
   }
 
+
   // 🔹 Obtener perfil completo desde Firestore
   async getUserProfile(uid: string): Promise<UserProfile | null> {
     // 🚨 CAMBIO: Usar this.collectionName
@@ -70,6 +71,26 @@ export class ProfileService {
       updatedAt: new Date()
     });
   }
+// En ProfileService - agrega este método:
+
+// 🔹 CREAR PERFIL AUTOMÁTICAMENTE PARA USUARIOS DE GOOGLE
+async createUserProfileFromGoogle(user: any): Promise<void> {
+  try {
+    const profileData: UserProfile = {
+      id: user.uid,
+      email: user.email || '',
+      nombre: user.displayName?.split(' ')[0] || 'Usuario',
+      apellido: user.displayName?.split(' ')[1] || 'Google',
+      telefono: user.phoneNumber || ''
+    };
+
+    await this.saveUserProfile(profileData);
+    console.log('✅ Perfil de Google creado automáticamente');
+  } catch (error) {
+    console.error('❌ Error creando perfil de Google:', error);
+    throw error;
+  }
+}
 
   // 🔹 Obtener perfil completo combinando Auth y Firestore
   async getCompleteUserProfile(): Promise<UserProfile | null> {
