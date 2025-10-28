@@ -94,37 +94,64 @@ export class MapaPage implements OnInit, OnDestroy {
       }
     });
   }
+
   // ✅ MÉTODO PARA ACTIVAR GPS CON CONFIRMACIÓN
-async activarGPS() {
-  const alert = await this.alertController.create({
-    header: 'Activar GPS',
-    message: '¿Deseas activar el GPS para ver tu ubicación en el mapa?',
-    buttons: [
-      {
-        text: 'Cancelar',
-        role: 'cancel',
-        handler: () => {
-          console.log('📍 Activación de GPS cancelada');
+  async activarGPS() {
+    const alert = await this.alertController.create({
+      header: 'Activar GPS',
+      message: '¿Deseas activar el GPS para ver tu ubicación en el mapa?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          handler: () => {
+            console.log('📍 Activación de GPS cancelada');
+          }
+        },
+        {
+          text: 'Activar',
+          handler: () => {
+            console.log('📍 Activando GPS...');
+            this.activarGPSConfirmado();
+          }
         }
-      },
-      {
-        text: 'Activar',
-        handler: () => {
-          console.log('📍 Activando GPS...');
-          this.activarGPSConfirmado();
-        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  // ✅ MÉTODO CORREGIDO: ACTIVAR GPS Y ACTUALIZAR MAPA
+  private async activarGPSConfirmado() {
+    try {
+      console.log('📍 Activando GPS...');
+      
+      // 1. Activar el GPS en el servicio
+      const exito = await this.localizacion.cambiarEstadoGPS(true);
+      
+      if (exito) {
+        console.log('📍 GPS activado correctamente');
+        
+        // 2. Mostrar confirmación
+        this.showAlert('GPS Activado', 'La ubicación ha sido habilitada correctamente');
+        
+        // 3. ✅ IMPORTANTE: Recargar la ubicación del usuario en el mapa
+        setTimeout(() => {
+          this.mostrarUbicacionUsuario();
+        }, 1000);
+        
+      } else {
+        console.log('📍 No se pudieron obtener permisos de GPS');
+        this.showAlert(
+          'Permisos Denegados', 
+          'No se pudieron obtener los permisos de ubicación. Verifica que tengas los permisos habilitados en tu dispositivo.'
+        );
       }
-    ]
-  });
-
-  await alert.present();
-}
-
-// ✅ MÉTODO QUE SE EJECUTA CUANDO CONFIRMAN
-private async activarGPSConfirmado() {
-  // Aquí va la lógica para activar el GPS
-  console.log('📍 GPS activado por confirmación');
-}
+    } catch (error) {
+      console.error('Error activando GPS:', error);
+      this.showAlert('Error', 'Ocurrió un error al activar el GPS');
+    }
+  }
 
   // ✅ MÉTODO CORREGIDO - ESPERAR MAPA
   private mostrarPuntoFavorito(params: any) {
@@ -237,7 +264,7 @@ private async activarGPSConfirmado() {
     }
   }
 
-  // ✅ MÉTODO CORREGIDO: MOSTRAR UBICACIÓN DEL USUARIO
+  // ✅ MÉTODO MEJORADO: MOSTRAR UBICACIÓN CON MÁS FEEDBACK
   private async mostrarUbicacionUsuario() {
     try {
       // ✅ VERIFICAR SI EL GPS ESTÁ HABILITADO
@@ -273,11 +300,24 @@ private async activarGPSConfirmado() {
       .bindPopup('📍 ¡Estás aquí!')
       .openPopup();
 
-      console.log('📍 Ubicación del usuario mostrada:', ubicacion);
+      // ✅ CENTRAR EL MAPA EN LA NUEVA UBICACIÓN
+      this.map.setView([ubicacion.lat, ubicacion.lng], 15, {
+        animate: true,
+        duration: 1
+      });
+
+      console.log('📍 Ubicación del usuario mostrada y centrada:', ubicacion);
 
     } catch (error: any) {
       console.error('❌ Error obteniendo ubicación:', error);
-      // No mostrar alerta para no interrumpir la experiencia
+      
+      // Mostrar error específico
+      if (error.message.includes('permission') || error.message.includes('permiso')) {
+        this.showAlert(
+          'Permisos Requeridos', 
+          'Por favor, permite el acceso a la ubicación en la configuración de tu dispositivo.'
+        );
+      }
     }
   }
 
@@ -300,7 +340,7 @@ private async activarGPSConfirmado() {
     });
   }
 
-  // ✅ MÉTODO CORREGIDO: CENTRAR EN UBICACIÓN DEL USUARIO
+  // ✅ MÉTODO MEJORADO: CENTRAR EN UBICACIÓN
   async centrarEnMiUbicacion() {
     try {
       // ✅ VERIFICAR SI EL GPS ESTÁ HABILITADO
@@ -309,26 +349,10 @@ private async activarGPSConfirmado() {
         return;
       }
 
-      const ubicacion = await this.localizacion.getCurrentPosition();
+      console.log('📍 Centrando en mi ubicación...');
       
-      // ✅ VERIFICAR SI SE OBTUVO LA UBICACIÓN
-      if (!ubicacion) {
-        throw new Error('No se pudo obtener la ubicación');
-      }
-      
-      this.map.setView([ubicacion.lat, ubicacion.lng], 15, {
-        animate: true,
-        duration: 1
-      });
-
-      // Asegurarse de que el marcador del usuario esté visible
-      if (this.userMarker) {
-        this.userMarker.openPopup();
-      } else {
-        this.mostrarUbicacionUsuario();
-      }
-
-      console.log('🎯 Mapa centrado en tu ubicación');
+      // ✅ FORZAR ACTUALIZACIÓN DE LA UBICACIÓN
+      await this.mostrarUbicacionUsuario();
 
     } catch (error: any) {
       console.error('Error al centrar en ubicación:', error);
