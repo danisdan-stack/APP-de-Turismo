@@ -5,6 +5,7 @@ ion-card{
   margin: 0;
   height: 100%;
   overflow-y: auto;
+  background-color: #184a4e;
 }
 
 .paso-group {
@@ -16,6 +17,7 @@ ion-card{
     --padding-top: 16px;
     --padding-bottom: 16px;
   }
+
 }
 
 .opciones-list {
@@ -114,7 +116,7 @@ ion-button[disabled] {
 // Responsive
 @media (max-width: 768px) {
   .filtros-card {
-    max-height: 60vh;
+    max-height: 100vh;
   }
   
   .paso-group {
@@ -127,11 +129,12 @@ ion-button[disabled] {
   margin-bottom: 24px;
   padding: 12px;
   border-radius: 12px;
-  background: var(--ion-color-light-tint);
+  background: #184a4e ;
   
   &:last-child {
     margin-bottom: 16px;
   }
+
 }
 
 .estado-busqueda {
