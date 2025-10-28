@@ -1,6 +1,6 @@
 .login-page {
   --background: transparent;
-  min-height: 100vh; 
+  min-height: 100vh;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -12,11 +12,14 @@
 }
 
 .background-overlay {
-  position: fixed; 
-  top: 0; left: 0; right: 0; bottom: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: url('/assets/icon/fondo.png') center center no-repeat;
   background-size: cover;
-  background-attachment: fixed; 
+  background-attachment: fixed;
   z-index: -2;
 }
 
@@ -41,12 +44,12 @@
   backdrop-filter: blur(12px);
   border-radius: 20px;
   padding: 32px 22px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
 .tm-header {
   display: flex;
-  flex-direction: row; 
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   text-align: left;
@@ -77,7 +80,7 @@
 }
 
 .tm-tagline {
-  color: rgba(255,255,255,0.9);
+  color: rgba(255, 255, 255, 0.9);
   font-size: 0.9rem;
   margin-top: 2px;
 }
@@ -101,8 +104,8 @@
 .input-field {
   --background: rgba(255, 255, 255, 0.2);
   --border-radius: 14px;
-  height: 48px; 
-  width: 100%; 
+  height: 48px;
+  width: 100%;
   display: flex;
   align-items: center;
   backdrop-filter: blur(4px);
@@ -114,13 +117,13 @@
   color: #fff;
   font-size: 1rem;
   padding-left: 12px;
-  width: 100%; 
+  width: 100%;
 }
 
 .forgot-password {
   color: #ffffff;
   font-size: 0.9rem;
-  text-align: center; 
+  text-align: center;
   margin: 6px 0;
   cursor: pointer;
   transition: 0.3s ease;
@@ -180,20 +183,20 @@
 
 .google-button .google-icon {
   position: absolute;
-  left: 20px; /* <-- ajustá este número a gusto */
+  left: 20px;
   width: 26px;
   height: 26px;
 }
 
 .google-button span {
-  margin-left: 10px; 
+  margin-left: 10px;
 }
 
 
 
 
 .register-button {
-  --background: #1b3c55; 
+  --background: #1b3c55;
   color: #fff;
   font-size: 1rem;
   font-weight: 700;
@@ -201,13 +204,13 @@
 
 
 .content-container {
-  padding-bottom: 80px; 
+  padding-bottom: 80px;
 }
 
 
 .gps-permission {
-  position: relative; 
-  margin-top: 20px;  
+  position: relative;
+  margin-top: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -222,8 +225,64 @@
   height: 14px;
   border-radius: 50%;
   background: #fff;
-  border: 1px solid rgba(250,250,250,0.9);
+  border: 1px solid rgba(250, 250, 250, 0.9);
 }
 
+ion-item {
+  --background: transparent !important;
+  --border-color: transparent !important;
+  --inner-border-width: 0 !important;
+  --highlight-height: 0 !important;
+  --min-height: 48px;
+  border: none !important;
+  box-shadow: none !important;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  border-radius: 14px;
+  margin-bottom: 12px;
+  padding-left: 12px;
+  padding-right: 12px;
+}
 
+ion-input {
+  color: #fff;
+  --placeholder-color: #d4d4d4;
+  font-size: 1rem;
+}
 
+.password-field {
+  position: relative;
+  padding-right: 0;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 8px;
+  top: 0;
+  bottom: 0;
+  margin: auto 0;          
+  height: 24px;           
+  width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  z-index: 10;
+}
+
+.password-toggle ion-icon,
+.password-toggle .eye-icon {
+  font-size: 1.1rem;       
+  color: #4da3ff;
+  line-height: 1;
+}
+
+.password-field ion-input input,
+.password-field ion-input .native-input {
+  padding-right: 44px;
+  height: 48px;
+  line-height: 48px;
+  box-sizing: border-box;
+}

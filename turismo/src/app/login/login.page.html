@@ -22,15 +22,19 @@
         <ion-input type="email" placeholder="Email" [(ngModel)]="email"></ion-input>
       </ion-item>
 
-      <ion-item class="input-field" lines="none">
-        <ion-input [type]="passwordVisible ? 'text' : 'password'" placeholder="Contraseña" [(ngModel)]="password">
-        </ion-input>
+      <ion-item class="input-field password-field" lines="none">
+        <div class="password-container">
+          <ion-input class="password-input" [type]="passwordVisible ? 'text' : 'password'" placeholder="Contraseña"
+            [(ngModel)]="password"></ion-input>
 
-
-        <ion-button fill="clear" slot="end" (click)="togglePassword()" aria-label="Mostrar/ocultar contraseña">
-          <ion-icon [name]="passwordVisible ? 'eye-off' : 'eye'"></ion-icon>
-        </ion-button>
+          <ion-button fill="clear" class="password-toggle" (click)="togglePassword()"
+            aria-label="Mostrar/ocultar contraseña">
+            <ion-icon slot="icon-only" name="{{ passwordVisible ? 'eye-off' : 'eye' }}" class="eye-icon"></ion-icon>
+          </ion-button>
+        </div>
       </ion-item>
+
+
 
     </div>
 
