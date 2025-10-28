@@ -62,33 +62,39 @@ export class LoginPage {
 }
 
   // ✅ MODIFICADO: USAR SERVICIO LOCALIZACION
-  async onGPSChange(event: any) {
-    const habilitado = event.detail.checked;
+  // ✅ VERSIÓN MEJORADA en LoginPage
+async onGPSChange(event: any) {
+  const habilitado = event.detail.checked;
+  
+  // Actualizar UI inmediatamente para feedback visual
+  this.gpsHabilitado = habilitado;
+  
+  try {
+    const exito = await this.localizacion.cambiarEstadoGPS(habilitado);
     
-    try {
-      // ✅ USAR EL SERVICIO PARA CAMBIAR ESTADO
-      const exito = await this.localizacion.cambiarEstadoGPS(habilitado);
-      
-      if (habilitado) {
-        if (exito) {
-          console.log('📍 GPS habilitado correctamente');
-          this.showAlert('GPS Activado', 'Ubicación habilitada correctamente');
-        } else {
-          // Si falló la activación, revertir el checkbox
-          this.gpsHabilitado = false;
-          this.showAlert('GPS No Disponible', 'No se pudieron obtener los permisos de ubicación. Verifica que tengas los permisos habilitados en tu dispositivo.');
-        }
+    if (habilitado) {
+      if (exito) {
+        console.log('📍 GPS habilitado correctamente');
+        this.showAlert('GPS Activado', 'Ubicación habilitada correctamente');
       } else {
-        console.log('📍 GPS deshabilitado por el usuario');
-        this.showAlert('GPS Desactivado', 'La ubicación ha sido deshabilitada');
+        // Si falló la activación, revertir el checkbox
+        this.gpsHabilitado = false;
+        this.showAlert(
+          'GPS No Disponible', 
+          'No se pudieron obtener los permisos de ubicación. Verifica que tengas los permisos habilitados en tu dispositivo.'
+        );
       }
-    } catch (error) {
-      console.error('Error cambiando estado GPS:', error);
-      // Revertir en caso de error
-      this.gpsHabilitado = !habilitado;
-      this.showAlert('Error', 'Ocurrió un error al cambiar el estado del GPS');
+    } else {
+      console.log('📍 GPS deshabilitado correctamente');
+      // No mostrar alerta al desactivar para mejor UX
     }
+  } catch (error) {
+    console.error('Error cambiando estado GPS:', error);
+    // Revertir en caso de error
+    this.gpsHabilitado = !habilitado;
+    this.showAlert('Error', 'Ocurrió un error al cambiar el estado del GPS');
   }
+}
 
   // ❌ ELIMINADO: solicitarPermisosGPS() - YA LO MANEJA EL SERVICIO
 

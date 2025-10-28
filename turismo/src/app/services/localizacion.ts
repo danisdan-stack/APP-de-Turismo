@@ -51,34 +51,36 @@ export class Localizacion {
   }
 
   // ✅ CAMBIAR ESTADO DEL GPS
-  async cambiarEstadoGPS(habilitar: boolean): Promise<boolean> {
-    try {
-      // Guardar en localStorage
-      localStorage.setItem('gpsHabilitado', JSON.stringify(habilitar));
+  // ✅ VERSIÓN CORREGIDA: No intentar obtener ubicación inmediatamente
+async cambiarEstadoGPS(habilitar: boolean): Promise<boolean> {
+  try {
+    // Guardar en localStorage primero
+    localStorage.setItem('gpsHabilitado', JSON.stringify(habilitar));
+    
+    if (habilitar) {
+      // Solo solicitar permisos, NO obtener ubicación
+      const permisos = await this.requestPermissions();
       
-      if (habilitar) {
-        // Si está activando, solicitar permisos
-        const permisos = await this.requestPermissions();
-        
-        if (permisos === 'granted') {
-          // Verificar que realmente funciona obteniendo ubicación
-          await this.getCurrentPosition();
-          return true; // Éxito
-        } else {
-          // Si deniega permisos, desactivar GPS
-          localStorage.setItem('gpsHabilitado', 'false');
-          return false; // Falló
-        }
+      if (permisos === 'granted') {
+        console.log('📍 Permisos concedidos - GPS habilitado');
+        return true; // Éxito - permisos concedidos
+      } else {
+        console.log('📍 Permisos denegados - GPS deshabilitado');
+        // Si deniega permisos, desactivar GPS
+        localStorage.setItem('gpsHabilitado', 'false');
+        return false; // Falló - permisos denegados
       }
-      
-      return true; // Éxito al desactivar
-    } catch (error) {
-      console.error('Error cambiando estado GPS:', error);
-      // En caso de error, desactivar por seguridad
-      localStorage.setItem('gpsHabilitado', 'false');
-      return false;
     }
+    
+    console.log('📍 GPS deshabilitado por usuario');
+    return true; // Éxito al desactivar
+    
+  } catch (error) {
+    console.error('Error cambiando estado GPS:', error);
+    // En caso de error, mantener el estado deseado pero loguear error
+    return habilitar; // Si estaba intentando activar, retornar false
   }
+}
 
   // 🔹 SEGUIMIENTO CONTINUO DE UBICACIÓN (solo si está habilitado)
   watchPosition(callback: (ubicacion: Ubicacion | null) => void) {
