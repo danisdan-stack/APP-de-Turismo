@@ -91,7 +91,7 @@
   margin-bottom: 8px;
 }
 
-/* Inputs  */
+
 .input-group {
   width: 100%;
 
@@ -157,33 +157,40 @@
   font-size: 1rem;
 }
 
-/* Boton google */
+
 .google-button {
-  background: transparent;
-  color: #1b3c55;
+  --background: #fff;
+  --color: #1b3c55;
+  --border-radius: 14px;
   font-weight: 600;
+  font-size: 1rem;
+  height: 48px;
+  text-transform: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  padding: 0;
+}
+
+.google-button .google-content {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  height: 48px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-  transition: all 0.3s ease;
-  text-transform: none;
-  font-size: 1rem;
+  width: 100%;
+  position: relative;
 }
 
-.google-button img.google-icon {
-  width: 22px;
-  height: 22px;
-  margin-left: 6px; 
+.google-button .google-icon {
+  position: absolute;
+  left: 20px; /* <-- ajustá este número a gusto */
+  width: 26px;
+  height: 26px;
 }
-.google-button:hover {
-  border-color: #a8ffdc;
-  transform: translateY(-2px);
+
+.google-button span {
+  margin-left: 10px; 
 }
+
+
+
 
 .register-button {
   --background: #1b3c55; 
@@ -199,8 +206,8 @@
 
 
 .gps-permission {
-  position: relative; /* vuelve al flujo normal */
-  margin-top: 20px;   /* deja espacio con el botón de registro */
+  position: relative; 
+  margin-top: 20px;  
   display: flex;
   justify-content: center;
   align-items: center;

@@ -1,5 +1,5 @@
 <ion-content class="login-page">
-  <!-- Fondo -->
+
   <div class="background-overlay"></div>
 
   <header class="tm-header">
@@ -23,12 +23,19 @@
       </ion-item>
 
       <ion-item class="input-field" lines="none">
-        <ion-input type="password" placeholder="Contraseña" [(ngModel)]="password"></ion-input>
+        <ion-input [type]="passwordVisible ? 'text' : 'password'" placeholder="Contraseña" [(ngModel)]="password">
+        </ion-input>
+
+
+        <ion-button fill="clear" slot="end" (click)="togglePassword()" aria-label="Mostrar/ocultar contraseña">
+          <ion-icon [name]="passwordVisible ? 'eye-off' : 'eye'"></ion-icon>
+        </ion-button>
       </ion-item>
+
     </div>
 
     <div class="forgot-password">
-      ¿Olvidaste tu contraseña?
+      <a (click)="forgotPassword()">¿Olvidaste tu contraseña?</a>
     </div>
 
     <div class="button-group">
@@ -37,18 +44,21 @@
       </ion-button>
 
       <ion-button expand="full" fill="solid" class="google-button">
-        <img src="assets/icon/google.png" alt="Google" class="google-icon" />
-        Continuar con Google
+        <div class="google-content">
+          <img src="assets/icon/google.png" alt="Google" class="google-icon" />
+          <span>Continuar con Google</span>
+        </div>
       </ion-button>
 
-      <a (click)="forgotPassword()">¿Olvidaste tu contraseña?</a>
+
+
 
       <ion-button expand="full" class="main-button register-button" (click)="irARegistro()">
         Registrarse
       </ion-button>
     </div>
 
-    
+
     <div class="gps-permission">
       <div class="gps-dot"></div>
       Permisos GPS
