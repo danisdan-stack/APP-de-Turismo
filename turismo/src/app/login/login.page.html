@@ -36,7 +36,8 @@
         Iniciar sesión
       </ion-button>
 
-      <ion-button expand="full" fill="solid" class="google-button">
+      <!-- ✅ BOTÓN GOOGLE CON (click) AGREGADO -->
+      <ion-button expand="full" fill="solid" class="google-button" (click)="continuarConGoogle()">
         <img src="assets/icon/google.png" alt="Google" class="google-icon" />
         Continuar con Google
       </ion-button>
@@ -49,10 +50,15 @@
     </div>
 
     
-    <div class="gps-permission">
-      <div class="gps-dot"></div>
-      Permisos GPS
-    </div>
+<div class="gps-permission">
+  <ion-checkbox 
+    class="gps-toggle custom-checkbox" 
+    [(ngModel)]="gpsHabilitado"
+    (ionChange)="onGPSChange($event)">
+  </ion-checkbox>
+  Permisos GPS
+</div>
+
 
   </div>
 </ion-content>
