@@ -48,19 +48,25 @@ export class OverpassService {
     return queries;
   }
 
-  // ====== Construir query para paisajes ======
-  private construirQueryPaisaje(codigoISO: string, paisaje: string): string {
-    const config = PAISAJES_OVERPASS[paisaje as keyof typeof PAISAJES_OVERPASS];
-    if (!config) return '';
+ // ====== Construir query para paisajes ======
+private construirQueryPaisaje(codigoISO: string, paisaje: string): string {
+  const config = PAISAJES_OVERPASS[paisaje as keyof typeof PAISAJES_OVERPASS];
+  if (!config) return '';
 
-    const queries = config.tags.map(tag => 
-      TIPOS_ELEMENTOS.map(tipo => 
-        `${tipo}(area.a)["${tag}"];`
-      ).join('\n')
-    ).join('\n');
+  console.log('🔍 DEBUG construirQueryPaisaje:', { paisaje, config });
 
-    return queries;
-  }
+  // ✅ CORREGIDO: Usar TAGS como CLAVES y TIPOS como VALORES
+  const queries = config.tipos.map(tipoValor => {
+    return config.tags.map(tagKey => {
+      return TIPOS_ELEMENTOS.map(tipoElemento => 
+        `${tipoElemento}(area.a)["${tagKey}"="${tipoValor}"];`
+      ).join('\n');
+    }).join('\n');
+  }).join('\n');
+
+  console.log('🔍 Query paisaje CORREGIDA:', queries);
+  return queries;
+}
 
   // ====== Generar query completa para Overpass ======
   private construirQueryOverpass(codigoISO: string, filtros: FiltrosBusqueda): string {
