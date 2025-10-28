@@ -7,9 +7,9 @@
         <ion-title>Mapa de Resultados</ion-title>
 
         <ion-buttons slot="end">
-            <ion-button (click)="recargarBusqueda()" [disabled]="cargando">
-                <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
-            </ion-button>
+<ion-button (click)="activarGPS()" fill="clear">
+  <ion-icon name="location" slot="icon-only"></ion-icon>
+</ion-button>
             <ion-button (click)="centrarMapa()">
                 <ion-icon name="locate-outline" slot="icon-only"></ion-icon>
             </ion-button>

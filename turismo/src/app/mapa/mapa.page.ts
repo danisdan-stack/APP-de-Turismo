@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingController, AlertController } from '@ionic/angular';
 import { OverpassService, PuntoInteres, FiltrosBusqueda } from '../components/services/overpass.service';
 import { MeGustaService } from '../services/megusta';
+import { Localizacion } from '../services/localizacion';
 import * as L from 'leaflet';
 
 @Component({
@@ -21,10 +22,12 @@ export class MapaPage implements OnInit, OnDestroy {
 
   private map!: L.Map;
   private markers: L.Marker[] = [];
+  private userMarker: L.Marker | null = null;
 
   constructor(
     private overpassService: OverpassService,
     private meGustaService: MeGustaService,
+    private localizacion: Localizacion,
     private loadingController: LoadingController,
     private alertController: AlertController,
     private route: ActivatedRoute,
@@ -32,35 +35,36 @@ export class MapaPage implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-  console.log('Página de mapa con Leaflet inicializada');
-  
-  // ✅ CONFIGURAR FUNCIONES GLOBALES PRIMERO
-  (window as any).centrarEnPuntoPopup = (lat: number, lon: number) => {
-    this.centrarEnPuntoDesdePopup(lat, lon);
-  };
-  
-  (window as any).guardarFavorito = (lat: number, lon: number, nombre: string, categoria: string, provincia: string) => {
-    this.guardarFavorito(lat, lon, nombre, categoria, provincia);
-  };
-  
-  // ✅ NUEVAS FUNCIONES PARA NAVEGACIÓN DESDE POPUP
-  (window as any).irAInicio = () => {
-    this.router.navigate(['/inicio']);
-  };
-  
-  (window as any).irAFavoritos = () => {
-    this.router.navigate(['/favoritos']);
-  };
-  
-  (window as any).irAMiCuenta = () => {
-    this.router.navigate(['/mi-cuenta']);
-  };
-  
-  this.configurarIconosLeaflet();
-  
-  setTimeout(() => {
-    this.inicializarMapa();
-  }, 100)  
+    console.log('Página de mapa con Leaflet inicializada');
+    
+    // ✅ CONFIGURAR FUNCIONES GLOBALES PRIMERO
+    (window as any).centrarEnPuntoPopup = (lat: number, lon: number) => {
+      this.centrarEnPuntoDesdePopup(lat, lon);
+    };
+    
+    (window as any).guardarFavorito = (lat: number, lon: number, nombre: string, categoria: string, provincia: string) => {
+      this.guardarFavorito(lat, lon, nombre, categoria, provincia);
+    };
+    
+    // ✅ NUEVAS FUNCIONES PARA NAVEGACIÓN DESDE POPUP
+    (window as any).irAInicio = () => {
+      this.router.navigate(['/inicio']);
+    };
+    
+    (window as any).irAFavoritos = () => {
+      this.router.navigate(['/favoritos']);
+    };
+    
+    (window as any).irAMiCuenta = () => {
+      this.router.navigate(['/mi-cuenta']);
+    };
+    
+    this.configurarIconosLeaflet();
+    
+    setTimeout(() => {
+      this.inicializarMapa();
+    }, 100);
+    
     this.route.queryParams.subscribe(params => {
       console.log('Parámetros recibidos en mapa:', params);
       
@@ -91,9 +95,66 @@ export class MapaPage implements OnInit, OnDestroy {
     });
   }
 
+  // ✅ MÉTODO PARA ACTIVAR GPS CON CONFIRMACIÓN
+  async activarGPS() {
+    const alert = await this.alertController.create({
+      header: 'Activar GPS',
+      message: '¿Deseas activar el GPS para ver tu ubicación en el mapa?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          handler: () => {
+            console.log('📍 Activación de GPS cancelada');
+          }
+        },
+        {
+          text: 'Activar',
+          handler: () => {
+            console.log('📍 Activando GPS...');
+            this.activarGPSConfirmado();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  // ✅ MÉTODO CORREGIDO: ACTIVAR GPS Y ACTUALIZAR MAPA
+  private async activarGPSConfirmado() {
+    try {
+      console.log('📍 Activando GPS...');
+      
+      // 1. Activar el GPS en el servicio
+      const exito = await this.localizacion.cambiarEstadoGPS(true);
+      
+      if (exito) {
+        console.log('📍 GPS activado correctamente');
+        
+        // 2. Mostrar confirmación
+        this.showAlert('GPS Activado', 'La ubicación ha sido habilitada correctamente');
+        
+        // 3. ✅ IMPORTANTE: Recargar la ubicación del usuario en el mapa
+        setTimeout(() => {
+          this.mostrarUbicacionUsuario();
+        }, 1000);
+        
+      } else {
+        console.log('📍 No se pudieron obtener permisos de GPS');
+        this.showAlert(
+          'Permisos Denegados', 
+          'No se pudieron obtener los permisos de ubicación. Verifica que tengas los permisos habilitados en tu dispositivo.'
+        );
+      }
+    } catch (error) {
+      console.error('Error activando GPS:', error);
+      this.showAlert('Error', 'Ocurrió un error al activar el GPS');
+    }
+  }
+
   // ✅ MÉTODO CORREGIDO - ESPERAR MAPA
   private mostrarPuntoFavorito(params: any) {
-    // Esperar a que el mapa esté inicializado
     const esperarMapa = setInterval(() => {
       if (this.map) {
         clearInterval(esperarMapa);
@@ -138,83 +199,28 @@ export class MapaPage implements OnInit, OnDestroy {
     }
   }
 
-// ✅ NUEVO MÉTODO PARA POPUP DE FAVORITOS (con botones de navegación)
-private crearPopupContentFavorito(punto: PuntoInteres): string {
-  return `
-    <div style="text-align: center; min-width: 250px;">
-      <strong style="font-size: 14px;">${punto.nombre || 'Sin nombre'}</strong><br>
-      <em style="color: #666;">${punto.categoria}</em><br>
-      <small>${punto.provincia || 'Provincia no especificada'}</small><br>
-      <small style="color: #888;">${punto.lat.toFixed(4)}, ${punto.lon.toFixed(4)}</small>
-      <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
-        <small style="color: #3880ff;">⭐ Este es uno de tus favoritos</small>
+  // ✅ NUEVO MÉTODO PARA POPUP DE FAVORITOS
+  private crearPopupContentFavorito(punto: PuntoInteres): string {
+    return `
+      <div style="text-align: center; min-width: 250px;">
+        <strong style="font-size: 14px;">${punto.nombre || 'Sin nombre'}</strong><br>
+        <em style="color: #666;">${punto.categoria}</em><br>
+        <small>${punto.provincia || 'Provincia no especificada'}</small><br>
+        <small style="color: #888;">${punto.lat.toFixed(4)}, ${punto.lon.toFixed(4)}</small>
+        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+          <small style="color: #3880ff;">⭐ Este es uno de tus favoritos</small>
+        </div>
+        
+        <!-- ✅ BOTONES DE NAVEGACIÓN -->
+        <div style="margin-top: 12px; padding: 8px 0; border-top: 1px solid #eee; display: flex; justify-content: space-between; gap: 4px;">
+          <button onclick="irAInicio()" style="background: #3880ff; color: white; border: none; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-size: 10px; font-weight: bold; flex: 1;">🏠 Inicio</button>
+          <button onclick="irAFavoritos()" style="background: #ff4081; color: white; border: none; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-size: 10px; font-weight: bold; flex: 1;">💖 Favoritos</button>
+          <button onclick="irAMiCuenta()" style="background: #10dc60; color: white; border: none; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-size: 10px; font-weight: bold; flex: 1;">👤 Mi Cuenta</button>
+        </div>
       </div>
-      
-      <!-- ✅ BOTONES DE NAVEGACIÓN -->
-      <div style="margin-top: 12px; padding: 8px 0; border-top: 1px solid #eee; display: flex; justify-content: space-between; gap: 4px;">
-        <button 
-          onclick="irAInicio()"
-          style="
-            background: #3880ff; 
-            color: white; 
-            border: none; 
-            padding: 6px 12px; 
-            border-radius: 15px; 
-            cursor: pointer; 
-            font-size: 10px;
-            font-weight: bold;
-            flex: 1;
-            transition: background 0.3s;
-          "
-          onmouseover="this.style.background='#2e6bd1'"
-          onmouseout="this.style.background='#3880ff'"
-        >
-          🏠 Inicio
-        </button>
+    `;
+  }
 
-        <button 
-          onclick="irAFavoritos()"
-          style="
-            background: #ff4081; 
-            color: white; 
-            border: none; 
-            padding: 6px 12px; 
-            border-radius: 15px; 
-            cursor: pointer; 
-            font-size: 10px;
-            font-weight: bold;
-            flex: 1;
-            transition: background 0.3s;
-          "
-          onmouseover="this.style.background='#e03670'"
-          onmouseout="this.style.background='#ff4081'"
-        >
-          💖 Favoritos
-        </button>
-
-        <button 
-          onclick="irAMiCuenta()"
-          style="
-            background: #10dc60; 
-            color: white; 
-            border: none; 
-            padding: 6px 12px; 
-            border-radius: 15px; 
-            cursor: pointer; 
-            font-size: 10px;
-            font-weight: bold;
-            flex: 1;
-            transition: background 0.3s;
-          "
-          onmouseover="this.style.background='#0ec254'"
-          onmouseout="this.style.background='#10dc60'"
-        >
-          👤 Mi Cuenta
-        </button>
-      </div>
-    </div>
-  `;
-}
   private configurarIconosLeaflet() {
     const iconDefault = L.Icon.Default.prototype as any;
     delete iconDefault._getIconUrl;
@@ -247,10 +253,155 @@ private crearPopupContentFavorito(punto: PuntoInteres): string {
       }).addTo(this.map);
 
       console.log('✅ Mapa Leaflet inicializado correctamente');
+
+      // ✅ MOSTRAR UBICACIÓN DEL USUARIO SOLO SI ESTÁ HABILITADO
+      setTimeout(() => {
+        this.mostrarUbicacionUsuario();
+      }, 2000);
+
     } catch (error) {
       console.error('Error al inicializar el mapa:', error);
     }
   }
+
+  // ✅ MÉTODO MEJORADO: MOSTRAR UBICACIÓN CON MÁS FEEDBACK
+  private async mostrarUbicacionUsuario() {
+    try {
+      // ✅ VERIFICAR SI EL GPS ESTÁ HABILITADO
+      if (!this.localizacion.estaGPSHabilitado()) {
+        console.log('📍 GPS deshabilitado por el usuario - no se muestra ubicación');
+        return;
+      }
+
+      console.log('📍 Obteniendo ubicación del usuario...');
+      
+      const ubicacion = await this.localizacion.getCurrentPosition();
+      
+      // ✅ VERIFICAR SI SE OBTUVO LA UBICACIÓN
+      if (!ubicacion) {
+        console.log('📍 No se pudo obtener la ubicación');
+        return;
+      }
+      
+      // Eliminar marcador anterior si existe
+      if (this.userMarker) {
+        this.map.removeLayer(this.userMarker);
+      }
+
+      // Crear icono personalizado para el usuario
+      const userIcon = this.crearIconoUsuario();
+      
+      // Crear marcador del usuario
+      this.userMarker = L.marker([ubicacion.lat, ubicacion.lng], {
+        icon: userIcon,
+        zIndexOffset: 1000
+      })
+      .addTo(this.map)
+      .bindPopup('📍 ¡Estás aquí!')
+      .openPopup();
+
+      // ✅ CENTRAR EL MAPA EN LA NUEVA UBICACIÓN
+      this.map.setView([ubicacion.lat, ubicacion.lng], 15, {
+        animate: true,
+        duration: 1
+      });
+
+      console.log('📍 Ubicación del usuario mostrada y centrada:', ubicacion);
+
+    } catch (error: any) {
+      console.error('❌ Error obteniendo ubicación:', error);
+      
+      // Mostrar error específico
+      if (error.message.includes('permission') || error.message.includes('permiso')) {
+        this.showAlert(
+          'Permisos Requeridos', 
+          'Por favor, permite el acceso a la ubicación en la configuración de tu dispositivo.'
+        );
+      }
+    }
+  }
+
+  // ✅ MÉTODO: CREAR ICONO PERSONALIZADO PARA EL USUARIO
+  private crearIconoUsuario(): L.DivIcon {
+    return L.divIcon({
+      html: `
+        <div style="
+          background: #3880ff;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          border: 3px solid white;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        "></div>
+      `,
+      className: 'user-location-marker',
+      iconSize: [20, 20],
+      iconAnchor: [10, 10]
+    });
+  }
+
+  // ✅ MÉTODO MEJORADO: CENTRAR EN UBICACIÓN
+  async centrarEnMiUbicacion() {
+    try {
+      // ✅ VERIFICAR SI EL GPS ESTÁ HABILITADO
+      if (!this.localizacion.estaGPSHabilitado()) {
+        await this.mostrarAlertaGPSDeshabilitado();
+        return;
+      }
+
+      console.log('📍 Centrando en mi ubicación...');
+      
+      // ✅ FORZAR ACTUALIZACIÓN DE LA UBICACIÓN
+      await this.mostrarUbicacionUsuario();
+
+    } catch (error: any) {
+      console.error('Error al centrar en ubicación:', error);
+      this.mostrarErrorUbicacion(error);
+    }
+  }
+
+  // ✅ NUEVO MÉTODO: ALERTA CUANDO EL GPS ESTÁ DESHABILITADO
+  private async mostrarAlertaGPSDeshabilitado() {
+    const alert = await this.alertController.create({
+      header: 'GPS Deshabilitado',
+      message: 'El GPS está deshabilitado. Actívalo desde la configuración para ver tu ubicación.',
+      buttons: [
+        {
+          text: 'Entendido',
+          role: 'cancel'
+        },
+        {
+          text: 'Activar GPS',
+          handler: () => {
+            this.router.navigate(['/login']);
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  // ✅ NUEVO MÉTODO: MANEJO DE ERRORES DE UBICACIÓN
+  private async mostrarErrorUbicacion(error: any) {
+    const alert = await this.alertController.create({
+      header: 'Error de Ubicación',
+      message: `No se pudo obtener tu ubicación: ${error.message}. Asegúrate de permitir el acceso a la ubicación en tu dispositivo.`,
+      buttons: ['OK']
+    });
+    await alert.present();
+  }
+
+  // ✅ MÉTODO showAlert QUE FALTABA
+  private async showAlert(header: string, message: string) {
+    const alert = await this.alertController.create({
+      header,
+      message,
+      buttons: ['OK']
+    });
+    await alert.present();
+  }
+
+  // ... (el resto de tus métodos se mantienen igual)
 
   private async buscarConFiltros(filtros: FiltrosBusqueda) {
     console.log('Buscando con filtros:', filtros);
@@ -323,7 +474,6 @@ private crearPopupContentFavorito(punto: PuntoInteres): string {
   }
 
   private crearPopupContent(punto: PuntoInteres): string {
-    // ✅ Escapar comillas en el nombre para evitar errores
     const nombreSeguro = (punto.nombre || 'Sin nombre').replace(/'/g, "\\'");
     const categoriaSegura = (punto.categoria || '').replace(/'/g, "\\'");
     const provinciaSegura = (punto.provincia || '').replace(/'/g, "\\'");
@@ -339,18 +489,7 @@ private crearPopupContentFavorito(punto: PuntoInteres): string {
         <div style="margin-top: 12px; padding: 8px 0; border-top: 1px solid #eee;">
           <button 
             onclick="guardarFavorito(${punto.lat}, ${punto.lon}, '${nombreSeguro}', '${categoriaSegura}', '${provinciaSegura}')"
-            style="
-              background: #3880ff; 
-              color: white; 
-              border: none; 
-              padding: 8px 16px; 
-              border-radius: 20px; 
-              cursor: pointer; 
-              font-size: 12px;
-              font-weight: bold;
-              transition: background 0.3s;
-              margin: 4px;
-            "
+            style="background: #3880ff; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: bold; transition: background 0.3s; margin: 4px;"
             onmouseover="this.style.background='#2e6bd1'"
             onmouseout="this.style.background='#3880ff'"
           >
@@ -359,18 +498,7 @@ private crearPopupContentFavorito(punto: PuntoInteres): string {
 
           <button 
             onclick="centrarEnPuntoPopup(${punto.lat}, ${punto.lon})"
-            style="
-              background: #10dc60; 
-              color: white; 
-              border: none; 
-              padding: 8px 16px; 
-              border-radius: 20px; 
-              cursor: pointer; 
-              font-size: 12px;
-              font-weight: bold;
-              transition: background 0.3s;
-              margin: 4px;
-            "
+            style="background: #10dc60; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: bold; transition: background 0.3s; margin: 4px;"
             onmouseover="this.style.background='#0ec254'"
             onmouseout="this.style.background='#10dc60'"
           >
@@ -569,18 +697,18 @@ private crearPopupContentFavorito(punto: PuntoInteres): string {
     return `${this.puntos.length} puntos encontrados`;
   }
 
-ngOnDestroy() {
-  if (this.map) {
-    this.map.remove();
+  ngOnDestroy() {
+    if (this.map) {
+      this.map.remove();
+    }
+    
+    // ✅ LIMPIAR FUNCIONES GLOBALES
+    delete (window as any).centrarEnPuntoPopup;
+    delete (window as any).guardarFavorito;
+    delete (window as any).irAInicio;
+    delete (window as any).irAFavoritos;
+    delete (window as any).irAMiCuenta;
   }
-  
-  // ✅ LIMPIAR FUNCIONES GLOBALES
-  delete (window as any).centrarEnPuntoPopup;
-  delete (window as any).guardarFavorito;
-  delete (window as any).irAInicio;
-  delete (window as any).irAFavoritos;
-  delete (window as any).irAMiCuenta;
-}
 
   private centrarEnPuntoDesdePopup(lat: number, lon: number) {
     console.log('📍 Centrando en punto desde popup:', lat, lon);
