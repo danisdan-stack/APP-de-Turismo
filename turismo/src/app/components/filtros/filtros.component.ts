@@ -71,7 +71,6 @@ export class FiltrosComponent implements OnInit {
     this.filtroActivo = '';
   }
 
-  // === MÉTODO BUSCAR ACTUALIZADO ===
   buscar() {
     if (this.isBuscarHabilitado()) {
       console.log('Navegando al mapa con filtros:', this.selecciones);

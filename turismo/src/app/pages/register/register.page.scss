@@ -1,0 +1,185 @@
+
+.register-content {
+  --background: #184a4e;
+  display: flex;
+  justify-content: center;    
+  align-items: flex-start;  
+  padding: 32px 16px 48px;   
+  min-height: calc(100vh - 56px);
+  overflow-y: auto;          
+  -webkit-overflow-scrolling: touch;
+}
+
+
+.custom-toolbar {
+  --background: #184a4e !important;
+  padding: 8px 12px;
+  box-shadow: none;
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+}
+
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
+.logo {
+  height: 48px;
+  margin-left: 8px;
+}
+
+
+.site-title {
+  color: #f2ede4;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-size: 1rem;
+  margin-left: 6px;
+}
+
+
+.toolbar-right {
+  margin-left: auto;  
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.account-button {
+  color: #f2ede4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  --padding-start: 6px;
+  --padding-end: 8px;
+}
+
+.account-icon {
+  font-size: 1.6rem;
+}
+
+.account-label {
+  font-size: 0.98rem;
+  color: #f2ede4;
+}
+
+
+.register-box {
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  margin: 0 auto;   
+}
+
+.register-box h1 {
+  color: #f2ede4;
+  font-size: 1.9rem;
+  margin: 6px 0 18px 0;
+  text-align: left;
+  padding-left: 6px;
+}
+
+
+.form-list {
+  width: 100%;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+.input-item {
+  --background: transparent !important;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+}
+
+.input-field {
+  width: 92%;
+  background: #f2ede4;  
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-sizing: border-box;
+  color: #184a4e;
+  margin: 10px 0; 
+  box-shadow: 0 2px 0 rgba(0,0,0,0.06) inset;
+}
+
+
+ion-input {
+  background: transparent;
+  color: #184a4e;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.btn-crear {
+  margin-top: 22px;
+  --background: #a8d0c4;
+  --color: #184a4e;
+  font-weight: 700;
+  border-radius: 10px;
+  width: 92%;
+  max-width: 360px;
+  align-self: center;
+  margin-bottom: 18px;  
+}
+
+@media (max-height: 620px) {
+  .register-content { padding-bottom: 24px; }
+  .input-field { margin: 8px 0; padding: 10px 12px; }
+  .btn-crear { margin-top: 16px; }
+}
+ion-toolbar.custom-toolbar,
+.custom-toolbar {
+  
+  display: flex !important;
+  align-items: flex-start !important;  
+  justify-content: space-between !important;
+  padding-top: 6px !important;          
+  padding-bottom: 6px !important;
+}
+.custom-toolbar {
+  position: relative;
+}
+
+
+.toolbar-left {
+  display: flex;
+  align-items: flex-start; 
+  gap: 10px;
+}
+
+
+.toolbar-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  z-index: 10;
+}
+
+.account-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+.site-title {
+  margin-top: 20px; 
+}
