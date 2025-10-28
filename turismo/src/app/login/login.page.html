@@ -18,11 +18,11 @@
     <div class="bienvenido-text">Bienvenido</div>
 
     <div class="input-group">
-      <ion-item class="input-field" lines="none">
-        <ion-input type="email" placeholder="Email" [(ngModel)]="email"></ion-input>
+      <ion-item class="input-field" lines="none"style="border-radius: 12px;">
+        <ion-input type="email" placeholder="Email" [(ngModel)]="email" ></ion-input>
       </ion-item>
 
-      <ion-item class="input-field" lines="none">
+      <ion-item class="input-field" lines="none" style="border-radius: 12px;">
         <ion-input type="password" placeholder="Contraseña" [(ngModel)]="password"></ion-input>
       </ion-item>
     </div>
@@ -37,8 +37,8 @@
       </ion-button>
 
       <!-- ✅ BOTÓN GOOGLE CON (click) AGREGADO -->
-      <ion-button expand="full" fill="solid" class="google-button" (click)="continuarConGoogle()">
-        <img src="assets/icon/google.png" alt="Google" class="google-icon" />
+      <ion-button expand="full" fill="solid" class="google-button" (click)="continuarConGoogle()" >
+        <img src="assets/icon/google.png" alt="Google" class="google-icon"/>
         Continuar con Google
       </ion-button>
 
