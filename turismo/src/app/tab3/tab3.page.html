@@ -1,54 +1,121 @@
 <ion-header>
-    <ion-toolbar>
-        <div class="imagen">
-            <ion-img src="data:image/webp;base64,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" alt="TurisMatch-logo">
-            </ion-img>
-        </div>
-        <div class="derecha" slot="end">
-            <div class="icon">
-                <ion-icon name="person-outline" size="large"></ion-icon>
-            </div>
-            <div class="texto">
-                <p>Mi cuenta</p>
-            </div>
-        </div>
-    </ion-toolbar>
+  <ion-toolbar>
+    <ion-title>Mi Cuenta</ion-title>
+  </ion-toolbar>
 </ion-header>
-<ion-content>
 
-        <div class="title">
-            <ion-title>
-                <h1>
-                    ajustes
-                </h1>
-            </ion-title>
+<ion-content class="ion-padding">
+
+  <ion-card *ngIf="!loading">
+    <ion-card-header>
+      <ion-card-title>Mi Perfil</ion-card-title>
+      <ion-card-subtitle>¡Bienvenido/a, {{ editedProfile?.nombre }}!</ion-card-subtitle>
+    </ion-card-header>
+
+    <ion-card-content>
+
+      <ion-item>
+        <ion-label position="stacked">Nombre</ion-label>
+        <ion-input [(ngModel)]="editedProfile.nombre" [readonly]="!isEditing" placeholder="Ingrese su nombre"></ion-input>
+        <ion-button fill="clear" slot="end" (click)="editarNombre()">
+          <ion-icon name="create-outline"></ion-icon>
+          <span class="ion-padding-start">Editar</span>
+        </ion-button>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Apellido</ion-label>
+        <ion-input [(ngModel)]="editedProfile.apellido" [readonly]="!isEditing" placeholder="Ingrese su apellido"></ion-input>
+        <ion-button fill="clear" slot="end" (click)="editarApellido()">
+          <ion-icon name="create-outline"></ion-icon>
+          <span class="ion-padding-start">Editar</span>
+        </ion-button>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Teléfono</ion-label>
+        <ion-input [(ngModel)]="editedProfile.telefono" [readonly]="!isEditing" placeholder="Ingrese su teléfono"></ion-input>
+        <ion-button fill="clear" slot="end" (click)="editarTelefono()">
+          <ion-icon name="create-outline"></ion-icon>
+          <span class="ion-padding-start">Editar</span>
+        </ion-button>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Email</ion-label>
+        <ion-input type="email" [(ngModel)]="editedProfile.email" [readonly]="true" placeholder="Ingrese su correo"></ion-input>
+        <ion-button fill="clear" slot="end" [disabled]="true">
+          <ion-icon [name]="isGoogleUser() ? 'lock-closed-outline' : 'create-outline'"></ion-icon>
+          <span class="ion-padding-start">{{ isGoogleUser() ? 'Fijo' : 'Editar' }}</span>
+        </ion-button>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Contraseña</ion-label>
+        <ion-input type="password" [value]="'********'" readonly></ion-input>
+        <ion-button fill="clear" slot="end" [disabled]="isGoogleUser()" (click)="cambiarContrasena()">
+          <ion-icon [name]="isGoogleUser() ? 'lock-closed-outline' : 'key-outline'"></ion-icon>
+          <span class="ion-padding-start">{{ isGoogleUser() ? 'Fija' : 'Cambiar' }}</span>
+        </ion-button>
+      </ion-item>
+
+      <ion-item lines="none">
+        <ion-label>
+          <h3>Tipo de cuenta</h3>
+          <p>{{ isGoogleUser() ? 'Google' : 'Email/Contraseña' }}</p>
+        </ion-label>
+        <ion-icon [name]="isGoogleUser() ? 'logo-google' : 'mail-outline'" slot="end" [color]="isGoogleUser() ? 'primary' : 'medium'"></ion-icon>
+      </ion-item>
+
+      <div class="action-buttons ion-padding">
+        <ion-button expand="block" fill="solid" color="primary" (click)="logout()">
+          <ion-icon name="log-out-outline" slot="start"></ion-icon>
+          Cerrar Sesión
+        </ion-button>
+
+        <ion-button expand="block" fill="solid" color="danger" (click)="eliminarCuenta()" style="margin-top: 16px;">
+          <ion-icon name="trash-outline" slot="start"></ion-icon>
+          Eliminar Cuenta
+        </ion-button>
+
+        <div *ngIf="!isGoogleUser()" class="ion-text-center ion-margin-top">
+          <ion-text color="warning">
+            <small>
+              <ion-icon name="warning-outline"></ion-icon>
+              Para eliminar tu cuenta necesitarás ingresar tu contraseña
+            </small>
+          </ion-text>
         </div>
+      </div>
 
+    </ion-card-content>
+  </ion-card>
 
-    <div class="botones-content">
+  <div *ngIf="!userProfile && !loading" class="ion-text-center ion-padding">
+    <ion-icon name="person-circle-outline" size="large" color="medium"></ion-icon>
+    <p>No se pudo cargar la información del perfil</p>
+  </div>
 
-        <ion-button fill="outline" color="light" shape="round">
-            <p>nombre</p>
-        </ion-button>
-        <ion-button fill="outline" color="light" shape="round">
-            <p>apellido</p>
-        </ion-button>
-        <ion-button fill="outline" color="light" shape="round">
-            <p>telefono</p>
-        </ion-button>
-        <ion-button fill="outline" color="light" shape="round">
-            <ion-icon name="mail-outline"></ion-icon>
-            <p> Cambiar email</p>
-        </ion-button>
-        <ion-button fill="outline" color="light" shape="round">
-            <p>Cambiar contraseña</p>
-        </ion-button>
-        <ion-button fill="outline" color="danger" shape="round">
-            <ion-icon name="log-out"></ion-icon>
-            <p>eliminar cuenta</p>
-        </ion-button>
-    </div>
-    <div class="logo">
-        <img src="" alt="tender"> 
-    </div>
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner name="crescent" class="ion-margin"></ion-spinner>
+    <p>Cargando perfil...</p>
+  </div>
+
 </ion-content>
+
+<ion-tab-bar slot="bottom" class="tabs-navigation">
+  <ion-tab-button tab="tab1" (click)="irATab1()">
+    <ion-icon name="home-outline"></ion-icon>
+    <ion-label>Inicio</ion-label>
+  </ion-tab-button>
+
+  <ion-tab-button tab="tab2" (click)="irATab2()">
+    <ion-icon name="search-outline"></ion-icon>
+    <ion-label>Favoritos</ion-label>
+  </ion-tab-button>
+
+  <ion-tab-button tab="tab3" (click)="irATab3()" class="tab-active">
+    <ion-icon name="person-outline"></ion-icon>
+    <ion-label>Mi Cuenta</ion-label>
+  </ion-tab-button>
+</ion-tab-bar>

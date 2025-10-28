@@ -24,7 +24,7 @@ export class FiltrosComponent implements OnInit {
 
   // Opciones disponibles
   provincias = [
-    'Buenos Aires', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 
+    'Ciudad de Buenos Aires','Buenos Aires', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 
     'Corrientes', 'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 
     'La Rioja', 'Mendoza', 'Misiones', 'Neuquén', 'Río Negro', 
     'Salta', 'San Juan', 'San Luis', 'Santa Cruz', 'Santa Fe', 
@@ -37,10 +37,10 @@ export class FiltrosComponent implements OnInit {
     { id: 'alojamiento', nombre: 'Alojamiento', icon: 'bed' }
   ];
 
-  paisajes = [
-    { id: 'montañas', nombre: 'Montañas y Cerros', icon: 'terrain' },
-    { id: 'agua', nombre: 'Ríos y Mar', icon: 'water' }
-  ];
+paisajes = [
+  { id: 'cerros_y_montañas', nombre: 'Montañas y Cerros', icon: 'terrain' },
+  { id: 'rios_y_mar', nombre: 'Ríos y Mar', icon: 'water' }
+];
 
   constructor(private router: Router) { } // ← AGREGAR Router AL CONSTRUCTOR
 
