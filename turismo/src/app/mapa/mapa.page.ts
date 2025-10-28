@@ -574,20 +574,26 @@ export class MapaPage implements OnInit, OnDestroy {
     this.markers = [];
   }
 
-  private generarMensajeBusqueda(filtros: FiltrosBusqueda): string {
-    if (filtros.paisaje) {
-      const paisaje = filtros.paisaje === 'montañas' ? 'montañas y cerros' : 'ríos y mar';
-      return `Buscando ${paisaje} en Argentina...`;
-    } else if (filtros.provincia && filtros.categoria) {
-      const categoria = this.obtenerNombreCategoria(filtros.categoria);
-      const provinciaFormateada = this.formatearProvincia(filtros.provincia);
-      return `Buscando ${categoria} en ${provinciaFormateada}...`;
-    } else if (filtros.provincia) {
-      const provinciaFormateada = this.formatearProvincia(filtros.provincia);
-      return `Buscando puntos en ${provinciaFormateada}...`;
+ private generarMensajeBusqueda(filtros: FiltrosBusqueda): string {
+  if (filtros.paisaje) {
+    // ✅ CORREGIDO: Usar los IDs correctos
+    if (filtros.paisaje === 'cerros_y_montañas') {
+      return 'Buscando montañas y cerros en Argentina...';
+    } else if (filtros.paisaje === 'rios_y_mar') {
+      return 'Buscando ríos y mar en Argentina...';
+    } else {
+      return 'Buscando paisajes en Argentina...';
     }
-    return 'Buscando puntos de interés...';
+  } else if (filtros.provincia && filtros.categoria) {
+    const categoria = this.obtenerNombreCategoria(filtros.categoria);
+    const provinciaFormateada = this.formatearProvincia(filtros.provincia);
+    return `Buscando ${categoria} en ${provinciaFormateada}...`;
+  } else if (filtros.provincia) {
+    const provinciaFormateada = this.formatearProvincia(filtros.provincia);
+    return `Buscando puntos en ${provinciaFormateada}...`;
   }
+  return 'Buscando puntos de interés...';
+}
 
   private generarMensajeError(filtros: FiltrosBusqueda): string {
     if (filtros.paisaje) {
@@ -682,9 +688,15 @@ export class MapaPage implements OnInit, OnDestroy {
   getResumenBusqueda(): string {
     if (this.puntos.length === 0) return 'No hay resultados';
     
-    if (this.filtrosActuales.paisaje) {
-      const paisaje = this.filtrosActuales.paisaje === 'montañas' ? 'montañas y cerros' : 'ríos y mar';
-      return `${this.puntos.length} puntos de ${paisaje} encontrados`;
+      if (this.filtrosActuales.paisaje) {
+    // ✅ CORREGIDO: Usar los IDs correctos
+    if (this.filtrosActuales.paisaje === 'cerros_y_montañas') {
+      return `${this.puntos.length} puntos de montañas y cerros encontrados`;
+    } else if (this.filtrosActuales.paisaje === 'rios_y_mar') {
+      return `${this.puntos.length} puntos de ríos y mar encontrados`;
+    } else {
+      return `${this.puntos.length} puntos de paisaje encontrados`;
+    }
     } else if (this.filtrosActuales.provincia && this.filtrosActuales.categoria) {
       const categoria = this.obtenerNombreCategoria(this.filtrosActuales.categoria);
       const provincia = this.formatearProvincia(this.filtrosActuales.provincia);

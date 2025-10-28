@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-filtros-page',
   templateUrl: './filtros.page.html',
+  styleUrl :'./filtros.page.scss',
   standalone: false,
 })
 export class FiltrosPage {
