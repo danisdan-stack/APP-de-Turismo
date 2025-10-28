@@ -23,7 +23,8 @@
   </div>
 
   <!-- ✅ LISTA DE FAVORITOS -->
-  <div *ngIf="!cargando && misFavoritos.length > 0">
+  <div *ngIf="!cargando && misFavoritos.length > 0" class="list-container">
+    <h4 class="list-title">Lista de favoritos:</h4>
     <ion-list>
       <ion-item *ngFor="let favorito of misFavoritos">
         <ion-label>
