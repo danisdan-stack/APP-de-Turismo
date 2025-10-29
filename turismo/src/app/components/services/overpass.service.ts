@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, forkJoin, of, map, catchError } from 'rxjs';
 import { PROVINCIAS, CATEGORIAS_OVERPASS, PAISAJES_OVERPASS, OVERPASS_CONFIG, TIPOS_ELEMENTOS } from '../constants/overpass.constants';
+
 export interface PuntoInteres {
   id: number;
   tipo: string;
@@ -25,8 +26,13 @@ export interface FiltrosBusqueda {
 export class OverpassService {
 
   constructor(private http: HttpClient) { }
-
-  // ====== Obtener código ISO de la provincia ======
+  /**
+   * @function obtenerCodigoProvincia
+   * @description Convierte el nombre de una provincia argentina a su código ISO correspondiente
+   * @param {string} nombre - Nombre completo de la provincia (ej: "Mendoza")
+   * @returns {string | undefined} Código ISO de la provincia (ej: "AR-M") o undefined si no se encuentra
+   * @private
+   */
   private obtenerCodigoProvincia(nombre: string): string | undefined {
     const provincia = PROVINCIAS.find(p => 
       p.nombre.toLowerCase() === nombre.toLowerCase()
@@ -34,7 +40,14 @@ export class OverpassService {
     return provincia?.iso;
   }
 
-  // ====== Construir query para categorías ======
+  /**
+   * @function construirQueryCategoria
+   * @description Construye una query Overpass específica para búsquedas por categoría turística
+   * @param {string} codigoISO - Código ISO de la provincia (ej: "AR-M")
+   * @param {string} categoria - Identificador de la categoría (ej: "naturaleza", "turismo")
+   * @returns {string} Query Overpass QL formateada para la categoría especificada
+   * @private
+   */
   private construirQueryCategoria(codigoISO: string, categoria: string): string {
     const config = CATEGORIAS_OVERPASS[categoria as keyof typeof CATEGORIAS_OVERPASS];
     if (!config) return '';
@@ -48,14 +61,18 @@ export class OverpassService {
     return queries;
   }
 
- // ====== Construir query para paisajes ======
+ /**
+   * @function construirQueryPaisaje
+   * @description Construye una query Overpass específica para búsquedas por tipo de paisaje
+   * @param {string} codigoISO - Código ISO de la provincia (ej: "AR-M")
+   * @param {string} paisaje - Identificador del paisaje (ej: "cerros_y_montañas", "rios_y_mar")
+   * @returns {string} Query Overpass QL formateada para el paisaje especificado
+   * @private
+   */
 private construirQueryPaisaje(codigoISO: string, paisaje: string): string {
   const config = PAISAJES_OVERPASS[paisaje as keyof typeof PAISAJES_OVERPASS];
   if (!config) return '';
 
-  console.log('🔍 DEBUG construirQueryPaisaje:', { paisaje, config });
-
-  // ✅ CORREGIDO: Usar TAGS como CLAVES y TIPOS como VALORES
   const queries = config.tipos.map(tipoValor => {
     return config.tags.map(tagKey => {
       return TIPOS_ELEMENTOS.map(tipoElemento => 
@@ -64,23 +81,25 @@ private construirQueryPaisaje(codigoISO: string, paisaje: string): string {
     }).join('\n');
   }).join('\n');
 
-  console.log('🔍 Query paisaje CORREGIDA:', queries);
   return queries;
 }
 
-  // ====== Generar query completa para Overpass ======
+   /**
+   * @function construirQueryOverpass
+   * @description Construye una query Overpass completa combinando filtros de categoría y/o paisaje
+   * @param {string} codigoISO - Código ISO de la provincia objetivo
+   * @param {FiltrosBusqueda} filtros - Objeto con los filtros de búsqueda aplicados
+   * @returns {string} Query Overpass QL completa y formateada lista para ejecutar
+   * @private
+   */
   private construirQueryOverpass(codigoISO: string, filtros: FiltrosBusqueda): string {
     let partes: string[] = [];
-
-    // Query para categorías (modo normal)
     if (filtros.categoria) {
       const queryCategoria = this.construirQueryCategoria(codigoISO, filtros.categoria);
       if (queryCategoria) {
         partes.push(queryCategoria);
       }
     }
-
-    // Query para paisajes (modo independiente)
     if (filtros.paisaje) {
       const queryPaisaje = this.construirQueryPaisaje(codigoISO, filtros.paisaje);
       if (queryPaisaje) {
@@ -88,12 +107,9 @@ private construirQueryPaisaje(codigoISO: string, paisaje: string): string {
       }
     }
 
-    // Si no hay partes válidas, retornar query vacía
     if (partes.length === 0) {
       return '';
     }
-
-    // Query completa
     const query = `
       [out:json][timeout:${OVERPASS_CONFIG.timeout}];
       area["ISO3166-2"="${codigoISO}"]->.a;
@@ -102,17 +118,22 @@ private construirQueryPaisaje(codigoISO: string, paisaje: string): string {
       );
       out center ${OVERPASS_CONFIG.maxElements};
     `;
-
-    console.log('Query Overpass generada:', query);
     return query;
   }
 
-  // ====== Procesar elementos de Overpass ======
+   /**
+   * @function procesarElementos
+   * @description Transforma y filtra elementos crudos de Overpass a puntos de interés estructurados
+   * @param {any[]} elementos - Array de elementos crudos obtenidos de la API Overpass
+   * @param {FiltrosBusqueda} filtros - Filtros aplicados para contextualizar el procesamiento
+   * @returns {PuntoInteres[]} Array de puntos de interés procesados y validados
+   * @private
+   */
   private procesarElementos(elementos: any[], filtros: FiltrosBusqueda): PuntoInteres[] {
     return elementos
-      .filter(el => el.lat && el.lon) // Solo elementos con coordenadas
+      .filter(el => el.lat && el.lon) 
       .map(el => {
-        // Determinar categoría principal
+      
         let categoriaPrincipal = 'otro';
         
         if (filtros.categoria) {
@@ -120,7 +141,7 @@ private construirQueryPaisaje(codigoISO: string, paisaje: string): string {
         } else if (filtros.paisaje) {
           categoriaPrincipal = filtros.paisaje;
         } else {
-          // Intentar detectar categoría desde tags
+       
           if (el.tags?.tourism) categoriaPrincipal = 'turismo';
           else if (el.tags?.natural) categoriaPrincipal = 'naturaleza';
           else if (el.tags?.amenity) categoriaPrincipal = 'alojamiento';
@@ -137,10 +158,16 @@ private construirQueryPaisaje(codigoISO: string, paisaje: string): string {
           provincia: filtros.provincia
         };
       })
-      .filter(punto => punto.nombre !== 'Sin nombre'); // Filtrar puntos sin nombre
+      .filter(punto => punto.nombre !== 'Sin nombre');
   }
 
-  // ====== Generar nombre desde tags cuando no hay name ======
+   /**
+   * @function generarNombreDesdeTags
+   * @description Genera un nombre legible para puntos que no tienen nombre en OpenStreetMap
+   * @param {any} tags - Objeto de tags/metadatos del elemento OpenStreetMap
+   * @returns {string} Nombre generado a partir de los tags disponibles
+   * @private
+   */
   private generarNombreDesdeTags(tags: any): string {
     if (tags?.tourism) {
       return `${tags.tourism} ${tags.name || ''}`.trim();
@@ -154,17 +181,23 @@ private construirQueryPaisaje(codigoISO: string, paisaje: string): string {
     return '';
   }
 
-// ====== Método principal para buscar puntos ======
+ /**
+   * @function buscarPuntos
+   * @description Método principal que ejecuta búsquedas de puntos de interés según los filtros aplicados
+   * @param {FiltrosBusqueda} filtros - Criterios de búsqueda (provincia, categoría, paisaje)
+   * @returns {Observable<PuntoInteres[]>} Observable que emite array de puntos de interés encontrados
+   * @public
+   */
 buscarPuntos(filtros: FiltrosBusqueda): Observable<PuntoInteres[]> {
   return new Observable(observer => {
-    // Validar filtros
+   
     if (!filtros.provincia && !filtros.paisaje) {
       observer.error('Se requiere al menos provincia o paisaje');
       return;
     }
 
     if (filtros.provincia) {
-      // 🔹 MODO NORMAL: Búsqueda por provincia específica
+    
       const codigo = this.obtenerCodigoProvincia(filtros.provincia);
       if (!codigo) {
         observer.error(`Provincia no válida: ${filtros.provincia}`);
@@ -181,7 +214,6 @@ buscarPuntos(filtros: FiltrosBusqueda): Observable<PuntoInteres[]> {
       this.llamarOverpass(query).subscribe({
         next: (elementos) => {
           const puntos = this.procesarElementos(elementos, filtros);
-          console.log(`✅ ${puntos.length} puntos encontrados en ${filtros.provincia}`);
           observer.next(puntos);
           observer.complete();
         },
@@ -192,16 +224,10 @@ buscarPuntos(filtros: FiltrosBusqueda): Observable<PuntoInteres[]> {
       });
 
     } else {
-      // 🔹 MODO PAISAJE: Búsqueda en TODA ARGENTINA
-      console.log('🔍 Buscando paisaje en toda Argentina...');
-      
       const provincias = PROVINCIAS.map(p => p.iso);
-      console.log('📍 Provincias a buscar:', provincias.length);
-
-      // Array para almacenar todas las búsquedas
       const todasLasBusquedas: Observable<PuntoInteres[]>[] = [];
 
-      // Crear una búsqueda para cada provincia
+
       provincias.forEach(provinciaISO => {
         const query = this.construirQueryOverpass(provinciaISO, filtros);
         
@@ -210,26 +236,23 @@ buscarPuntos(filtros: FiltrosBusqueda): Observable<PuntoInteres[]> {
             map(elementos => this.procesarElementos(elementos, filtros)),
             catchError(error => {
               console.warn(`⚠️ Provincia ${provinciaISO}: error -`, error.message);
-              return of([]); // Retornar array vacío si hay error
+              return of([]);
             })
           );
           todasLasBusquedas.push(busqueda);
         }
       });
 
-      // Combinar todas las búsquedas
+   
       if (todasLasBusquedas.length === 0) {
         observer.error('No se pudieron generar queries para ninguna provincia');
         return;
       }
 
-      // Esperar a que todas las búsquedas terminen
       forkJoin(todasLasBusquedas).subscribe({
         next: (resultadosArray) => {
-          // ✅ CORREGIDO: Usar reduce en lugar de flat()
           const todosLosPuntos = resultadosArray.reduce((acc, val) => acc.concat(val), []);
-          
-          // ✅ CORREGIDO: Especificar tipo del parámetro
+
           const seen = new Set();
           const puntosUnicos = todosLosPuntos.filter((punto: PuntoInteres) => {
             const key = `${punto.lat.toFixed(4)}_${punto.lon.toFixed(4)}`;
@@ -252,7 +275,13 @@ buscarPuntos(filtros: FiltrosBusqueda): Observable<PuntoInteres[]> {
     }
   });
 }
-  // ====== Llamar a la API de Overpass ======
+ /**
+   * @function llamarOverpass
+   * @description Ejecuta una petición HTTP a la API de Overpass con la query proporcionada
+   * @param {string} query - Query Overpass QL completa a ejecutar
+   * @returns {Observable<any[]>} Observable que emite los elementos crudos obtenidos de Overpass
+   * @private
+   */
   private llamarOverpass(query: string): Observable<any[]> {
     const formData = new FormData();
     formData.append('data', query);
@@ -262,28 +291,51 @@ buscarPuntos(filtros: FiltrosBusqueda): Observable<PuntoInteres[]> {
     }).pipe(
       map(response => response.elements || []),
       catchError(error => {
-        console.error('Error en petición Overpass:', error);
+        
         throw new Error('No se pudieron obtener los datos de Overpass');
       })
     );
   }
-
-  // ====== Obtener lista de provincias ======
+   /**
+   * @function getProvincias
+   * @description Obtiene la lista de nombres de todas las provincias argentinas disponibles
+   * @returns {string[]} Array con los nombres de las 24 provincias argentinas
+   * @public
+   */
   getProvincias(): string[] {
     return PROVINCIAS.map(p => p.nombre);
   }
 
-  // ====== Buscar puntos por paisaje en toda Argentina ======
+ /**
+   * @function buscarPorPaisaje
+   * @description Busca puntos de interés por tipo de paisaje en toda Argentina
+   * @param {string} paisaje - Identificador del paisaje a buscar
+   * @returns {Observable<PuntoInteres[]>} Observable con puntos de interés del paisaje especificado
+   * @public
+   */
   buscarPorPaisaje(paisaje: string): Observable<PuntoInteres[]> {
     return this.buscarPuntos({ paisaje });
   }
 
-  // ====== Buscar puntos por categoría en provincia específica ======
+ /**
+   * @function buscarPorCategoria
+   * @description Busca puntos de interés por categoría en una provincia específica
+   * @param {string} provincia - Nombre de la provincia donde buscar
+   * @param {string} categoria - Identificador de la categoría a buscar
+   * @returns {Observable<PuntoInteres[]>} Observable con puntos de interés de la categoría en la provincia
+   * @public
+   */
   buscarPorCategoria(provincia: string, categoria: string): Observable<PuntoInteres[]> {
     return this.buscarPuntos({ provincia, categoria });
   }
 
-  // ====== Método para obtener estadísticas ======
+/**
+   * @function getEstadisticasBusqueda
+   * @description Obtiene estadísticas de una búsqueda (total de puntos y distribución por categoría)
+   * @param {FiltrosBusqueda} filtros - Filtros de búsqueda para analizar
+   * @returns {Observable<{total: number, categorias: any}>} Observable con estadísticas de la búsqueda
+   * @public
+   */
   getEstadisticasBusqueda(filtros: FiltrosBusqueda): Observable<{total: number, categorias: any}> {
     return this.buscarPuntos(filtros).pipe(
       map(puntos => {

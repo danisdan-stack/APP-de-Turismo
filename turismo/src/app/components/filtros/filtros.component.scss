@@ -108,12 +108,12 @@ ion-card{
   }
 }
 
-// Estados deshabilitados
+
 ion-button[disabled] {
   opacity: 0.6;
 }
 
-// Responsive
+
 @media (max-width: 768px) {
   .filtros-card {
     max-height: 100vh;
@@ -123,7 +123,6 @@ ion-button[disabled] {
     margin-bottom: 16px;
   }
 }
-// Agregar al archivo SCSS existente
 
 .modo-group {
   margin-bottom: 24px;
@@ -143,13 +142,12 @@ ion-button[disabled] {
   color: var(--ion-color-medium);
 }
 
-// Destacar el modo paisaje
 .modo-group:last-child {
   border: 2px solid var(--ion-color-tertiary);
   background: rgba(var(--ion-color-tertiary-rgb), 0.05);
 }
 
-// Responsive
+
 @media (max-width: 768px) {
   .modo-group {
     margin-bottom: 16px;

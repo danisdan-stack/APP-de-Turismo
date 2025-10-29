@@ -7,10 +7,8 @@
 
   <ion-card-content>
 
-    <!-- MODO NORMAL: Provincia + Categorías -->
     <div class="modo-group" *ngIf="!isModoPaisaje()">
 
-      <!-- Selección de Provincia -->
       <div class="paso-group">
         <ion-button expand="block" fill="outline" color="primary" (click)="alternarFiltro('provincias')">
           <ion-icon name="location" slot="start"></ion-icon>
@@ -19,7 +17,6 @@
           </ion-icon>
         </ion-button>
 
-        <!-- Lista de Provincias -->
         <div class="opciones-list" *ngIf="filtroActivo === 'provincias'">
           <ion-list>
             <ion-item *ngFor="let provincia of provincias" (click)="seleccionarProvincia(provincia)"
@@ -33,7 +30,6 @@
         </div>
       </div>
 
-      <!-- Selección de Categorías (solo si hay provincia seleccionada) -->
       <div class="paso-group" *ngIf="isProvinciaSeleccionada()">
         <ion-button expand="block" fill="outline" color="secondary" (click)="alternarFiltro('categorias')">
           <ion-icon name="options" slot="start"></ion-icon>
@@ -42,7 +38,6 @@
           </ion-icon>
         </ion-button>
 
-        <!-- Lista de Categorías -->
         <div class="opciones-list" *ngIf="filtroActivo === 'categorias'">
           <ion-list>
             <ion-item *ngFor="let categoria of categorias" (click)="seleccionarCategoria(categoria.id)"
@@ -57,7 +52,6 @@
       </div>
     </div>
 
-    <!-- OPCIÓN INDEPENDIENTE: Turismo por Paisaje -->
     <div class="modo-group">
       <div class="paso-group">
         <ion-button expand="block" fill="solid" color="tertiary" (click)="alternarFiltro('paisajes')">
@@ -67,7 +61,6 @@
           </ion-icon>
         </ion-button>
 
-        <!-- Lista de Paisajes -->
         <div class="opciones-list" *ngIf="filtroActivo === 'paisajes'">
           <ion-list>
             <ion-item *ngFor="let paisaje of paisajes" (click)="seleccionarPaisaje(paisaje.id)"
@@ -82,7 +75,6 @@
       </div>
     </div>
 
-    <!-- Botón Buscar (se habilita con cualquier modo válido) -->
     <div class="paso-group" *ngIf="isBuscarHabilitado()">
       <ion-button expand="block" fill="solid" color="success" (click)="buscar()" class="buscar-btn">
         <ion-icon name="search" slot="start"></ion-icon>
@@ -91,7 +83,7 @@
       </ion-button>
     </div>
 
-    <!-- Resumen de selecciones actuales -->
+
     <div class="resumen-selecciones" *ngIf="isBuscarHabilitado()">
       <ion-item-divider>
         <ion-label>Búsqueda Configurada</ion-label>
