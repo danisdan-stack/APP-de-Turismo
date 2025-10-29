@@ -4,8 +4,6 @@ import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth';
 import { ProfileService } from 'src/app/services/perfil';
 import { Localizacion } from 'src/app/services/localizacion';
-
-
 import { Auth as FirebaseAuth, sendPasswordResetEmail } from '@angular/fire/auth';
 
 @Component({
@@ -13,15 +11,13 @@ import { Auth as FirebaseAuth, sendPasswordResetEmail } from '@angular/fire/auth
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
   standalone: false
-
 })
 export class LoginPage {
-
   email: string = '';
   password: string = '';
   loading: boolean = false;
   gpsHabilitado: boolean = true;
-
+  passwordVisible: boolean = false;
 
   private firebaseAuth = inject(FirebaseAuth);
 
@@ -35,49 +31,43 @@ export class LoginPage {
     this.limpiarFormulario();
   }
 
-  ngOnInit() {
-    this.limpiarFormulario();
-    this.cargarEstadoGPS();
-  }
   /**
-    * @function
-   * @description
+   * @function ngOnInit
+   * @description Inicializa el componente y carga el estado del GPS
+   * @returns {void}
    */
-  ionViewWillEnter() {
+  ngOnInit(): void {
     this.limpiarFormulario();
     this.cargarEstadoGPS();
   }
 
-  /** 
-   * @function
-   * @description */
-  cargarEstadoGPS() {
+  /**
+   * @function ionViewWillEnter
+   * @description Se ejecuta antes de que la vista se muestre
+   * @returns {void}
+   */
+  ionViewWillEnter(): void {
+    this.limpiarFormulario();
+    this.cargarEstadoGPS();
+  }
+
+  /**
+   * @function cargarEstadoGPS
+   * @description Carga el estado actual del GPS desde el servicio
+   * @returns {void}
+   */
+  cargarEstadoGPS(): void {
     this.gpsHabilitado = this.localizacion.estaGPSHabilitado();
-    console.log('📍 Estado GPS cargado desde servicio:', this.gpsHabilitado);
-  }
-  /**
-    * @function
-   * @description
-   */
-  probarEstadoGPS() {
-    console.log('📍 Estado actual GPS:', this.gpsHabilitado);
-    console.log('📍 localStorage GPS:', localStorage.getItem('gpsHabilitado'));
-    console.log('📍 Servicio GPS:', this.localizacion.estaGPSHabilitado());
-
-
-    this.gpsHabilitado = !this.gpsHabilitado;
-    localStorage.setItem('gpsHabilitado', JSON.stringify(this.gpsHabilitado));
-    console.log('📍 Nuevo estado GPS:', this.gpsHabilitado);
   }
 
   /**
-    * @function
-   * @description
+   * @function onGPSChange
+   * @description Maneja el cambio de estado del GPS
+   * @param {any} event - Evento del toggle
+   * @returns {Promise<void>}
    */
-  async onGPSChange(event: any) {
+  async onGPSChange(event: any): Promise<void> {
     const habilitado = event.detail.checked;
-
-
     this.gpsHabilitado = habilitado;
 
     try {
@@ -85,38 +75,32 @@ export class LoginPage {
 
       if (habilitado) {
         if (exito) {
-          console.log('📍 GPS habilitado correctamente');
           this.showAlert('GPS Activado', 'Ubicación habilitada correctamente');
         } else {
-
           this.gpsHabilitado = false;
           this.showAlert(
             'GPS No Disponible',
             'No se pudieron obtener los permisos de ubicación. Verifica que tengas los permisos habilitados en tu dispositivo.'
           );
         }
-      } else {
-        console.log('📍 GPS deshabilitado correctamente');
       }
     } catch (error) {
-      console.error('Error cambiando estado GPS:', error);
-
       this.gpsHabilitado = !habilitado;
       this.showAlert('Error', 'Ocurrió un error al cambiar el estado del GPS');
     }
   }
 
-  /** 
-   * @function
-     * @description */
-
-  async continuarConGoogle() {
+  /**
+   * @function continuarConGoogle
+   * @description Inicia sesión con Google Authentication
+   * @returns {Promise<void>}
+   */
+  async continuarConGoogle(): Promise<void> {
     if (this.loading) return;
 
     this.loading = true;
     try {
       const result = await this.authService.loginWithGoogle();
-
       const perfilExistente = await this.profileService.getUserProfile(result.user.uid);
 
       if (!perfilExistente) {
@@ -129,8 +113,6 @@ export class LoginPage {
       this.router.navigate(['/inicio']);
 
     } catch (error: any) {
-      console.error('Error con Google Auth:', error);
-
       let errorMessage = 'Error al iniciar sesión con Google.';
       if (error.code === 'auth/popup-closed-by-user') {
         errorMessage = 'El inicio de sesión fue cancelado.';
@@ -145,67 +127,60 @@ export class LoginPage {
       this.loading = false;
     }
   }
+
   /**
-   * @function
-   * @description
-   * @returns 
+   * @function iniciarSesion
+   * @description Inicia sesión con email y contraseña
+   * @returns {Promise<void>}
    */
-
-
-  async iniciarSesion() {
+  async iniciarSesion(): Promise<void> {
     if (this.loading) return;
 
-if (!this.email || !this.password) {
-  if (!this.email && !this.password) {
-    this.showAlert('Campos requeridos', 'Por favor ingresa email y contraseña');
-    return;
-  }
-  
-  if (!this.email) {
-    this.showAlert('Email requerido', 'Por favor ingresa tu email');
-    return;
-  }
-  
-  if (!this.password) {
-    this.showAlert('Contraseña requerida', 'Por favor ingresa tu contraseña');
-    return;
-  }
-}
-  // Limpiar espacios en blanco
-this.email = this.email.trim();
+    if (!this.email || !this.password) {
+      if (!this.email && !this.password) {
+        this.showAlert('Campos requeridos', 'Por favor ingresa email y contraseña');
+        return;
+      }
+      
+      if (!this.email) {
+        this.showAlert('Email requerido', 'Por favor ingresa tu email');
+        return;
+      }
+      
+      if (!this.password) {
+        this.showAlert('Contraseña requerida', 'Por favor ingresa tu contraseña');
+        return;
+      }
+    }
 
-// Verificar que tenga @
-if (!this.email.includes('@')) {
-  this.showAlert('Email inválido', 'El email debe contener @ (ejemplo: usuario@dominio.com)');
-  return;
-}
+    this.email = this.email.trim();
 
-// Verificar que tenga punto después del @
-const parts = this.email.split('@');
-if (parts.length < 2 || !parts[1].includes('.')) {
-  this.showAlert('Email inválido', 'El email debe tener un dominio válido (ejemplo: usuario@dominio.com)');
-  return;
-}
+    if (!this.email.includes('@')) {
+      this.showAlert('Email inválido', 'El email debe contener @ (ejemplo: usuario@dominio.com)');
+      return;
+    }
 
-// Regex final
-const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-if (!emailRegex.test(this.email)) {
-  this.showAlert('Email inválido', 'Por favor ingresa un email válido:\n• usuario@ejemplo.com\n• nombre.apellido@empresa.com.mx');
-  return;
-  }
+    const parts = this.email.split('@');
+    if (parts.length < 2 || !parts[1].includes('.')) {
+      this.showAlert('Email inválido', 'El email debe tener un dominio válido (ejemplo: usuario@dominio.com)');
+      return;
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(this.email)) {
+      this.showAlert('Email inválido', 'Por favor ingresa un email válido:\n• usuario@ejemplo.com\n• nombre.apellido@empresa.com.mx');
+      return;
+    }
 
     this.loading = true;
 
     try {
       await this.authService.login(this.email, this.password);
       this.showAlert('¡Bienvenido!', 'Sesión iniciada correctamente');
-
       this.limpiarFormulario();
       this.router.navigate(['/inicio']);
 
     } catch (error: any) {
-      console.error('Error en login:', error);
-
       let errorMessage = 'No se pudo iniciar sesión. ';
 
       switch (error.code) {
@@ -251,11 +226,13 @@ if (!emailRegex.test(this.email)) {
       this.loading = false;
     }
   }
+
   /**
-    * @function
-     * @description
+   * @function registrarse
+   * @description Registra un nuevo usuario con email y contraseña
+   * @returns {Promise<void>}
    */
-  async registrarse() {
+  async registrarse(): Promise<void> {
     if (this.loading) return;
 
     if (!this.email || !this.password) {
@@ -280,13 +257,10 @@ if (!emailRegex.test(this.email)) {
       const userCredential = await this.authService.register(this.email, this.password);
       if (userCredential) {
         this.showAlert('¡Registro Exitoso!', 'Bienvenido a TurisMatch. Te hemos iniciado sesión automáticamente.');
-
         this.limpiarFormulario();
         this.router.navigate(['/tabs']);
       }
     } catch (error: any) {
-      console.error('Error en registro:', error);
-
       let errorMessage = 'Error al registrarse. ';
 
       switch (error.code) {
@@ -323,11 +297,13 @@ if (!emailRegex.test(this.email)) {
   }
 
   /**
-    * @function
-    * @description 
+   * @function showAlert
+   * @description Muestra un cuadro de diálogo de alerta
+   * @param {string} header - Encabezado de la alerta
+   * @param {string} message - Mensaje de la alerta
+   * @returns {Promise<void>}
    */
-
-  async showAlert(header: string, message: string) {
+  async showAlert(header: string, message: string): Promise<void> {
     const alert = await this.alertController.create({
       header: header,
       message: message,
@@ -336,11 +312,16 @@ if (!emailRegex.test(this.email)) {
 
     await alert.present();
   }
+
   /**
-    * @function
-   * @description
+   * @function showAlertWithOptions
+   * @description Muestra una alerta con botones personalizados
+   * @param {string} header - Encabezado de la alerta
+   * @param {string} message - Mensaje de la alerta
+   * @param {any[]} buttons - Array de botones personalizados
+   * @returns {Promise<void>}
    */
-  async showAlertWithOptions(header: string, message: string, buttons: any[]) {
+  async showAlertWithOptions(header: string, message: string, buttons: any[]): Promise<void> {
     const alert = await this.alertController.create({
       header: header,
       message: message,
@@ -349,19 +330,22 @@ if (!emailRegex.test(this.email)) {
 
     await alert.present();
   }
+
   /**
-    * @function
-    * @description
+   * @function irARegistro
+   * @description Navega a la página de registro
+   * @returns {void}
    */
-  irARegistro() {
+  irARegistro(): void {
     this.router.navigate(['/register']);
   }
 
   /**
-    * @function
-    * @description
+   * @function forgotPassword
+   * @description Muestra un diálogo para recuperar contraseña
+   * @returns {Promise<void>}
    */
-  async forgotPassword() {
+  async forgotPassword(): Promise<void> {
     const alert = await this.alertController.create({
       header: 'Recuperar Contraseña',
       inputs: [
@@ -390,10 +374,12 @@ if (!emailRegex.test(this.email)) {
   }
 
   /**
-    * @function
-    * @description
+   * @function sendResetEmail
+   * @description Envía un email para restablecer la contraseña
+   * @param {string} email - Email del usuario
+   * @returns {Promise<void>}
    */
-  async sendResetEmail(email: string) {
+  async sendResetEmail(email: string): Promise<void> {
     if (!email) {
       this.showAlert('Error', 'Debes introducir un correo electrónico.');
       return;
@@ -406,7 +392,6 @@ if (!emailRegex.test(this.email)) {
     }
 
     try {
-
       await sendPasswordResetEmail(this.firebaseAuth, email);
       this.showAlert('Éxito', 'Se ha enviado un correo electrónico con instrucciones para restablecer tu contraseña.');
     } catch (error: any) {
@@ -424,29 +409,32 @@ if (!emailRegex.test(this.email)) {
     }
   }
 
-
-  passwordVisible: boolean = false;
   /**
-   * @function
-   * @description
+   * @function togglePassword
+   * @description Alterna la visibilidad de la contraseña
+   * @returns {void}
    */
-  togglePassword() {
+  togglePassword(): void {
     this.passwordVisible = !this.passwordVisible;
   }
+
   /**
-    * @function
-   * @description
+   * @function limpiarFormulario
+   * @description Limpia los campos del formulario
+   * @returns {void}
    */
-  limpiarFormulario() {
+  limpiarFormulario(): void {
     this.email = '';
     this.password = '';
-    console.log('✅ Formulario de login limpiado');
   }
+
   /**
-    * @function
-   * @description
+   * @function onKeyPress
+   * @description Maneja el evento de tecla presionada
+   * @param {any} event - Evento del teclado
+   * @returns {void}
    */
-  onKeyPress(event: any) {
+  onKeyPress(event: any): void {
     if (event.key === 'Enter') {
       this.iniciarSesion();
     }
