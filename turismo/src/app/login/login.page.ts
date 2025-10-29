@@ -155,16 +155,44 @@ export class LoginPage {
   async iniciarSesion() {
     if (this.loading) return;
 
-    if (!this.email || !this.password) {
-      this.showAlert('Campos requeridos', 'Por favor ingresa email y contraseña');
-      return;
-    }
+if (!this.email || !this.password) {
+  if (!this.email && !this.password) {
+    this.showAlert('Campos requeridos', 'Por favor ingresa email y contraseña');
+    return;
+  }
+  
+  if (!this.email) {
+    this.showAlert('Email requerido', 'Por favor ingresa tu email');
+    return;
+  }
+  
+  if (!this.password) {
+    this.showAlert('Contraseña requerida', 'Por favor ingresa tu contraseña');
+    return;
+  }
+}
+  // Limpiar espacios en blanco
+this.email = this.email.trim();
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(this.email)) {
-      this.showAlert('Email inválido', 'Por favor ingresa un email válido');
-      return;
-    }
+// Verificar que tenga @
+if (!this.email.includes('@')) {
+  this.showAlert('Email inválido', 'El email debe contener @ (ejemplo: usuario@dominio.com)');
+  return;
+}
+
+// Verificar que tenga punto después del @
+const parts = this.email.split('@');
+if (parts.length < 2 || !parts[1].includes('.')) {
+  this.showAlert('Email inválido', 'El email debe tener un dominio válido (ejemplo: usuario@dominio.com)');
+  return;
+}
+
+// Regex final
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+if (!emailRegex.test(this.email)) {
+  this.showAlert('Email inválido', 'Por favor ingresa un email válido:\n• usuario@ejemplo.com\n• nombre.apellido@empresa.com.mx');
+  return;
+  }
 
     this.loading = true;
 
