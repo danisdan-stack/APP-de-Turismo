@@ -20,6 +20,24 @@
   justify-content: space-between; 
 }
 
+.password-requirements {
+  background-color: #e4f1eb;         
+  border: 8px solid #296f64;     
+  padding: 10px;
+  border-radius: 20px;
+  box-shadow: 0 0 6px rgba(41, 111, 100, 0.4);
+  color: #184a4e;                   
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+}
+
+.password-requirements ion-item {
+  --background: transparent !important;
+  --ion-item-background: transparent !important;
+  background: transparent !important;
+  color: #184a4e !important;
+}
+
 
 .toolbar-left {
   display: flex;
