@@ -12,7 +12,6 @@ import { DataService, UserProfile } from 'src/app/services/datas';
 })
 export class RegisterPage implements OnInit {
   
-  // Campos del formulario
   nombre = ''; 
   apellido = ''; 
   telefono = ''; 
@@ -22,7 +21,6 @@ export class RegisterPage implements OnInit {
   
   loading = false;
   
-  // ✅ Para mostrar requisitos de contraseña en tiempo real
   passwordRequirements = {
     minLength: false,
     hasUpperCase: false,
@@ -38,16 +36,20 @@ export class RegisterPage implements OnInit {
 
   ngOnInit() {}
 
-  volverAlLogin() {
+  /**
+   * @function volverAlLogin
+   * @description Navega de vuelta a la página de login
+   */
+  volverAlLogin(): void {
     this.router.navigate(['']);
   }
 
   /**
-   * VALIDACIÓN COMPLETA DEL FORMULARIO
-   * Retorna objeto con estado y mensaje de error si aplica
+   * @function validarRegistro
+   * @description Realiza validación completa del formulario de registro
+   * @returns {Object} Objeto con estado de validación y mensaje de error si aplica
    */
   validarRegistro(): { valido: boolean, mensaje?: string } {
-    // 1. Validar campos vacíos
     const campos = [
       { valor: this.nombre, nombre: 'Nombre' },
       { valor: this.apellido, nombre: 'Apellido' },
@@ -67,7 +69,6 @@ export class RegisterPage implements OnInit {
       };
     }
 
-    // 2. Validar formato de email
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(this.email.trim())) {
       return {
@@ -76,7 +77,6 @@ export class RegisterPage implements OnInit {
       };
     }
 
-    // 3. Validar NOMBRE (solo letras y espacios)
     const nombreRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
     if (!nombreRegex.test(this.nombre.trim())) {
       return {
@@ -85,7 +85,6 @@ export class RegisterPage implements OnInit {
       };
     }
 
-    // 4. Validar APELLIDO (solo letras y espacios)
     if (!nombreRegex.test(this.apellido.trim())) {
       return {
         valido: false,
@@ -93,7 +92,6 @@ export class RegisterPage implements OnInit {
       };
     }
 
-    // 5. Validar TELÉFONO (solo números)
     const telefonoRegex = /^[0-9]+$/;
     if (!telefonoRegex.test(this.telefono.trim())) {
       return {
@@ -102,15 +100,13 @@ export class RegisterPage implements OnInit {
       };
     }
 
-    // 6. Validar longitud mínima del teléfono
-    if (this.telefono.trim().length < 7) {
+    if (this.telefono.trim().length < 8) {
       return {
         valido: false,
         mensaje: 'Teléfono muy corto:\n\nDebe tener al menos 8 dígitos'
       };
     }
 
-    // 7. Validar CONTRASEÑA SEGURA
     const passwordValidation = this.validarPasswordSegura();
     if (!passwordValidation.valida) {
       return {
@@ -119,7 +115,6 @@ export class RegisterPage implements OnInit {
       };
     }
 
-    // 8. Validar que las contraseñas coincidan
     if (this.password !== this.confirmPassword) {
       return {
         valido: false,
@@ -131,7 +126,9 @@ export class RegisterPage implements OnInit {
   }
 
   /**
-   * VALIDACIÓN DE CONTRASEÑA SEGURA
+   * @function validarPasswordSegura
+   * @description Valida que la contraseña cumpla con los requisitos de seguridad
+   * @returns {Object} Objeto con estado de validación y mensaje de error si aplica
    */
   validarPasswordSegura(): { valida: boolean, mensaje: string } {
     const requisitos = [
@@ -163,14 +160,20 @@ export class RegisterPage implements OnInit {
   }
 
   /**
-   * ACTUALIZAR ESTADO DE REQUISITOS EN TIEMPO REAL
+   * @function onPasswordInput
+   * @description Actualiza el estado de los requisitos de contraseña en tiempo real
+   * @param {any} event - Evento del input
    */
-  onPasswordInput(event: any) {
+  onPasswordInput(event: any): void {
     this.password = event.target.value;
     this.actualizarRequisitosPassword();
   }
 
-  actualizarRequisitosPassword() {
+  /**
+   * @function actualizarRequisitosPassword
+   * @description Actualiza el estado de los requisitos de contraseña
+   */
+  actualizarRequisitosPassword(): void {
     this.passwordRequirements = {
       minLength: this.password.length >= 6,
       hasUpperCase: /[A-Z]/.test(this.password),
@@ -179,43 +182,46 @@ export class RegisterPage implements OnInit {
   }
 
   /**
-   * MÉTODOS PARA VALIDACIÓN EN TIEMPO REAL - VERSIÓN CORREGIDA
+   * @function onNombreInput
+   * @description Filtra y limpia el input de nombre en tiempo real
+   * @param {any} event - Evento del input
    */
-  onNombreInput(event: any) {
+  onNombreInput(event: any): void {
     const input = event.target as HTMLInputElement;
     const valorLimpio = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
-    
-    // Forzar la actualización del input
     this.nombre = valorLimpio;
     input.value = valorLimpio;
-    
-    //console.log('Nombre actualizado:', this.nombre);
   }
 
-  onApellidoInput(event: any) {
+  /**
+   * @function onApellidoInput
+   * @description Filtra y limpia el input de apellido en tiempo real
+   * @param {any} event - Evento del input
+   */
+  onApellidoInput(event: any): void {
     const input = event.target as HTMLInputElement;
     const valorLimpio = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
-    
-    // Forzar la actualización del input
     this.apellido = valorLimpio;
     input.value = valorLimpio;
-    
-    //console.log('Apellido actualizado:', this.apellido);
   }
 
-  onTelefonoInput(event: any) {
+  /**
+   * @function onTelefonoInput
+   * @description Filtra y limpia el input de teléfono en tiempo real
+   * @param {any} event - Evento del input
+   */
+  onTelefonoInput(event: any): void {
     const input = event.target as HTMLInputElement;
     const valorLimpio = input.value.replace(/[^0-9]/g, '');
-    
-    // Forzar la actualización del input
     this.telefono = valorLimpio;
     input.value = valorLimpio;
-    
-    //console.log('Teléfono actualizado:', this.telefono);
   }
 
-  async onRegister() {
-    // ✅ VALIDACIÓN MEJORADA
+  /**
+   * @function onRegister
+   * @description Procesa el registro del usuario
+   */
+  async onRegister(): Promise<void> {
     const validacion = this.validarRegistro();
     
     if (!validacion.valido) {
@@ -223,19 +229,14 @@ export class RegisterPage implements OnInit {
       return;
     }
 
-    // ✅ ACTIVAR LOADING
     this.loading = true;
     
     try {
-      // --- PASO 1: REGISTRO EN FIREBASE AUTH ---
       const userCredential = await this.authService.register(this.email, this.password);
 
       if (userCredential && userCredential.user) {
+        const userId = userCredential.user.uid;
         
-        const userId = userCredential.user.uid; 
-        console.log('✅ Usuario autenticado con UID:', userId);
-        
-        // --- PASO 2: PREPARAR DATOS PARA FIRESTORE ---
         const initialUserData: UserProfile = {
           email: this.email.trim(),
           nombre: this.nombre.trim(),
@@ -244,30 +245,23 @@ export class RegisterPage implements OnInit {
           id: userId,
         };
         
-        // --- PASO 3: GUARDAR EL PERFIL EN FIRESTORE ---
-        await this.dataService.saveUserProfile(userId, initialUserData); 
+        await this.dataService.saveUserProfile(userId, initialUserData);
         
-        // --- PASO 4: ACTUALIZAR PERFIL EN AUTH ---
         try {
           await this.authService.updateUserProfile({
             nombre: this.nombre.trim(),
             apellido: this.apellido.trim()
           });
-          console.log('✅ Perfil de Auth actualizado');
         } catch (profileError) {
-          console.warn('⚠️ No se pudo actualizar perfil de Auth:', profileError);
         }
         
-        // --- PASO 5: ÉXITO Y REDIRECCIÓN ---
         this.showAlert('¡Registro Exitoso!', `Bienvenido ${this.nombre}.`);
         this.router.navigate(['/inicio']);
-        
       }
 
     } catch (e: any) {
       let errorMessage = 'Fallo al registrar. Inténtalo de nuevo.';
       
-      // Manejo de errores de Firebase Auth
       switch (e.code) {
         case 'auth/email-already-in-use':
           errorMessage = 'Este correo ya está registrado.';
@@ -285,21 +279,22 @@ export class RegisterPage implements OnInit {
           errorMessage = 'Demasiados intentos. Intenta más tarde.';
           break;
         default:
-          console.error('❌ Fallo al registrar:', e);
           errorMessage = 'Error inesperado. Intenta nuevamente.';
           break;
       }
       this.showAlert('Error de Registro', errorMessage);
     } finally {
-      // ✅ DESACTIVAR LOADING SIEMPRE
       this.loading = false;
     }
   }
 
   /**
-   * Muestra un cuadro de diálogo de alerta
+   * @function showAlert
+   * @description Muestra un cuadro de diálogo de alerta
+   * @param {string} header - Encabezado de la alerta
+   * @param {string} message - Mensaje de la alerta
    */
-  async showAlert(header: string, message: string) {
+  async showAlert(header: string, message: string): Promise<void> {
     const alert = await this.alertController.create({
       header: header,
       message: message,
