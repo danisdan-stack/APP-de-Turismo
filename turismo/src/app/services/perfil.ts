@@ -1,26 +1,23 @@
 import { Injectable, inject } from '@angular/core';
-import { 
-  Firestore, 
-  doc, 
-  getDoc, 
-  setDoc, 
-  updateDoc 
-} from '@angular/fire/firestore';
 import { AuthService } from './auth';
-
-// 🔹 Importa UserProfile desde auth
 import { UserProfile } from './auth';
+import { 
+  Firestore, 
+  doc, 
+  getDoc, 
+  setDoc, 
+  updateDoc 
+} from '@angular/fire/firestore';
+
 
 @Injectable({
-  providedIn: 'root'
+   providedIn: 'root'
 })
 export class ProfileService {
 
-  private firestore = inject(Firestore);
-  private auth = inject(AuthService);
-  
-
-  private readonly collectionName = 'usuario';
+  private firestore = inject(Firestore);
+  private auth = inject(AuthService);
+  private readonly collectionName = 'usuario';
 
   // 🔹 Guardar perfil completo en Firestore
   async saveUserProfile(profile: UserProfile): Promise<void> {
