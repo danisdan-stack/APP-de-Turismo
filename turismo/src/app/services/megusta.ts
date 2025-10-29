@@ -8,9 +8,9 @@ import {
   collectionData,
   query, 
   where, 
-  orderBy,
+
   Timestamp,
-  getDocs  // ✅ IMPORTAR getDocs
+  getDocs 
 } from '@angular/fire/firestore';
 import { Observable, of, tap } from 'rxjs';
 import { ProfileService } from './perfil';
@@ -27,10 +27,17 @@ export class MeGustaService {
     private profileService: ProfileService
   ) {}
 
-  // ✅ MÉTODO PARA VERIFICAR SI EL PUNTO YA ES FAVORITO
+    /**
+   * @function verificarFavoritoExistente
+   * @description Verifica si el punto ya está marcado como favorito
+   * @param {string} usuarioId - ID del usuario
+   * @param {number} lat - Latitud del punto
+   * @param {number} lng - Longitud del punto
+   * @returns {Promise<boolean>}
+   */
   private async verificarFavoritoExistente(usuarioId: string, lat: number, lng: number): Promise<boolean> {
     try {
-      console.log('🔍 Verificando si punto ya es favorito...', { usuarioId, lat, lng });
+     
       
       const q = query(
         collection(this.firestore, 'me_gusta'),
@@ -42,34 +49,40 @@ export class MeGustaService {
       const querySnapshot = await getDocs(q);
       const existe = !querySnapshot.empty;
       
-      console.log('📊 Resultado verificación duplicado:', existe);
+    
       return existe;
 
     } catch (error) {
-      console.error('❌ Error verificando favorito existente:', error);
-      // Si hay error, asumimos que no existe para permitir guardar
+     
       return false;
     }
   }
+
+    /**
+   * @function guardarMeGusta
+   * @description Guarda un punto como favorito del usuario
+   * @param {any} puntoData - Datos del punto a guardar
+   * @returns {Promise<boolean>}
+   */
 
   async guardarMeGusta(puntoData: any): Promise<boolean> {
     try {
       const uid = this.authService.getUserId();
       
       if (!uid) {
-        console.error('Usuario no logeado');
+       
         return false;
       }
 
-      // ✅ Obtener el perfil completo usando el UID
+     
       const userProfile = await this.profileService.getUserProfile(uid);
       
       if (!userProfile) {
-        console.error('No se pudo obtener el perfil del usuario');
+  
         return false;
       }
 
-      // ✅ VERIFICAR SI YA EXISTE ANTES DE GUARDAR
+      
       const yaExiste = await this.verificarFavoritoExistente(
         userProfile.id, 
         puntoData.lat, 
@@ -77,7 +90,7 @@ export class MeGustaService {
       );
       
       if (yaExiste) {
-        console.log('⚠️ El punto ya está en favoritos, no se guardará duplicado');
+        
         return false;
       }
 
@@ -98,23 +111,28 @@ export class MeGustaService {
         datosParaGuardar
       );
 
-      console.log('✅ Guardado en Firestore con ID:', docRef.id);
+     
       return true;
 
     } catch (error) {
-      console.error('❌ Error guardando:', error);
+     
       return false;
     }
   }
 
-  // ✅ OBTENER TODOS LOS "ME GUSTA" DEL USUARIO LOGGEADO
+  /**
+   * @function obtenerMisMeGusta
+   * @description Obtiene todos los favoritos del usuario logeado
+   * @returns {Observable<any[]>}
+   */
+
   obtenerMisMeGusta(): Observable<any[]> {
     const uid = this.authService.getUserId();
     
-    console.log('🔍 DEBUG - Usuario actual UID:', uid);
+  
     
     if (!uid) {
-      console.log('❌ DEBUG - No hay UID, retornando array vacío');
+
       return of([]);
     }
 
@@ -123,26 +141,30 @@ export class MeGustaService {
       where('usuarioId', '==', uid)
     );
 
-    console.log('📡 DEBUG - Consulta creada, ejecutando...');
     
     return collectionData(q, { idField: 'id' }).pipe(
       tap(favoritos => {
-        console.log('📊 DEBUG - Favoritos recibidos:', favoritos.length);
+        
         if (favoritos.length > 0) {
-          console.log('🔍 DEBUG - Primer favorito:', favoritos[0]);
+ 
         }
       })
     ) as Observable<any[]>;
   }
 
-  // ✅ ELIMINAR "ME GUSTA"
+   /**
+   * @function eliminarMeGusta
+   * @description Elimina un favorito por su ID
+   * @param {string} id - ID del favorito a eliminar
+   * @returns {Promise<boolean>}
+   */
   async eliminarMeGusta(id: string): Promise<boolean> {
     try {
       await deleteDoc(doc(this.firestore, 'me_gusta', id));
-      console.log('✅ Favorito eliminado:', id);
+ 
       return true;
     } catch (error) {
-      console.error('❌ Error eliminando favorito:', error);
+  
       return false;
     }
   }
