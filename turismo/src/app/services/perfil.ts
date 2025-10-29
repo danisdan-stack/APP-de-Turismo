@@ -19,7 +19,7 @@ export class ProfileService {
   private firestore = inject(Firestore);
   private auth = inject(AuthService);
   
-  // 🚨 CAMBIO CLAVE: Usar 'usuario' en lugar de 'users' para que coincida con las reglas.
+
   private readonly collectionName = 'usuario';
 
   // 🔹 Guardar perfil completo en Firestore
