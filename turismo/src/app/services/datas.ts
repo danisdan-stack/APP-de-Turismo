@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-// --- Importaciones para la API Modular de Firestore ---
+
 import { Firestore, collection, doc, setDoc } from '@angular/fire/firestore';
-// También necesitarás 'inject' si no lo inyectas en el constructor
+
 import { inject } from '@angular/core';
 
 export interface UserProfile {
@@ -16,16 +16,22 @@ export interface UserProfile {
   providedIn: 'root'
 })
 export class DataService {
-  // Inyectar Firestore de forma modular
-  // Puedes hacerlo en el constructor como antes, o usando inject() en un field initializer:
-  private firestore: Firestore = inject(Firestore); // <--- Uso modular de Firestore
+
+  private firestore: Firestore = inject(Firestore); 
 
   constructor() {}
+    /**
+   * @function saveUserProfile
+   * @description Guarda el perfil del usuario en Firestore
+   * @param {string} userId - ID del usuario
+   * @param {UserProfile} data - Datos del perfil del usuario
+   * @returns {Promise<void>}
+   */
 
   async saveUserProfile(userId: string, data: UserProfile): Promise<void> {
-    const docRef = doc(this.firestore, `usuario/${userId}`); // Crear una referencia de documento
+    const docRef = doc(this.firestore, `usuario/${userId}`); 
     try {
-      await setDoc(docRef, data, { merge: true }); // Usar setDoc modular
+      await setDoc(docRef, data, { merge: true }); 
       console.log('[DataService] Perfil guardado en:', `usuario/${userId}`);
     } catch (error) {
       console.error('[DataService] Error al guardar el perfil en Firestore:', error);
