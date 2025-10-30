@@ -50,7 +50,7 @@ export class MapaPage implements OnInit, OnDestroy {
       this.guardarFavorito(lat, lon, nombre, categoria, provincia);
     };
     
-    // ✅ NUEVAS FUNCIONES PARA NAVEGACIÓN DESDE POPUP
+
     (window as any).irAInicio = () => {
       this.router.navigate(['/inicio']);
     };
@@ -472,7 +472,7 @@ export class MapaPage implements OnInit, OnDestroy {
       await loading.present();
       this.overpassService.buscarPuntos(filtros).subscribe({
         next: (puntos) => {
-          console.log(`✅ ${puntos.length} puntos encontrados`);
+
           this.puntos = puntos;
           this.actualizarMapaConPuntos(puntos);
           loading.dismiss();
