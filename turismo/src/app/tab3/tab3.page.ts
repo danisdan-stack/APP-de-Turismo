@@ -30,7 +30,10 @@ export class Tab3Page implements OnInit {
     private router: Router,
     private toastController: ToastController
   ) {}
-
+    /**
+   * @function ngOnInit
+   * @description Inicializa el componente y carga el perfil del usuario autenticado
+   */
   async ngOnInit() {
     this.loading = true;
 
@@ -38,33 +41,41 @@ export class Tab3Page implements OnInit {
       if (user) {
         await this.loadUserProfile(user.uid);
       } else {
-        console.warn('No hay usuario autenticado. Redirigiendo a /login.');
         this.loading = false;
         this.router.navigate(['/login']); 
       }
     });
   }
 
-  // ✅ MÉTODO: Para usar en el template
+    /**
+   * @function isGoogleUser
+   * @description Verifica si el usuario actual está autenticado con Google
+   * @returns {boolean} True si es usuario de Google, false en caso contrario
+   */
   isGoogleUser(): boolean {
     return this.auth.isGoogleUser();
   }
-
+    /**
+   * @function onLogout
+   * @description Cierra la sesión del usuario y redirige al login
+   */
   async onLogout() {
     try {
       await this.auth.logout();
       this.router.navigateByUrl('/login', { replaceUrl: true });
     } catch (error) {
-      console.error('Error al intentar cerrar sesión:', error);
+      this.showAlert('Error', 'No se pudo Cerrar Sesión');
     }
   }
-
+  /**
+   * @function loadUserProfile
+   * @description Carga el perfil del usuario desde Firestore y Authentication
+   * @param {string} uid - ID único del usuario
+   */
   async loadUserProfile(uid: string) {
     try {
       this.loading = true;
       const userData = await this.profileService.getUserProfileById(uid);
-
-      // ✅ ASIGNACIÓN SEGURA CON VALORES POR DEFECTO
       this.userProfile = userData;
       this.editedProfile = userData ? { ...userData } : {
         id: uid,
@@ -75,35 +86,32 @@ export class Tab3Page implements OnInit {
       };
 
       if (this.userProfile) {
-        console.log('✅ Perfil cargado exitosamente:');
-        console.log(`👤 UID: ${this.userProfile.id}`);
-        console.log(`✍️ Nombre: ${this.userProfile.nombre} ${this.userProfile.apellido}`);
-        console.log(`📧 Email: ${this.userProfile.email}`);
-        console.log(`📱 Telefono: ${this.userProfile.telefono}`);
-        console.log(`🔐 Tipo: ${this.auth.isGoogleUser() ? 'Google' : 'Email'}`);
+
       } else {
-        console.warn('No se encontró documento de perfil.');
-        // ✅ LIMPIAR DATOS SI NO HAY PERFIL
+
         this.limpiarDatosUsuario();
       }
 
     } catch (error) {
-      console.error('Error cargando perfil:', error);
+
       this.showAlert('Error', 'No se pudo cargar el perfil del usuario');
-      // ✅ LIMPIAR DATOS EN CASO DE ERROR
+
       this.limpiarDatosUsuario();
     } finally {
       this.loading = false;
     }
   }
-
-  // ----------------------------------------------------
-  // EDICIÓN GLOBAL
-  // ----------------------------------------------------
+  /**
+   * @function enableEditing
+   * @description Habilita el modo de edición del perfil
+   */
   enableEditing() {
     this.isEditing = true;
   }
-
+   /**
+   * @function cancelEditing
+   * @description Cancela el modo de edición y restaura los valores originales
+   */
   cancelEditing() {
     this.isEditing = false;
     if (this.userProfile) {

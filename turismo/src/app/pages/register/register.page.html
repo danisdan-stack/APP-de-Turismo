@@ -90,6 +90,7 @@
     </ion-list>
 
     <ion-list lines="none" class="password-requirements">
+       <ion-label class="ion-text-wrap">Requerimientos de la contraseña</ion-label>
       <ion-item>
         <ion-icon 
           [name]="passwordRequirements.minLength ? 'checkmark-circle' : 'ellipse'" 
@@ -107,6 +108,7 @@
       </ion-item>
       
       <ion-item>
+        
         <ion-icon 
           [name]="passwordRequirements.hasNumber ? 'checkmark-circle' : 'ellipse'" 
           [color]="passwordRequirements.hasNumber ? 'success' : 'medium'">

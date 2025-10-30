@@ -10,9 +10,9 @@ import { Tab3Page } from './tab3.page';
   imports: [
     CommonModule,
     FormsModule,
-    IonicModule,  // ✅ IonicModule proporciona los componentes Ionic
+    IonicModule,  
     Tab3PageRoutingModule
   ],
-  declarations: [Tab3Page]  // ✅ Declara el componente
+  declarations: [Tab3Page]  
 })
 export class Tab3PageModule {}
