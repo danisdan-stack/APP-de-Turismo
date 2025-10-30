@@ -27,21 +27,21 @@ export class FiltrosPage {
 
   /**
    * @function irATab1
-   * @description Navega a la página de inicio (Tab 1)
+   * @description Navega a la página de inicio 
    */
 irATab1() {
   this.router.navigate(['/inicio']); 
 }
  /**
    * @function irATab2
-   * @description Navega a la página de favoritos (Tab 2)
+   * @description Navega a la página de favoritos 
    */
 irATab2() {
   this.router.navigate(['/favoritos']);
 }
  /**
    * @function irATab3
-   * @description Navega a la página de mi cuenta (Tab 3)
+   * @description Navega a la página de mi cuenta 
    */
 irATab3() {
   this.router.navigate(['/mi-cuenta']);
