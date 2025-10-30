@@ -20,6 +20,24 @@
   justify-content: space-between; 
 }
 
+.password-requirements {
+  background-color: #e4f1eb;         
+  border: 8px solid #296f64;     
+  padding: 10px;
+  border-radius: 20px;
+  box-shadow: 0 0 6px rgba(41, 111, 100, 0.4);
+  color: #184a4e;                   
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+}
+
+.password-requirements ion-item {
+  --background: transparent !important;
+  --ion-item-background: transparent !important;
+  background: transparent !important;
+  color: #184a4e !important;
+}
+
 
 .toolbar-left {
   display: flex;
@@ -31,27 +49,6 @@
 .logo {
   height: 48px;
   margin-left: 8px;
-}
-
-.password-requirements {
-  margin: 16px 0;
-  padding: 0;
-  
-  ion-item {
-    --min-height: 32px;
-    --padding-start: 0;
-    --inner-padding-end: 0;
-    
-    ion-icon {
-      font-size: 16px;
-      margin-right: 8px;
-    }
-    
-    ion-label {
-      font-size: 14px;
-      color: var(--ion-color-medium);
-    }
-  }
 }
 
 
