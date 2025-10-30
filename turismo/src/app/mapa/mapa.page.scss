@@ -1,24 +1,24 @@
-// Fondo transparente
+
 ion-content {
   --background: transparent;
 }
 
 .mapa-container {
-  height: 100vh; // ✅ Altura completa de la ventana
+  height: 100vh; 
   width: 100%;
-  position: fixed; // ✅ FIXED en lugar de absolute
+  position: fixed; 
   top: 0;
   left: 0;
-  z-index: 0; // ✅ Detrás del header
+  z-index: 0; 
 }
 
-// El header debe estar sobre el mapa
+
 ion-header {
   position: relative;
-  z-index: 1000; // ✅ Por encima del mapa
+  z-index: 1000; 
 }
 
-// Asegurar que Leaflet ocupe todo el espacio
+
 :host ::ng-deep .leaflet-container {
   height: 100% !important;
   width: 100% !important;
@@ -26,11 +26,11 @@ ion-header {
 }
 
 .loading-container {
-  position: fixed; // ✅ FIXED para que esté centrado
+  position: fixed; 
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 1001; // ✅ Por encima del mapa y header
+  z-index: 1001; 
   text-align: center;
   background: rgba(255, 255, 255, 0.95);
   padding: 20px;
@@ -48,7 +48,7 @@ ion-header {
   }
 }
 
-// Footer también sobre el mapa
+
 ion-footer {
   position: relative;
   z-index: 1000;
@@ -68,7 +68,7 @@ ion-footer {
   }
 }
 
-// Ocultar scrollbars y asegurar altura completa
+
 ion-content {
   --offset-bottom: auto !important;
   --overflow: hidden;
