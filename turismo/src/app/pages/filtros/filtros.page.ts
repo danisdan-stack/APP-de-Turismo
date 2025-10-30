@@ -17,7 +17,7 @@ export class FiltrosPage {
    * @param {any} filtros - Objeto con los filtros seleccionados (provincia, categoría, paisaje)
    */
   onFiltrosAplicados(filtros: any) {
-    console.log('Redirigiendo al mapa con:', filtros);
+
     
     this.router.navigate(['/mapa'], {
       queryParams: filtros
