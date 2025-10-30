@@ -139,7 +139,7 @@ export class MapaPage implements OnInit, OnDestroy {
       if (exito) {
         this.showAlert('GPS Activado', 'La ubicación ha sido habilitada correctamente');
         setTimeout(() => {
-          this.mostrarUbicacionUsuario();
+          this.mostrarUbicacionUsuario2();
         }, 1000);
         
       } else {
@@ -264,7 +264,16 @@ export class MapaPage implements OnInit, OnDestroy {
 
     }
   }
+  /**
+ * @function estaMostrandoFavorito
+ * @description Verifica si actualmente se está mostrando un punto favorito
+ * @returns {boolean}
+ * @private
+ */
 
+  private estaMostrandoFavorito(): boolean {
+    return this.route.snapshot.queryParams['desdeFavoritos'] === 'true';
+  }
   /**
    * @function mostrarUbicacionUsuario
    * @description Muestra la ubicación actual del usuario en el mapa
@@ -273,6 +282,44 @@ export class MapaPage implements OnInit, OnDestroy {
    */
   private async mostrarUbicacionUsuario() {
     try {
+      //if (this.estaMostrandoFavorito()) {
+      //return;
+      //}
+      if (!this.localizacion.estaGPSHabilitado()) {
+        return;
+      }
+      const ubicacion = await this.localizacion.getCurrentPosition();
+      if (!ubicacion) {
+        return;
+      }
+      if (this.userMarker) {
+        this.map.removeLayer(this.userMarker);
+      }
+      const userIcon = this.crearIconoUsuario();
+      this.userMarker = L.marker([ubicacion.lat, ubicacion.lng], {
+        icon: userIcon,
+        zIndexOffset: 1000
+      })
+      .addTo(this.map)
+      .bindPopup('📍 ¡Estás aquí!')
+      .openPopup();
+      /*this.map.setView([ubicacion.lat, ubicacion.lng], 15, {
+        animate: true,
+        duration: 1
+      });*/
+    } catch (error: any) {
+      if (error.message.includes('permission') || error.message.includes('permiso')) {
+        this.showAlert(
+          'Permisos Requeridos', 
+          'Por favor, permite el acceso a la ubicación en la configuración de tu dispositivo.'
+        );
+      }
+    }
+  }
+
+  private async mostrarUbicacionUsuario2() {
+    try {
+
       if (!this.localizacion.estaGPSHabilitado()) {
         return;
       }
@@ -304,6 +351,7 @@ export class MapaPage implements OnInit, OnDestroy {
       }
     }
   }
+
   /**
    * @function crearIconoUsuario
    * @description Crea un icono personalizado para la ubicación del usuario
