@@ -36,8 +36,12 @@
   --ion-item-background: transparent !important;
   background: transparent !important;
   color: #184a4e !important;
+  
 }
-
+ion-list{
+  width: 87%;
+  margin-left: 15px;  
+}
 
 .toolbar-left {
   display: flex;
