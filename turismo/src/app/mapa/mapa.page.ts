@@ -303,10 +303,7 @@ export class MapaPage implements OnInit, OnDestroy {
       .addTo(this.map)
       .bindPopup('📍 ¡Estás aquí!')
       .openPopup();
-      /*this.map.setView([ubicacion.lat, ubicacion.lng], 15, {
-        animate: true,
-        duration: 1
-      });*/
+ 
     } catch (error: any) {
       if (error.message.includes('permission') || error.message.includes('permiso')) {
         this.showAlert(
