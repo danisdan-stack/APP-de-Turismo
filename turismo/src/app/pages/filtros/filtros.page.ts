@@ -23,29 +23,9 @@ export class FiltrosPage {
       queryParams: filtros
     });
   }
+
+
   /**
-   * @function cambiarTab
-   * @description Maneja el cambio de pestañas en la interfaz y redirige a la ruta correspondiente
-   * @param {any} event - Evento del segmento/componente de pestañas con la pestaña seleccionada
-   */
-  cambiarTab(event: any) {
-  const tab = event.detail.value;
-  
-
-  switch(tab) {
-    case 'tab1':
-      this.irATab1();
-      break;
-    case 'tab2':
-      this.irATab2();
-      break;
-    case 'tab3':
-      this.irATab3();
-      break;
-  }
-}
-
- /**
    * @function irATab1
    * @description Navega a la página de inicio (Tab 1)
    */
