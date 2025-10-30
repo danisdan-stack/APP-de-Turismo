@@ -282,9 +282,9 @@ export class MapaPage implements OnInit, OnDestroy {
    */
   private async mostrarUbicacionUsuario() {
     try {
-      //if (this.estaMostrandoFavorito()) {
-      //return;
-      //}
+      if (this.estaMostrandoFavorito()) {
+      return;
+      }
       if (!this.localizacion.estaGPSHabilitado()) {
         return;
       }
