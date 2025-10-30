@@ -5,13 +5,13 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <!-- ✅ ESTADO DE CARGA -->
+
   <div *ngIf="cargando" class="loading-state">
     <ion-spinner name="crescent"></ion-spinner>
     <p>Cargando tus favoritos...</p>
   </div>
 
-  <!-- ✅ LISTA VACÍA -->
+
   <div *ngIf="!cargando && misFavoritos.length === 0" class="empty-state">
     <ion-icon name="heart-outline" size="large"></ion-icon>
     <h3>No tienes favoritos aún</h3>
@@ -22,7 +22,7 @@
     </ion-button>
   </div>
 
-  <!-- ✅ LISTA DE FAVORITOS -->
+
   <div *ngIf="!cargando && misFavoritos.length > 0" class="list-container">
     <h4 class="list-title">Lista de favoritos:</h4>
     <ion-list>
@@ -36,12 +36,12 @@
         </ion-label>
         
         <ion-buttons slot="end">
-          <!-- ✅ BOTÓN PARA IR AL MAPA -->
+
           <ion-button fill="clear" (click)="verEnMapa(favorito)">
             <ion-icon name="navigate-outline" color="primary"></ion-icon>
           </ion-button>
           
-          <!-- ✅ NUEVO BOTÓN ELIMINAR -->
+
           <ion-button fill="clear" (click)="eliminarFavorito(favorito)" color="danger">
             <ion-icon name="trash-outline"></ion-icon>
           </ion-button>
@@ -51,7 +51,7 @@
   </div>
 </ion-content>
 
-<!-- 🔹 NAVEGACIÓN DE TABS EN LA PARTE INFERIOR -->
+
   <ion-tab-bar slot="bottom" class="tabs-navigation">
     <ion-tab-button tab="tab1" (click)="irATab1()">
       <ion-icon name="home-outline"></ion-icon>
