@@ -118,9 +118,7 @@ export class MeGustaService {
     
     return collectionData(q, { idField: 'id' }).pipe(
       tap(favoritos => {
-        
         if (favoritos.length > 0) {
- 
         }
       })
     ) as Observable<any[]>;

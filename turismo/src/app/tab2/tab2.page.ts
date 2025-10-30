@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MeGustaService } from '../services/megusta';
 import { Router } from '@angular/router';
-import { AlertController } from '@ionic/angular'; // ✅ Añadir AlertController
+import { AlertController } from '@ionic/angular'; 
 
 @Component({
   selector: 'app-tab2',
@@ -16,30 +16,35 @@ export class Tab2Page implements OnInit {
   constructor(
     private meGustaService: MeGustaService,
     private router: Router,
-    private alertController: AlertController // ✅ Inyectar AlertController
+    private alertController: AlertController 
   ) {}
 
   ngOnInit() {
     this.cargarMisFavoritos();
   }
 
+  /**
+   * @function cargarMisFavoritos
+   * @description Carga la lista de lugares favoritos del usuario desde el servicio
+   */
   cargarMisFavoritos() {
     this.cargando = true;
-    
     this.meGustaService.obtenerMisMeGusta().subscribe({
       next: (favoritos) => {
         this.misFavoritos = favoritos;
         this.cargando = false;
-        console.log('✅ Favoritos cargados:', favoritos.length);
-      },
+        },
       error: (error) => {
-        console.error('❌ Error cargando favoritos:', error);
         this.cargando = false;
       }
     });
   }
 
-  // ✅ IR AL MAPA CON EL PUNTO SELECCIONADO
+  /**
+   * @function verEnMapa
+   * @description Navega al mapa centrado en la ubicación del lugar favorito seleccionado
+   * @param {any} favorito - Objeto con los datos del lugar favorito
+   */
   verEnMapa(favorito: any) {
     this.router.navigate(['/mapa'], {
       queryParams: {
@@ -53,10 +58,12 @@ export class Tab2Page implements OnInit {
     });
   }
 
-  // ✅ ELIMINAR FAVORITO - IMPLEMENTADO
+  /**
+   * @function eliminarFavorito
+   * @description Muestra una alerta de confirmación para eliminar un lugar de favoritos
+   * @param {any} favorito - Objeto con los datos del lugar favorito a eliminar
+   */
   async eliminarFavorito(favorito: any) {
-    console.log('🗑️ Intentando eliminar favorito:', favorito.id);
-    
     const alert = await this.alertController.create({
       header: 'Eliminar Favorito',
       message: `¿Estás seguro de que quieres eliminar "${favorito.nombre_lugar}" de tus favoritos?`,
@@ -69,7 +76,6 @@ export class Tab2Page implements OnInit {
         {
           text: 'Eliminar',
           handler: async () => {
-            console.log('✅ Confirmado - Eliminando favorito...');
             await this.ejecutarEliminacion(favorito.id);
           }
         }
@@ -79,27 +85,31 @@ export class Tab2Page implements OnInit {
     await alert.present();
   }
 
-  // ✅ EJECUTAR ELIMINACIÓN
+  /**
+   * @function ejecutarEliminacion
+   * @description Ejecuta la eliminación del favorito a través del servicio
+   * @param {string} favoritoId - ID del favorito a eliminar
+   * @private
+   */
   private async ejecutarEliminacion(favoritoId: string) {
     try {
       const resultado = await this.meGustaService.eliminarMeGusta(favoritoId);
-      
       if (resultado) {
-        console.log('✅ Favorito eliminado exitosamente');
         this.mostrarMensajeExito();
-        // Recargar la lista
         this.cargarMisFavoritos();
       } else {
-        console.error('❌ Error al eliminar favorito');
         this.mostrarMensajeError();
       }
     } catch (error) {
-      console.error('❌ Error eliminando favorito:', error);
       this.mostrarMensajeError();
     }
   }
 
-  // ✅ MENSAJE DE ÉXITO
+  /**
+   * @function mostrarMensajeExito
+   * @description Muestra una alerta indicando que la eliminación fue exitosa
+   * @private
+   */
   private async mostrarMensajeExito() {
     const alert = await this.alertController.create({
       header: 'Eliminado',
@@ -109,7 +119,11 @@ export class Tab2Page implements OnInit {
     await alert.present();
   }
 
-  // ✅ MENSAJE DE ERROR
+  /**
+   * @function mostrarMensajeError
+   * @description Muestra una alerta indicando que hubo un error en la eliminación
+   * @private
+   */
   private async mostrarMensajeError() {
     const alert = await this.alertController.create({
       header: 'Error',
@@ -119,22 +133,29 @@ export class Tab2Page implements OnInit {
     await alert.present();
   }
 
-  direccionar(){
-    console.log("te direcciono")
-  }
-  
-  hola(){
-    console.log("hola ")
-  }
 
+
+  /**
+   * @function irATab1
+   * @description Navega a la pestaña de inicio
+   */
   irATab1() {
     this.router.navigate(['/inicio']);
   }
+
+  /**
+   * @function irATab2
+   * @description Navega a la pestaña de favoritos
+   */
 
   irATab2() {
     this.router.navigate(['/favoritos']);
   }
 
+    /**
+   * @function irATab3
+   * @description Navega a la pestaña de mi cuenta
+   */
   irATab3() {
     this.router.navigate(['/mi-cuenta']);
   }

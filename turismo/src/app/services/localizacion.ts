@@ -63,10 +63,8 @@ export class Localizacion {
   async cambiarEstadoGPS(habilitar: boolean): Promise<boolean> {
     try {
       localStorage.setItem('gpsHabilitado', JSON.stringify(habilitar));
-      
       if (habilitar) {
         const permisos = await this.requestPermissions();
-        
         if (permisos === 'granted') {
           return true;
         } else {
@@ -74,9 +72,7 @@ export class Localizacion {
           return false;
         }
       }
-      
       return true;
-      
     } catch (error) {
       return habilitar;
     }
@@ -92,7 +88,6 @@ export class Localizacion {
     if (!this.estaGPSHabilitado()) {
       return null;
     }
-
     return Geolocation.watchPosition({
       enableHighAccuracy: true,
       timeout: 10000
