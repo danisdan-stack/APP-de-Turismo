@@ -8,7 +8,7 @@
 
         <ion-buttons slot="end">
 <ion-button (click)="activarGPS()" fill="clear">
-  <ion-icon name="location" slot="icon-only"></ion-icon>
+<ion-icon name="location" slot="icon-only"></ion-icon>
 </ion-button>
             <ion-button (click)="centrarMapa()">
                 <ion-icon name="locate-outline" slot="icon-only"></ion-icon>
@@ -18,18 +18,18 @@
 </ion-header>
 
 <ion-content>
-    <!-- Estado de carga -->
+
     <div *ngIf="cargando" class="loading-container">
         <ion-spinner></ion-spinner>
         <p>Buscando puntos en el mapa...</p>
     </div>
 
-    <!-- ✅ Mapa Leaflet DIRECTO - Cambios aquí -->
+
     <div class="mapa-container">
         <div #mapContainer style="height: 100%; width: 100%"></div>
     </div>
 
-    <!-- Resumen de resultados -->
+
     <ion-footer *ngIf="puntos.length > 0 && !cargando">
         <ion-toolbar>
             <ion-title size="small">

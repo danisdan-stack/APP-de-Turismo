@@ -1,4 +1,4 @@
-/* ---------- VARIABLES GLOBALES ---------- */
+
 :root {
   --color-fondo-oscuro: #1F4E4E;
   --color-header-verde-claro: #255d5d;
@@ -6,7 +6,7 @@
   --color-item-claro: #f3e9af;
 }
 
-/* ---------- FONDO Y CABECERA ---------- */
+
 ion-content {
   --background: #1F4E4E;
 }
@@ -22,7 +22,7 @@ ion-header ion-toolbar {
   min-height: 100vh;
 }
 
-/* ---------- LISTA Y ÍTEMS ---------- */
+
 ion-list {
   background: transparent !important;
   --ion-background-color: transparent !important;
@@ -43,7 +43,7 @@ ion-item {
   --padding-end: 16px;
 }
 
-/* Texto dentro de ítems */
+
 ion-item ion-label h2 {
   color: #111111;
 }
@@ -52,7 +52,7 @@ ion-item ion-label p {
   color: #555555;
 }
 
-/* ---------- TÍTULO DE SECCIÓN ---------- */
+
 .list-title {
   color: white;
   font-size: 1.1rem;
@@ -61,7 +61,6 @@ ion-item ion-label p {
   margin: 0;
 }
 
-/* ---------- BOTONES E ICONOS ---------- */
 ion-item ion-button {
   height: 48px;
   width: 48px;
@@ -84,7 +83,7 @@ ion-button[color="danger"] ion-icon {
   font-size: 1.5rem;
 }
 
-/* ---------- ESTADOS (Carga y Vacío) ---------- */
+
 .loading-state,
 .empty-state {
   color: white;
@@ -121,7 +120,7 @@ ion-button[color="danger"] ion-icon {
   color: #777777;
 }
 
-/* ---------- BARRA DE PESTAÑAS INFERIOR ---------- */
+
 .tabs-navigation {
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.4);
   --background: #ffffff;

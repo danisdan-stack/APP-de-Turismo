@@ -1,8 +1,8 @@
 export const environment = {
-  // MUY IMPORTANTE: Cambiar a 'true' para indicar que es el entorno de producción.
+
   production: true, 
 
-  // La configuración de Firebase es la misma, ya que es la base de datos a la que quieres acceder.
+
   firebaseConfig: {
     apiKey: "AIzaSyBRzbhxa21snh-QmsJFi4BxvMlfco5C_-c",
     authDomain: "turismo-2a3b2.firebaseapp.com",

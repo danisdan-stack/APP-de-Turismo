@@ -14,22 +14,27 @@ export class Localizacion {
 
   constructor() {}
 
-  // ✅ VERIFICAR SI EL GPS ESTÁ HABILITADO (sincronizado con localStorage)
+  /**
+   * @function estaGPSHabilitado
+   * @description Verifica si el GPS está habilitado (sincronizado con localStorage)
+   * @returns {boolean}
+   */
   estaGPSHabilitado(): boolean {
     try {
       const estado = localStorage.getItem('gpsHabilitado');
-      // Si no existe en localStorage, por defecto es true
       return estado === null ? true : JSON.parse(estado);
     } catch (error) {
-      console.error('Error leyendo estado GPS:', error);
-      return true; // Valor por defecto seguro
+      return true;
     }
   }
 
-  // ✅ OBTENER UBICACIÓN SOLO SI ESTÁ HABILITADO
+  /**
+   * @function getCurrentPosition
+   * @description Obtiene la ubicación actual solo si el GPS está habilitado
+   * @returns {Promise<Ubicacion | null>}
+   */
   async getCurrentPosition(): Promise<Ubicacion | null> {
     if (!this.estaGPSHabilitado()) {
-      console.log('📍 GPS deshabilitado - no se obtiene ubicación');
       return null;
     }
 
@@ -45,50 +50,44 @@ export class Localizacion {
         precision: coordinates.coords.accuracy
       };
     } catch (error) {
-      console.error('Error obteniendo ubicación:', error);
       throw error;
     }
   }
 
-  // ✅ CAMBIAR ESTADO DEL GPS
-  // ✅ VERSIÓN CORREGIDA: No intentar obtener ubicación inmediatamente
-async cambiarEstadoGPS(habilitar: boolean): Promise<boolean> {
-  try {
-    // Guardar en localStorage primero
-    localStorage.setItem('gpsHabilitado', JSON.stringify(habilitar));
-    
-    if (habilitar) {
-      // Solo solicitar permisos, NO obtener ubicación
-      const permisos = await this.requestPermissions();
-      
-      if (permisos === 'granted') {
-        console.log('📍 Permisos concedidos - GPS habilitado');
-        return true; // Éxito - permisos concedidos
-      } else {
-        console.log('📍 Permisos denegados - GPS deshabilitado');
-        // Si deniega permisos, desactivar GPS
-        localStorage.setItem('gpsHabilitado', 'false');
-        return false; // Falló - permisos denegados
+  /**
+   * @function cambiarEstadoGPS
+   * @description Cambia el estado del GPS y solicita permisos si se habilita
+   * @param {boolean} habilitar - Estado deseado del GPS
+   * @returns {Promise<boolean>}
+   */
+  async cambiarEstadoGPS(habilitar: boolean): Promise<boolean> {
+    try {
+      localStorage.setItem('gpsHabilitado', JSON.stringify(habilitar));
+      if (habilitar) {
+        const permisos = await this.requestPermissions();
+        if (permisos === 'granted') {
+          return true;
+        } else {
+          localStorage.setItem('gpsHabilitado', 'false');
+          return false;
+        }
       }
+      return true;
+    } catch (error) {
+      return habilitar;
     }
-    
-    console.log('📍 GPS deshabilitado por usuario');
-    return true; // Éxito al desactivar
-    
-  } catch (error) {
-    console.error('Error cambiando estado GPS:', error);
-    // En caso de error, mantener el estado deseado pero loguear error
-    return habilitar; // Si estaba intentando activar, retornar false
   }
-}
 
-  // 🔹 SEGUIMIENTO CONTINUO DE UBICACIÓN (solo si está habilitado)
+  /**
+   * @function watchPosition
+   * @description Inicia seguimiento continuo de ubicación solo si está habilitado
+   * @param {Function} callback - Función a ejecutar cuando cambia la ubicación
+   * @returns {any}
+   */
   watchPosition(callback: (ubicacion: Ubicacion | null) => void) {
     if (!this.estaGPSHabilitado()) {
-      console.log('GPS deshabilitado, no se inicia seguimiento');
       return null;
     }
-
     return Geolocation.watchPosition({
       enableHighAccuracy: true,
       timeout: 10000
@@ -105,32 +104,48 @@ async cambiarEstadoGPS(habilitar: boolean): Promise<boolean> {
     });
   }
 
-  // 🔹 VERIFICAR PERMISOS
+  /**
+   * @function checkPermissions
+   * @description Verifica los permisos de ubicación
+   * @returns {Promise<string>}
+   */
   async checkPermissions(): Promise<string> {
     if (!this.estaGPSHabilitado()) {
-      return 'denied'; // Simular permisos denegados si el GPS está deshabilitado
+      return 'denied';
     }
 
     const status = await Geolocation.checkPermissions();
     return status.location;
   }
 
-  // 🔹 SOLICITAR PERMISOS
+  /**
+   * @function requestPermissions
+   * @description Solicita permisos de ubicación
+   * @returns {Promise<string>}
+   */
   async requestPermissions(): Promise<string> {
     if (!this.estaGPSHabilitado()) {
-      return 'denied'; // Simular permisos denegados si el GPS está deshabilitado
+      return 'denied';
     }
 
     const status = await Geolocation.requestPermissions();
     return status.location;
   }
 
-  // 🔹 OBTENER UBICACIÓN SI ESTÁ HABILITADO (alias para claridad)
+  /**
+   * @function obtenerUbicacionSiHabilitada
+   * @description Alias para obtener ubicación si está habilitada
+   * @returns {Promise<Ubicacion | null>}
+   */
   async obtenerUbicacionSiHabilitada(): Promise<Ubicacion | null> {
     return await this.getCurrentPosition();
   }
 
-  // 🔹 FORZAR ACTIVACIÓN DE GPS
+  /**
+   * @function forzarActivacionGPS
+   * @description Fuerza la activación del GPS
+   * @returns {Promise<boolean>}
+   */
   async forzarActivacionGPS(): Promise<boolean> {
     return await this.cambiarEstadoGPS(true);
   }

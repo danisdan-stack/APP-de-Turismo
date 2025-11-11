@@ -34,10 +34,14 @@ export class MapaPage implements OnInit, OnDestroy {
     private router: Router
   ) { }
 
+  /**
+   * @function ngOnInit
+   * @description Inicializa el componente, configura funciones globales y procesa parámetros de ruta
+   */
   ngOnInit() {
-    console.log('Página de mapa con Leaflet inicializada');
+
     
-    // ✅ CONFIGURAR FUNCIONES GLOBALES PRIMERO
+
     (window as any).centrarEnPuntoPopup = (lat: number, lon: number) => {
       this.centrarEnPuntoDesdePopup(lat, lon);
     };
@@ -46,7 +50,7 @@ export class MapaPage implements OnInit, OnDestroy {
       this.guardarFavorito(lat, lon, nombre, categoria, provincia);
     };
     
-    // ✅ NUEVAS FUNCIONES PARA NAVEGACIÓN DESDE POPUP
+
     (window as any).irAInicio = () => {
       this.router.navigate(['/inicio']);
     };
@@ -66,14 +70,13 @@ export class MapaPage implements OnInit, OnDestroy {
     }, 100);
     
     this.route.queryParams.subscribe(params => {
-      console.log('Parámetros recibidos en mapa:', params);
       
-      // ✅ DETECTAR SI VIENE DE FAVORITOS
+      
+
       if (params['desdeFavoritos'] && params['lat'] && params['lng']) {
-        console.log('📍 Viene de favoritos - mostrando punto específico');
+
         this.mostrarPuntoFavorito(params);
       } else {
-        // Búsqueda normal con filtros
         const filtros: FiltrosBusqueda = {
           provincia: params['provincia'],
           categoria: params['categoria'],
@@ -84,7 +87,6 @@ export class MapaPage implements OnInit, OnDestroy {
           this.filtrosActuales = filtros;
           this.buscarConFiltros(filtros);
         } else {
-          console.log('No hay filtros - mostrando mapa vacío');
           this.puntos = [];
           this.limpiarMarcadores();
           if (this.map) {
@@ -95,7 +97,11 @@ export class MapaPage implements OnInit, OnDestroy {
     });
   }
 
-  // ✅ MÉTODO PARA ACTIVAR GPS CON CONFIRMACIÓN
+    /**
+   * @function activarGPS
+   * @description Muestra una alerta de confirmación para activar el GPS
+   * @returns {Promise<void>}
+   */
   async activarGPS() {
     const alert = await this.alertController.create({
       header: 'Activar GPS',
@@ -105,13 +111,13 @@ export class MapaPage implements OnInit, OnDestroy {
           text: 'Cancelar',
           role: 'cancel',
           handler: () => {
-            console.log('📍 Activación de GPS cancelada');
+
           }
         },
         {
           text: 'Activar',
           handler: () => {
-            console.log('📍 Activando GPS...');
+
             this.activarGPSConfirmado();
           }
         }
@@ -121,39 +127,38 @@ export class MapaPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  // ✅ MÉTODO CORREGIDO: ACTIVAR GPS Y ACTUALIZAR MAPA
+  /**
+   * @function activarGPSConfirmado
+   * @description Ejecuta la activación del GPS después de la confirmación del usuario
+   * @private
+   * @returns {Promise<void>}
+   */
   private async activarGPSConfirmado() {
     try {
-      console.log('📍 Activando GPS...');
-      
-      // 1. Activar el GPS en el servicio
       const exito = await this.localizacion.cambiarEstadoGPS(true);
-      
       if (exito) {
-        console.log('📍 GPS activado correctamente');
-        
-        // 2. Mostrar confirmación
         this.showAlert('GPS Activado', 'La ubicación ha sido habilitada correctamente');
-        
-        // 3. ✅ IMPORTANTE: Recargar la ubicación del usuario en el mapa
         setTimeout(() => {
-          this.mostrarUbicacionUsuario();
+          this.mostrarUbicacionUsuario2();
         }, 1000);
         
       } else {
-        console.log('📍 No se pudieron obtener permisos de GPS');
         this.showAlert(
           'Permisos Denegados', 
           'No se pudieron obtener los permisos de ubicación. Verifica que tengas los permisos habilitados en tu dispositivo.'
         );
       }
     } catch (error) {
-      console.error('Error activando GPS:', error);
       this.showAlert('Error', 'Ocurrió un error al activar el GPS');
     }
   }
 
-  // ✅ MÉTODO CORREGIDO - ESPERAR MAPA
+  /**
+   * @function mostrarPuntoFavorito
+   * @description Espera a que el mapa esté listo para mostrar un punto favorito
+   * @param {any} params - Parámetros del punto favorito
+   * @private
+   */
   private mostrarPuntoFavorito(params: any) {
     const esperarMapa = setInterval(() => {
       if (this.map) {
@@ -163,7 +168,12 @@ export class MapaPage implements OnInit, OnDestroy {
     }, 100);
   }
 
-  // ✅ NUEVO MÉTODO SEPARADO PARA MOSTRAR EN MAPA
+  /**
+   * @function mostrarPuntoFavoritoEnMapa
+   * @description Muestra un punto favorito específico en el mapa
+   * @param {any} params - Parámetros del punto favorito
+   * @private
+   */
   private mostrarPuntoFavoritoEnMapa(params: any) {
     const puntoFavorito: PuntoInteres = {
       id: Date.now(),
@@ -175,31 +185,26 @@ export class MapaPage implements OnInit, OnDestroy {
       provincia: params['provincia'] || 'Sin provincia',
       tags: {}
     };
-
-    console.log('📍 Mostrando punto favorito:', puntoFavorito);
-
-    // Limpiar marcadores anteriores
     this.limpiarMarcadores();
-    
-    // Crear solo el marcador del favorito
     if (puntoFavorito.lat && puntoFavorito.lon) {
       const marcador = L.marker([puntoFavorito.lat, puntoFavorito.lon])
         .addTo(this.map)
         .bindPopup(this.crearPopupContentFavorito(puntoFavorito))
         .openPopup();
-
       this.markers.push(marcador);
-      
-      // Centrar el mapa en el punto favorito
       this.map.setView([puntoFavorito.lat, puntoFavorito.lon], 14);
-      
-      console.log('✅ Punto favorito mostrado y centrado en el mapa');
     } else {
-      console.error('❌ Coordenadas inválidas para punto favorito');
+
     }
   }
 
-  // ✅ NUEVO MÉTODO PARA POPUP DE FAVORITOS
+  /**
+   * @function crearPopupContentFavorito
+   * @description Crea el contenido HTML para el popup de un punto favorito
+   * @param {PuntoInteres} punto - Punto de interés favorito
+   * @returns {string} HTML del popup
+   * @private
+   */
   private crearPopupContentFavorito(punto: PuntoInteres): string {
     return `
       <div style="text-align: center; min-width: 250px;">
@@ -211,7 +216,7 @@ export class MapaPage implements OnInit, OnDestroy {
           <small style="color: #3880ff;">⭐ Este es uno de tus favoritos</small>
         </div>
         
-        <!-- ✅ BOTONES DE NAVEGACIÓN -->
+
         <div style="margin-top: 12px; padding: 8px 0; border-top: 1px solid #eee; display: flex; justify-content: space-between; gap: 4px;">
           <button onclick="irAInicio()" style="background: #3880ff; color: white; border: none; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-size: 10px; font-weight: bold; flex: 1;">🏠 Inicio</button>
           <button onclick="irAFavoritos()" style="background: #ff4081; color: white; border: none; padding: 6px 12px; border-radius: 15px; cursor: pointer; font-size: 10px; font-weight: bold; flex: 1;">💖 Favoritos</button>
@@ -220,78 +225,77 @@ export class MapaPage implements OnInit, OnDestroy {
       </div>
     `;
   }
-
+  /**
+   * @function configurarIconosLeaflet
+   * @description Configura los iconos por defecto de Leaflet
+   * @private
+   */
   private configurarIconosLeaflet() {
     const iconDefault = L.Icon.Default.prototype as any;
     delete iconDefault._getIconUrl;
-    
     L.Icon.Default.mergeOptions({
       iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
       iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
     });
-    
-    console.log('✅ Iconos de Leaflet configurados');
   }
-
+  /**
+   * @function inicializarMapa
+   * @description Inicializa el mapa Leaflet en el contenedor
+   * @private
+   */
   private inicializarMapa() {
     if (!this.mapContainer?.nativeElement) {
-      console.error('Contenedor del mapa no encontrado');
       return;
     }
-
     try {
       this.map = L.map(this.mapContainer.nativeElement).setView([-34.6037, -58.3816], 5);
-
       setTimeout(() => {
         this.map.invalidateSize();
       }, 300);
-
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 18
       }).addTo(this.map);
-
-      console.log('✅ Mapa Leaflet inicializado correctamente');
-
-      // ✅ MOSTRAR UBICACIÓN DEL USUARIO SOLO SI ESTÁ HABILITADO
       setTimeout(() => {
         this.mostrarUbicacionUsuario();
       }, 2000);
-
     } catch (error) {
-      console.error('Error al inicializar el mapa:', error);
+
     }
   }
+  /**
+ * @function estaMostrandoFavorito
+ * @description Verifica si actualmente se está mostrando un punto favorito
+ * @returns {boolean}
+ * @private
+ */
 
-  // ✅ MÉTODO MEJORADO: MOSTRAR UBICACIÓN CON MÁS FEEDBACK
+  private estaMostrandoFavorito(): boolean {
+    return this.route.snapshot.queryParams['desdeFavoritos'] === 'true';
+  }
+  /**
+   * @function mostrarUbicacionUsuario
+   * @description Muestra la ubicación actual del usuario en el mapa
+   * @private
+   * @returns {Promise<void>}
+   */
   private async mostrarUbicacionUsuario() {
     try {
-      // ✅ VERIFICAR SI EL GPS ESTÁ HABILITADO
+      if (this.estaMostrandoFavorito()) {
+      return;
+      }
       if (!this.localizacion.estaGPSHabilitado()) {
-        console.log('📍 GPS deshabilitado por el usuario - no se muestra ubicación');
         return;
       }
-
-      console.log('📍 Obteniendo ubicación del usuario...');
-      
       const ubicacion = await this.localizacion.getCurrentPosition();
-      
-      // ✅ VERIFICAR SI SE OBTUVO LA UBICACIÓN
       if (!ubicacion) {
-        console.log('📍 No se pudo obtener la ubicación');
         return;
       }
-      
-      // Eliminar marcador anterior si existe
       if (this.userMarker) {
         this.map.removeLayer(this.userMarker);
       }
-
-      // Crear icono personalizado para el usuario
       const userIcon = this.crearIconoUsuario();
-      
-      // Crear marcador del usuario
       this.userMarker = L.marker([ubicacion.lat, ubicacion.lng], {
         icon: userIcon,
         zIndexOffset: 1000
@@ -299,19 +303,8 @@ export class MapaPage implements OnInit, OnDestroy {
       .addTo(this.map)
       .bindPopup('📍 ¡Estás aquí!')
       .openPopup();
-
-      // ✅ CENTRAR EL MAPA EN LA NUEVA UBICACIÓN
-      this.map.setView([ubicacion.lat, ubicacion.lng], 15, {
-        animate: true,
-        duration: 1
-      });
-
-      console.log('📍 Ubicación del usuario mostrada y centrada:', ubicacion);
-
+ 
     } catch (error: any) {
-      console.error('❌ Error obteniendo ubicación:', error);
-      
-      // Mostrar error específico
       if (error.message.includes('permission') || error.message.includes('permiso')) {
         this.showAlert(
           'Permisos Requeridos', 
@@ -321,7 +314,47 @@ export class MapaPage implements OnInit, OnDestroy {
     }
   }
 
-  // ✅ MÉTODO: CREAR ICONO PERSONALIZADO PARA EL USUARIO
+  private async mostrarUbicacionUsuario2() {
+    try {
+
+      if (!this.localizacion.estaGPSHabilitado()) {
+        return;
+      }
+      const ubicacion = await this.localizacion.getCurrentPosition();
+      if (!ubicacion) {
+        return;
+      }
+      if (this.userMarker) {
+        this.map.removeLayer(this.userMarker);
+      }
+      const userIcon = this.crearIconoUsuario();
+      this.userMarker = L.marker([ubicacion.lat, ubicacion.lng], {
+        icon: userIcon,
+        zIndexOffset: 1000
+      })
+      .addTo(this.map)
+      .bindPopup('📍 ¡Estás aquí!')
+      .openPopup();
+      this.map.setView([ubicacion.lat, ubicacion.lng], 15, {
+        animate: true,
+        duration: 1
+      });
+    } catch (error: any) {
+      if (error.message.includes('permission') || error.message.includes('permiso')) {
+        this.showAlert(
+          'Permisos Requeridos', 
+          'Por favor, permite el acceso a la ubicación en la configuración de tu dispositivo.'
+        );
+      }
+    }
+  }
+
+  /**
+   * @function crearIconoUsuario
+   * @description Crea un icono personalizado para la ubicación del usuario
+   * @returns {L.DivIcon} Icono personalizado de Leaflet
+   * @private
+   */
   private crearIconoUsuario(): L.DivIcon {
     return L.divIcon({
       html: `
@@ -339,8 +372,11 @@ export class MapaPage implements OnInit, OnDestroy {
       iconAnchor: [10, 10]
     });
   }
-
-  // ✅ MÉTODO MEJORADO: CENTRAR EN UBICACIÓN
+    /**
+   * @function centrarEnMiUbicacion
+   * @description Centra el mapa en la ubicación actual del usuario
+   * @returns {Promise<void>}
+   */
   async centrarEnMiUbicacion() {
     try {
       // ✅ VERIFICAR SI EL GPS ESTÁ HABILITADO
@@ -348,19 +384,19 @@ export class MapaPage implements OnInit, OnDestroy {
         await this.mostrarAlertaGPSDeshabilitado();
         return;
       }
-
-      console.log('📍 Centrando en mi ubicación...');
-      
-      // ✅ FORZAR ACTUALIZACIÓN DE LA UBICACIÓN
       await this.mostrarUbicacionUsuario();
 
     } catch (error: any) {
-      console.error('Error al centrar en ubicación:', error);
       this.mostrarErrorUbicacion(error);
     }
   }
 
-  // ✅ NUEVO MÉTODO: ALERTA CUANDO EL GPS ESTÁ DESHABILITADO
+  /**
+   * @function mostrarAlertaGPSDeshabilitado
+   * @description Muestra alerta cuando el GPS está deshabilitado
+   * @private
+   * @returns {Promise<void>}
+   */
   private async mostrarAlertaGPSDeshabilitado() {
     const alert = await this.alertController.create({
       header: 'GPS Deshabilitado',
@@ -381,7 +417,13 @@ export class MapaPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  // ✅ NUEVO MÉTODO: MANEJO DE ERRORES DE UBICACIÓN
+  /**
+   * @function mostrarErrorUbicacion
+   * @description Muestra alerta de error al obtener la ubicación
+   * @param {any} error - Error ocurrido
+   * @private
+   * @returns {Promise<void>}
+   */
   private async mostrarErrorUbicacion(error: any) {
     const alert = await this.alertController.create({
       header: 'Error de Ubicación',
@@ -391,7 +433,14 @@ export class MapaPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  // ✅ MÉTODO showAlert QUE FALTABA
+  /**
+   * @function showAlert
+   * @description Muestra una alerta simple al usuario
+   * @param {string} header - Encabezado de la alerta
+   * @param {string} message - Mensaje de la alerta
+   * @private
+   * @returns {Promise<void>}
+   */
   private async showAlert(header: string, message: string) {
     const alert = await this.alertController.create({
       header,
@@ -401,70 +450,63 @@ export class MapaPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  // ... (el resto de tus métodos se mantienen igual)
-
+  /**
+   * @function buscarConFiltros
+   * @description Realiza una búsqueda de puntos de interés con los filtros especificados
+   * @param {FiltrosBusqueda} filtros - Filtros de búsqueda
+   * @private
+   * @returns {Promise<void>}
+   */
   private async buscarConFiltros(filtros: FiltrosBusqueda) {
-    console.log('Buscando con filtros:', filtros);
-    
     this.cargando = true;
     this.error = '';
-
     try {
       const loading = await this.loadingController.create({
         message: this.generarMensajeBusqueda(filtros),
         spinner: 'crescent',
         duration: 30000
       });
-      
       await loading.present();
-
       this.overpassService.buscarPuntos(filtros).subscribe({
         next: (puntos) => {
-          console.log(`✅ ${puntos.length} puntos encontrados`);
+
           this.puntos = puntos;
           this.actualizarMapaConPuntos(puntos);
           loading.dismiss();
           this.cargando = false;
         },
         error: (err) => {
-          console.error('❌ Error al buscar puntos:', err);
           this.error = this.generarMensajeError(filtros);
           loading.dismiss();
           this.cargando = false;
           this.mostrarError(err);
         }
       });
-
     } catch (error) {
       this.cargando = false;
       this.mostrarError(error);
     }
   }
-
+    /**
+   * @function actualizarMapaConPuntos
+   * @description Actualiza el mapa con los puntos de interés encontrados
+   * @param {PuntoInteres[]} puntos - Array de puntos de interés
+   * @private
+   */
   private actualizarMapaConPuntos(puntos: PuntoInteres[]) {
-    console.log('🔍 Actualizando mapa con puntos:', puntos.length);
-    
     this.limpiarMarcadores();
-
     if (puntos.length === 0) {
       this.mostrarAlertaSinResultados();
       return;
     }
-
     puntos.forEach(punto => {
       if (punto.lat && punto.lon) {
-        console.log('📍 Creando marcador en:', punto.lat, punto.lon, punto.nombre);
-        
         const marcador = L.marker([punto.lat, punto.lon])
           .addTo(this.map)
           .bindPopup(this.crearPopupContent(punto));
-
         this.markers.push(marcador);
       }
     });
-
-    console.log('📌 Total de marcadores creados:', this.markers.length);
-
     if (this.markers.length > 0) {
       setTimeout(() => {
         this.map.invalidateSize();
@@ -473,6 +515,13 @@ export class MapaPage implements OnInit, OnDestroy {
     }
   }
 
+    /**
+   * @function crearPopupContent
+   * @description Crea el contenido HTML para el popup de un punto de interés
+   * @param {PuntoInteres} punto - Punto de interés
+   * @returns {string} HTML del popup
+   * @private
+   */
   private crearPopupContent(punto: PuntoInteres): string {
     const nombreSeguro = (punto.nombre || 'Sin nombre').replace(/'/g, "\\'");
     const categoriaSegura = (punto.categoria || '').replace(/'/g, "\\'");
@@ -485,7 +534,7 @@ export class MapaPage implements OnInit, OnDestroy {
         <small>${punto.provincia || 'Provincia no especificada'}</small><br>
         <small style="color: #888;">${punto.lat.toFixed(4)}, ${punto.lon.toFixed(4)}</small>
         
-        <!-- ✅ BOTÓN PARA GUARDAR FAVORITO -->
+
         <div style="margin-top: 12px; padding: 8px 0; border-top: 1px solid #eee;">
           <button 
             onclick="guardarFavorito(${punto.lat}, ${punto.lon}, '${nombreSeguro}', '${categoriaSegura}', '${provinciaSegura}')"
@@ -509,9 +558,17 @@ export class MapaPage implements OnInit, OnDestroy {
     `;
   }
 
+    /**
+   * @function guardarFavorito
+   * @description Guarda un punto de interés como favorito
+   * @param {number} lat - Latitud del punto
+   * @param {number} lon - Longitud del punto
+   * @param {string} nombre - Nombre del punto
+   * @param {string} categoria - Categoría del punto
+   * @param {string} provincia - Provincia del punto
+   * @returns {Promise<void>}
+   */
   async guardarFavorito(lat: number, lon: number, nombre: string, categoria: string, provincia: string) {
-    console.log('💾 Intentando guardar en Firestore...');
-    
     const resultado = await this.meGustaService.guardarMeGusta({
       lat: lat,
       lng: lon, 
@@ -519,14 +576,20 @@ export class MapaPage implements OnInit, OnDestroy {
       categoria: categoria,
       provincia: provincia
     });
-
     if (resultado) {
       await this.mostrarConfirmacionFavorito(nombre, true);
     } else {
       await this.mostrarConfirmacionFavorito(nombre, false);
     }
   }
-
+    /**
+   * @function mostrarConfirmacionFavorito
+   * @description Muestra confirmación de guardado de favorito
+   * @param {string} nombrePunto - Nombre del punto
+   * @param {boolean} exito - Indica si fue exitoso
+   * @private
+   * @returns {Promise<void>}
+   */
   private async mostrarConfirmacionFavorito(nombrePunto: string, exito: boolean) {
     if (exito) {
       const alert = await this.alertController.create({
@@ -544,7 +607,11 @@ export class MapaPage implements OnInit, OnDestroy {
       await alert.present();
     }
   }
-
+  /**
+   * @function ajustarVistaMapa
+   * @description Ajusta la vista del mapa para mostrar todos los marcadores
+   * @private
+   */
   private ajustarVistaMapa() {
     if (this.markers.length === 0) return;
 
@@ -561,10 +628,14 @@ export class MapaPage implements OnInit, OnDestroy {
         });
       }
     } catch (error) {
-      console.error('Error al ajustar vista del mapa:', error);
+
     }
   }
-
+  /**
+   * @function limpiarMarcadores
+   * @description Elimina todos los marcadores del mapa
+   * @private
+   */
   private limpiarMarcadores() {
     this.markers.forEach(marker => {
       if (this.map && this.map.hasLayer(marker)) {
@@ -574,9 +645,15 @@ export class MapaPage implements OnInit, OnDestroy {
     this.markers = [];
   }
 
- private generarMensajeBusqueda(filtros: FiltrosBusqueda): string {
+  /**
+   * @function generarMensajeBusqueda
+   * @description Genera el mensaje de búsqueda según los filtros aplicados
+   * @param {FiltrosBusqueda} filtros - Filtros de búsqueda
+   * @returns {string} Mensaje de búsqueda
+   * @private
+   */  
+  private generarMensajeBusqueda(filtros: FiltrosBusqueda): string {
   if (filtros.paisaje) {
-    // ✅ CORREGIDO: Usar los IDs correctos
     if (filtros.paisaje === 'cerros_y_montañas') {
       return 'Buscando montañas y cerros en Argentina...';
     } else if (filtros.paisaje === 'rios_y_mar') {
@@ -595,6 +672,13 @@ export class MapaPage implements OnInit, OnDestroy {
   return 'Buscando puntos de interés...';
 }
 
+  /**
+   * @function generarMensajeError
+   * @description Genera el mensaje de error según los filtros aplicados
+   * @param {FiltrosBusqueda} filtros - Filtros de búsqueda
+   * @returns {string} Mensaje de error
+   * @private
+   */  
   private generarMensajeError(filtros: FiltrosBusqueda): string {
     if (filtros.paisaje) {
       const paisaje = filtros.paisaje === 'montañas' ? 'montañas y cerros' : 'ríos y mar';
@@ -606,6 +690,13 @@ export class MapaPage implements OnInit, OnDestroy {
     return 'No se encontraron resultados.';
   }
 
+  /**
+   * @function formatearProvincia
+   * @description Formatea el nombre de la provincia para mostrar
+   * @param {string} provincia - Nombre de la provincia
+   * @returns {string} Provincia formateada
+   * @private
+   */
   private formatearProvincia(provincia: string): string {
     return provincia
       .split('_')
@@ -613,6 +704,13 @@ export class MapaPage implements OnInit, OnDestroy {
       .join(' ');
   }
 
+  /**
+   * @function obtenerNombreCategoria
+   * @description Obtiene el nombre legible de la categoría
+   * @param {string} categoria - Categoría
+   * @returns {string} Nombre de la categoría
+   * @private
+   */
   private obtenerNombreCategoria(categoria: string): string {
     const nombres: { [key: string]: string } = {
       'naturaleza': 'naturaleza',
@@ -624,6 +722,12 @@ export class MapaPage implements OnInit, OnDestroy {
     return nombres[categoria] || categoria;
   }
 
+  /**
+   * @function mostrarAlertaSinResultados
+   * @description Muestra alerta cuando no se encuentran resultados
+   * @private
+   * @returns {Promise<void>}
+   */
   private async mostrarAlertaSinResultados() {
     const alert = await this.alertController.create({
       header: 'Sin resultados',
@@ -644,9 +748,14 @@ export class MapaPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
+  /**
+   * @function mostrarError
+   * @description Muestra alerta de error genérico
+   * @param {any} error - Error ocurrido
+   * @private
+   * @returns {Promise<void>}
+   */
   private async mostrarError(error: any) {
-    console.error('Error en mapa:', error);
-    
     const alert = await this.alertController.create({
       header: 'Error',
       message: 'Ocurrió un error al buscar los puntos. Verifica tu conexión e intenta nuevamente.',
@@ -655,6 +764,12 @@ export class MapaPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
+  /**
+   * @function centrarEnPunto
+   * @description Centra el mapa en un punto específico
+   * @param {PuntoInteres} punto - Punto de interés
+   * @private
+   */
   private centrarEnPunto(punto: PuntoInteres) {
     if (this.map) {
       this.map.setView([punto.lat, punto.lon], 14, {
@@ -664,18 +779,30 @@ export class MapaPage implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * @function volverAFiltros
+   * @description Navega de vuelta a la página de filtros
+   */
   volverAFiltros() {
     this.router.navigate(['/inicio'], {
       queryParams: {} // Limpiar parámetros
     });
   }
 
+  /**
+   * @function recargarBusqueda
+   * @description Recarga la búsqueda con los filtros actuales
+   */
   recargarBusqueda() {
     if (Object.keys(this.filtrosActuales).length > 0) {
       this.buscarConFiltros(this.filtrosActuales);
     }
   }
 
+  /**
+   * @function centrarMapa
+   * @description Centra el mapa en la vista por defecto de Argentina
+   */
   centrarMapa() {
     if (this.map) {
       this.map.setView([-34.6037, -58.3816], 5, {
@@ -685,11 +812,16 @@ export class MapaPage implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * @function getResumenBusqueda
+   * @description Genera un resumen de la búsqueda actual
+   * @returns {string} Resumen de la búsqueda
+   */
   getResumenBusqueda(): string {
     if (this.puntos.length === 0) return 'No hay resultados';
     
       if (this.filtrosActuales.paisaje) {
-    // ✅ CORREGIDO: Usar los IDs correctos
+
     if (this.filtrosActuales.paisaje === 'cerros_y_montañas') {
       return `${this.puntos.length} puntos de montañas y cerros encontrados`;
     } else if (this.filtrosActuales.paisaje === 'rios_y_mar') {
@@ -709,12 +841,16 @@ export class MapaPage implements OnInit, OnDestroy {
     return `${this.puntos.length} puntos encontrados`;
   }
 
+  /**
+   * @function ngOnDestroy
+   * @description Limpia recursos al destruir el componente
+   */
   ngOnDestroy() {
     if (this.map) {
       this.map.remove();
     }
     
-    // ✅ LIMPIAR FUNCIONES GLOBALES
+
     delete (window as any).centrarEnPuntoPopup;
     delete (window as any).guardarFavorito;
     delete (window as any).irAInicio;
@@ -722,9 +858,14 @@ export class MapaPage implements OnInit, OnDestroy {
     delete (window as any).irAMiCuenta;
   }
 
+  /**
+   * @function centrarEnPuntoDesdePopup
+   * @description Centra el mapa en un punto desde el popup
+   * @param {number} lat - Latitud
+   * @param {number} lon - Longitud
+   * @private
+   */
   private centrarEnPuntoDesdePopup(lat: number, lon: number) {
-    console.log('📍 Centrando en punto desde popup:', lat, lon);
-    
     if (this.map) {
       this.map.setView([lat, lon], 14, {
         animate: true,

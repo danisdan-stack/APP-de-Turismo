@@ -1,17 +1,16 @@
-/* Colores principales*/
+
 $color-fondo-oscuro: #1F4E4E; 
 $color-header-verde_claro: #255d5d; 
 $color-acento-botones: #4a90e2; 
 
-/* --- FONDO Y LAYOUT PRINCIPAL --- */
 ion-content {
-  // Ponemos el fondo verde obligatorio
+
   --background: #1F4E4E !important; 
   
   --padding-start: 0;
   --padding-end: 0;
   --padding-top: 0;
-  --padding-bottom: 80px; // Espacio para la barra de tabs
+  --padding-bottom: 80px; 
 }
 
 ion-header {
@@ -26,7 +25,7 @@ ion-spinner {
   color: #ffffff;
 }
 
-/* --- TÍTULOS Y CABECERA DE LA CARD --- */
+
 ion-card {
   --background: transparent;
   box-shadow: none;
@@ -37,7 +36,7 @@ ion-card {
 ion-card-header {
   padding-bottom: 12px;
   
-  // Título Bienvenida al usuario con su nombre
+
 ion-card-subtitle {
   color: rgba(255, 255, 255, 0.9); 
   font-size: 0.9rem; 
@@ -53,10 +52,10 @@ ion-card-content {
 }
 
 
-/* --- ITEMS DE EDICIÓN: LAS CAJAS BLANCAS --- */
+
 ion-item {
   --min-height: 48px; 
-  --background: #ffffe5; /* Color crema */
+  --background: #ffffe5; 
   --border-radius: 8px; 
   margin-bottom: 12px;
   --inner-border-width: 0; 
@@ -64,7 +63,7 @@ ion-item {
   
   
   
-  /* El label (ej: "Nombre, Apellido, etc")*/
+ 
   ion-label[position="stacked"] {
     font-size: 1.0rem; 
     color: #050505;
@@ -99,7 +98,7 @@ ion-input {
 }
 
 
-/* Botones de Editar: Solo el icono de lápiz */
+
 ion-item ion-button[slot="end"] {
   width: 44px;
   height: 44px;
@@ -114,14 +113,12 @@ ion-item ion-button[slot="end"] {
     font-size: 1.35rem; 
   }
 
-  // Oculte el texto "EDITAR"
   span {
     display: none; 
   }
 }
 
 
-/* --- BOTONES DE ACCIÓN (LOGOUT Y ELIMINAR) --- */
 .action-buttons {
   margin: 30px 16px 0 16px; 
   padding: 0; 
@@ -145,7 +142,7 @@ ion-item ion-button[slot="end"] {
 }
 
 
-/* --- BARRA DE PESTAÑAS INFERIOR --- */
+
 .tabs-navigation {
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.4); 
   --background: #ffffff; 

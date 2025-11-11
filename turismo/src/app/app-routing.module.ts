@@ -11,33 +11,33 @@ const routes: Routes = [
   {
     path: 'login',
     loadChildren: () => import('./login/login.module').then(m => m.LoginPageModule)
-    // ✅ Sin protección - siempre accesible
+    
   },
   {
     path: 'register',
     loadChildren: () => import('./pages/register/register.module').then(m => m.RegisterPageModule)
-    // ✅ Sin protección - siempre accesible
+
   },
-  // ==================== RUTAS PROTEGIDAS ====================
+ 
   {
     path: 'inicio',
     loadChildren: () => import('./pages/filtros/filtros.module').then(m => m.FiltrosPageModule),
-    canActivate: [AuthGuard]  // ✅ Protegida - requiere login
+    canActivate: [AuthGuard]  
   },
   {
     path: 'mapa',
     loadChildren: () => import('./mapa/mapa.module').then(m => m.MapaPageModule),
-    canActivate: [AuthGuard]  // ✅ Protegida - requiere login
+    canActivate: [AuthGuard]  
   },
   {
     path: 'favoritos',
     loadChildren: () => import('./tab2/tab2.module').then(m => m.Tab2PageModule),
-    canActivate: [AuthGuard]  // ✅ Protegida - requiere login
+    canActivate: [AuthGuard] 
   },
   {
     path: 'mi-cuenta',
     loadChildren: () => import('./tab3/tab3.module').then(m => m.Tab3PageModule),
-    canActivate: [AuthGuard]  // ✅ Protegida - requiere login
+    canActivate: [AuthGuard]  
   },
 ];
 

@@ -15,7 +15,7 @@ import { FiltrosModule } from '../../components/filtros/filtros.module';
     FormsModule,
     IonicModule,
     FiltrosPageRoutingModule,
-     FiltrosModule
+    FiltrosModule
   ],
   declarations: [FiltrosPage]
 })

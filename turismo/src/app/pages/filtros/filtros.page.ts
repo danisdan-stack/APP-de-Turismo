@@ -11,39 +11,38 @@ export class FiltrosPage {
   
   constructor(private router: Router) {}
 
+  /**
+   * @function onFiltrosAplicados
+   * @description Maneja el evento cuando se aplican filtros desde el componente hijo y navega al mapa con los parámetros
+   * @param {any} filtros - Objeto con los filtros seleccionados (provincia, categoría, paisaje)
+   */
   onFiltrosAplicados(filtros: any) {
-    console.log('Redirigiendo al mapa con:', filtros);
+
     
     this.router.navigate(['/mapa'], {
       queryParams: filtros
     });
   }
-  cambiarTab(event: any) {
-  const tab = event.detail.value;
-  
-  // Mapear los valores del segment a las rutas correctas
-  switch(tab) {
-    case 'tab1':
-      this.irATab1();
-      break;
-    case 'tab2':
-      this.irATab2();
-      break;
-    case 'tab3':
-      this.irATab3();
-      break;
-  }
-}
 
-  // 🔹 MÉTODOS DE NAVEGACIÓN ENTRE TABS
+
+  /**
+   * @function irATab1
+   * @description Navega a la página de inicio 
+   */
 irATab1() {
   this.router.navigate(['/inicio']); 
 }
-
+ /**
+   * @function irATab2
+   * @description Navega a la página de favoritos 
+   */
 irATab2() {
   this.router.navigate(['/favoritos']);
 }
-
+ /**
+   * @function irATab3
+   * @description Navega a la página de mi cuenta 
+   */
 irATab3() {
   this.router.navigate(['/mi-cuenta']);
 }

@@ -15,10 +15,10 @@ import { FiltrosModule } from '../components/filtros/filtros.module';
     IonicModule,
     MapaPageRoutingModule,
     FiltrosModule ,
-       HttpClientModule,
+    HttpClientModule,
   ],
   declarations: [MapaPage],
-   providers: [
+  providers: [
   
     
   ]
