@@ -2,17 +2,17 @@ TurisMatch – Aplicación de Turismo
 
 TurisMatch es una aplicación desarrollada con Ionic y Angular que permite explorar puntos turísticos de Argentina filtrando por provincia, categoría y tipo de paisaje. Además, la aplicación permite registrar usuarios, iniciar sesión, guardar favoritos y visualizar información en un mapa interactivo.
 
-Este proyecto fue realizado como trabajo final para la materia Desarrollo de Aplicaciones.
+Este proyecto fue realizado como trabajo final para la materia Desarrollo de Sistemas de Información orientados a la gestión y apoyo a las decisiones.
 
 Integrantes del grupo
 
 Susana Cordón
 
-Daniela S.
+Daniela iglesias
 
-Gonzalo S.
+Gonzalo Ledezma.
 
-(Agregar si falta algún integrante)
+Juliana choque 
 
 Repositorio
 
